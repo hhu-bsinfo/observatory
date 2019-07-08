@@ -18,10 +18,33 @@ public class Benchmark implements Callable<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Benchmark.class);
 
+    private static final int DEFAULT_SERVER_PORT = 2998;
+
+    @CommandLine.Option(
+        names = {"-c", "--config"},
+        description = "Path to the config JSON file. If empty, observatory will try to load 'config.json' from it's resource folder.")
+    private String configPath;
+
+    @CommandLine.Option(
+        names = "--server",
+        description = "Runs this instance in server mode.")
+    private boolean isServer;
+
+    @CommandLine.Option(
+        names = {"-p", "--port"},
+        description = "The port the server will listen on.")
+    private int port = DEFAULT_SERVER_PORT;
+
     public Void call() throws Exception {
         LOGGER.info("Loading configuration");
 
-        BenchmarkConfig config = JsonResourceLoader.loadJsonObject("config.json", BenchmarkConfig.class);
+        BenchmarkConfig config;
+
+        if(configPath == null) {
+            config = JsonResourceLoader.loadJsonObjectFromResource("config.json", BenchmarkConfig.class);
+        } else {
+            config = JsonResourceLoader.loadJsonObjectFromFile(configPath, BenchmarkConfig.class);
+        }
 
         LOGGER.info("Creating benchmark instance");
 
