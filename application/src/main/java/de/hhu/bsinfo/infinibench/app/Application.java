@@ -1,10 +1,11 @@
 package de.hhu.bsinfo.infinibench.app;
 
-import de.hhu.bsinfo.infinibench.core.Benchmark;
-import de.hhu.bsinfo.infinibench.core.InfiniBench;
+import de.hhu.bsinfo.infinibench.InfiniBench;
+import de.hhu.bsinfo.infinibench.benchmark.Benchmark;
+import de.hhu.bsinfo.infinibench.app.config.BenchmarkConfig;
+import de.hhu.bsinfo.infinibench.app.config.BenchmarkParameter;
+import de.hhu.bsinfo.infinibench.app.config.RootConfig;
 import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,21 +18,26 @@ public class Application {
 
         LOGGER.info("Loading configuration");
 
-        Config config = JsonResourceLoader.loadJsonObject("config.json", Config.class);
+        RootConfig config = JsonResourceLoader.loadJsonObject("config.json", RootConfig.class);
 
-        Set<Benchmark> benchmarks = Arrays.stream(config.getBenchmarks())
+        Benchmark[] benchmarks = Arrays.stream(config.getBenchmarks())
             .map(Application::instantiateBenchmark)
-            .collect(Collectors.toSet());
+            .distinct()
+            .toArray(Benchmark[]::new);
 
-        for(Benchmark benchmark : benchmarks) {
-            benchmark.initialize();
-        }
+        new InfiniBench(benchmarks).start();
     }
 
-    private static Benchmark instantiateBenchmark(String className) {
+    private static Benchmark instantiateBenchmark(BenchmarkConfig config) {
         try {
-            Class<?> clazz = Application.class.getClassLoader().loadClass(className);
-            return (Benchmark) clazz.getConstructor().newInstance();
+            Class<?> clazz = InfiniBench.class.getClassLoader().loadClass(config.getClassName());
+            Benchmark benchmark = (Benchmark) clazz.getConstructor().newInstance();
+
+            for(BenchmarkParameter parameter : config.getParameters()) {
+                benchmark.setParameter(parameter.getKey(), parameter.getValue());
+            }
+
+            return benchmark;
         } catch (Exception e) {
             e.printStackTrace();
         }

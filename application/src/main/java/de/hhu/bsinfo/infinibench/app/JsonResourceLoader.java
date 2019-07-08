@@ -1,7 +1,7 @@
 package de.hhu.bsinfo.infinibench.app;
 
 import com.google.gson.Gson;
-import de.hhu.bsinfo.infinibench.core.InfiniBench;
+import de.hhu.bsinfo.infinibench.InfiniBench;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
