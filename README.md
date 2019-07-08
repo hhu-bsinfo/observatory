@@ -1,7 +1,7 @@
 # InfiniBench
 
 <p align="center">
-  <img src="logo.svg">
+  <img src="logo.png" height=250>
 </p>
 
 <p align="center">

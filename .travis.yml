@@ -1,0 +1,10 @@
+language: java
+dist: xenial
+
+stages:
+  - name: build
+
+jobs:
+  include:
+    - stage: build
+      script: ./gradlew distTar

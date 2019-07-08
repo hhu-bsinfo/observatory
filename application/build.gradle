@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+}
+
+group = 'de.hhu.bsinfo'
+version = getProperty('projectVersion')
+
+mainClassName = 'de.hhu.bsinfo.infinibench.app.Application'
+applicationName = 'infinibench'
+
+compileJava {
+    sourceCompatibility = '8'
+    targetCompatibility = '8'
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':benchmark')
+    implementation project(':example')
+
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
+}

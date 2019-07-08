@@ -1,2 +1,5 @@
-rootProject.name = 'InfiniBench'
+rootProject.name = 'infinibench'
+include 'benchmark'
+include 'example'
+include 'application'
 

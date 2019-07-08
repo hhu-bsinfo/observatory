@@ -1,0 +1,5 @@
+{
+  "benchmarks": [
+    "de.hhu.bsinfo.infinibench.example.ExampleBenchmark"
+  ]
+}

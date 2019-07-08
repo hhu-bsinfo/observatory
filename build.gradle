@@ -1,12 +1,19 @@
-plugins {
-    id 'java'
+ext {
+    projectVersion = '0.1.0'
 }
 
-group 'de.hhu.bsinfo'
-version '0.1.0-SNAPSHOT'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
 
-repositories {
-    mavenCentral()
+subprojects {
+    buildDir = rootProject.file("build/${it.name}")
+
+    repositories {
+        mavenCentral()
+    }
 }
 
 wrapper {
