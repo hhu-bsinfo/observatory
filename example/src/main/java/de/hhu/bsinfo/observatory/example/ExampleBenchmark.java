@@ -1,7 +1,7 @@
-package de.hhu.bsinfo.infinibench.example;
+package de.hhu.bsinfo.observatory.example;
 
-import de.hhu.bsinfo.infinibench.benchmark.Benchmark;
-import de.hhu.bsinfo.infinibench.benchmark.Status;
+import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -31,7 +31,7 @@ buildConfig {
     version = project.version
 
     clsName = 'BuildConfig'
-    packageName = 'de.hhu.bsinfo.infinibench.generated'
+    packageName = 'de.hhu.bsinfo.observatory.generated'
 
     charset = 'UTF-8'
 

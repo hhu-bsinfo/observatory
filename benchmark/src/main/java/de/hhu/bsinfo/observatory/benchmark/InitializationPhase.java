@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.infinibench.benchmark;
+package de.hhu.bsinfo.observatory.benchmark;
 
 public class InitializationPhase extends BenchmarkPhase {
 

@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.infinibench.app.util;
+package de.hhu.bsinfo.observatory.app.util;
 
 import java.net.InetSocketAddress;
 import picocli.CommandLine;

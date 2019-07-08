@@ -1,5 +1,5 @@
 {
-    "className": "de.hhu.bsinfo.infinibench.example.ExampleBenchmark",
+    "className": "de.hhu.bsinfo.observatory.example.ExampleBenchmark",
     "parameters": [
       {
         "key": "param1",

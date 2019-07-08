@@ -1,10 +1,10 @@
-package de.hhu.bsinfo.infinibench.app.command;
+package de.hhu.bsinfo.observatory.app.command;
 
-import de.hhu.bsinfo.infinibench.InfiniBench;
+import de.hhu.bsinfo.observatory.Observatory;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-    name = "infinibench",
+    name = "observatory",
     description = "",
     subcommands = { Benchmark.class }
 )
@@ -12,6 +12,6 @@ public class Root implements Runnable {
 
     @Override
     public void run() {
-        InfiniBench.printBanner();
+        Observatory.printBanner();
     }
 }

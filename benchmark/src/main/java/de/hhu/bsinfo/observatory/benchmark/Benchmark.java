@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.infinibench.benchmark;
+package de.hhu.bsinfo.observatory.benchmark;
 
 import java.util.HashMap;
 import java.util.Map;

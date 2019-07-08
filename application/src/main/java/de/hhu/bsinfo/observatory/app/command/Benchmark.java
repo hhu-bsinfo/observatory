@@ -1,9 +1,9 @@
-package de.hhu.bsinfo.infinibench.app.command;
+package de.hhu.bsinfo.observatory.app.command;
 
-import de.hhu.bsinfo.infinibench.InfiniBench;
-import de.hhu.bsinfo.infinibench.app.util.JsonResourceLoader;
-import de.hhu.bsinfo.infinibench.app.config.BenchmarkConfig;
-import de.hhu.bsinfo.infinibench.app.config.BenchmarkParameter;
+import de.hhu.bsinfo.observatory.Observatory;
+import de.hhu.bsinfo.observatory.app.util.JsonResourceLoader;
+import de.hhu.bsinfo.observatory.app.config.BenchmarkConfig;
+import de.hhu.bsinfo.observatory.app.config.BenchmarkParameter;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +25,15 @@ public class Benchmark implements Callable<Void> {
 
         LOGGER.info("Creating benchmark instance");
 
-        new InfiniBench(instantiateBenchmark(config)).start();
+        new Observatory(instantiateBenchmark(config)).start();
 
         return null;
     }
 
-    private static de.hhu.bsinfo.infinibench.benchmark.Benchmark instantiateBenchmark(BenchmarkConfig config) {
+    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(BenchmarkConfig config) {
         try {
-            Class<?> clazz = InfiniBench.class.getClassLoader().loadClass(config.getClassName());
-            de.hhu.bsinfo.infinibench.benchmark.Benchmark benchmark = (de.hhu.bsinfo.infinibench.benchmark.Benchmark) clazz.getConstructor().newInstance();
+            Class<?> clazz = Observatory.class.getClassLoader().loadClass(config.getClassName());
+            de.hhu.bsinfo.observatory.benchmark.Benchmark benchmark = (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
 
             for(BenchmarkParameter parameter : config.getParameters()) {
                 benchmark.setParameter(parameter.getKey(), parameter.getValue());

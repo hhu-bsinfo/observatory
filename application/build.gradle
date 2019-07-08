@@ -5,8 +5,8 @@ plugins {
 group = 'de.hhu.bsinfo'
 version = getProperty('projectVersion')
 
-mainClassName = 'de.hhu.bsinfo.infinibench.app.Application'
-applicationName = 'infinibench'
+mainClassName = 'de.hhu.bsinfo.observatory.app.Application'
+applicationName = 'observatory'
 
 compileJava {
     sourceCompatibility = '8'

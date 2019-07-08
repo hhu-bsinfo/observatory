@@ -1,24 +1,24 @@
-package de.hhu.bsinfo.infinibench;
+package de.hhu.bsinfo.observatory;
 
-import de.hhu.bsinfo.infinibench.benchmark.Benchmark;
-import de.hhu.bsinfo.infinibench.benchmark.BenchmarkPhase;
-import de.hhu.bsinfo.infinibench.benchmark.Status;
+import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.BenchmarkPhase;
+import de.hhu.bsinfo.observatory.benchmark.Status;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import de.hhu.bsinfo.infinibench.generated.BuildConfig;
+import de.hhu.bsinfo.observatory.generated.BuildConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InfiniBench {
+public class Observatory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InfiniBench.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Observatory.class);
 
     private final Benchmark benchmark;
 
-    public InfiniBench(Benchmark benchmark) {
+    public Observatory(Benchmark benchmark) {
         this.benchmark = benchmark;
     }
 
@@ -48,7 +48,7 @@ public class InfiniBench {
     }
 
     public static void printBanner() {
-        InputStream inputStream = InfiniBench.class.getClassLoader().getResourceAsStream("banner.txt");
+        InputStream inputStream = Observatory.class.getClassLoader().getResourceAsStream("banner.txt");
 
         if (inputStream == null) {
             return;

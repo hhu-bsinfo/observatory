@@ -1,7 +1,7 @@
-package de.hhu.bsinfo.infinibench.app.util;
+package de.hhu.bsinfo.observatory.app.util;
 
 import com.google.gson.Gson;
-import de.hhu.bsinfo.infinibench.InfiniBench;
+import de.hhu.bsinfo.observatory.Observatory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ public class JsonResourceLoader {
     private JsonResourceLoader() {}
 
     public static <T> T loadJsonObject(String resourceName, Class<T> clazz) throws IOException {
-        InputStream inputStream = InfiniBench.class.getClassLoader().getResourceAsStream(resourceName);
+        InputStream inputStream = Observatory.class.getClassLoader().getResourceAsStream(resourceName);
 
         if(inputStream == null) {
             throw new IOException("Unable to open input stream for resource '" + resourceName + "'!");

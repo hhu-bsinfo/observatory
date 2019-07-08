@@ -1,7 +1,7 @@
-package de.hhu.bsinfo.infinibench.app;
+package de.hhu.bsinfo.observatory.app;
 
-import de.hhu.bsinfo.infinibench.app.command.Root;
-import de.hhu.bsinfo.infinibench.app.util.InetSocketAddressConverter;
+import de.hhu.bsinfo.observatory.app.command.Root;
+import de.hhu.bsinfo.observatory.app.util.InetSocketAddressConverter;
 import java.net.InetSocketAddress;
 import picocli.CommandLine;
 
