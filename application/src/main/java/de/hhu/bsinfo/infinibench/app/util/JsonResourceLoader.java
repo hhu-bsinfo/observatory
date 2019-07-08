@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.infinibench.app;
+package de.hhu.bsinfo.infinibench.app.util;
 
 import com.google.gson.Gson;
 import de.hhu.bsinfo.infinibench.InfiniBench;

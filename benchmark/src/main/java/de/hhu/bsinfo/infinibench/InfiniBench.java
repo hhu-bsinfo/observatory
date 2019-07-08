@@ -16,18 +16,16 @@ public class InfiniBench {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InfiniBench.class);
 
-    private final Benchmark[] benchmarks;
+    private final Benchmark benchmark;
 
-    public InfiniBench(Benchmark... benchmarks) {
-        this.benchmarks = benchmarks;
+    public InfiniBench(Benchmark benchmark) {
+        this.benchmark = benchmark;
     }
 
     public void start() throws Exception {
-        for(Benchmark benchmark : benchmarks) {
-            LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
+        LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
-            runPhase(benchmark.getInitializationPhase());
-        }
+        runPhase(benchmark.getInitializationPhase());
     }
 
     private void runPhase(BenchmarkPhase phase) {
@@ -36,6 +34,10 @@ public class InfiniBench {
         LOGGER.info("Running {}", phaseName);
 
         phase.run();
+
+        if(phase.getStatus() == Status.NOT_IMPLEMENTED) {
+            LOGGER.warn("{} is not implemented and being skipped", phaseName);
+        }
 
         if(phase.getStatus() != Status.OK) {
             LOGGER.error("{} failed with status [{}]", phaseName, phase.getStatus());

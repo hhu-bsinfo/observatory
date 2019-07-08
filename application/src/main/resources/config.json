@@ -1,17 +1,13 @@
 {
-  "benchmarks": [
-    {
-      "className": "de.hhu.bsinfo.infinibench.example.ExampleBenchmark",
-      "parameters": [
-        {
-          "key": "param1",
-          "value": "test"
-        },
-        {
-          "key": "param2",
-          "value": "test"
-        }
-      ]
-    }
-  ]
+    "className": "de.hhu.bsinfo.infinibench.example.ExampleBenchmark",
+    "parameters": [
+      {
+        "key": "param1",
+        "value": "test"
+      },
+      {
+        "key": "param2",
+        "value": "test"
+      }
+    ]
 }
