@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+group 'de.hhu.bsinfo'
+version '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+wrapper {
+    gradleVersion = "5.4.1"
+}
