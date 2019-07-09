@@ -1,6 +1,9 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-public abstract class BenchmarkPhase {
+import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
+
+public abstract class BenchmarkPhase implements Runnable {
 
     private final Benchmark benchmark;
 
@@ -10,17 +13,18 @@ public abstract class BenchmarkPhase {
         this.benchmark = benchmark;
     }
 
-    public void run() {
-        this.status = execute();
-    }
-
     public Status getStatus() {
         return status;
     }
 
-    protected abstract Status execute();
+    void setStatus(Status status) {
+        this.status = status;
+    }
 
     Benchmark getBenchmark() {
         return benchmark;
     }
+
+    @Override
+    public abstract void run();
 }

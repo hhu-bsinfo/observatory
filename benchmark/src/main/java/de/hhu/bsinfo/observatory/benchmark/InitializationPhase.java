@@ -1,6 +1,8 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-public class InitializationPhase extends BenchmarkPhase {
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
+
+public class InitializationPhase extends SetupPhase {
 
     public InitializationPhase(Benchmark benchmark) {
         super(benchmark);

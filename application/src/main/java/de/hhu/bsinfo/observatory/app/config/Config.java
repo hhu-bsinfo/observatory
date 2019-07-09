@@ -3,7 +3,7 @@ package de.hhu.bsinfo.observatory.app.config;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class BenchmarkConfig {
+public class Config {
 
     @SerializedName("className")
     @Expose
@@ -11,13 +11,21 @@ public class BenchmarkConfig {
 
     @SerializedName("parameters")
     @Expose
-    private BenchmarkParameter[] parameters = null;
+    private Parameter[] parameters;
+
+    @SerializedName("phases")
+    @Expose
+    private Phase[] phases;
 
     public String getClassName() {
         return className;
     }
 
-    public BenchmarkParameter[] getParameters() {
+    public Parameter[] getParameters() {
         return parameters;
+    }
+
+    public Phase[] getPhases() {
+        return phases;
     }
 }

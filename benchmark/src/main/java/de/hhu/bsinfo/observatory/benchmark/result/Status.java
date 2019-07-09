@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.observatory.benchmark;
+package de.hhu.bsinfo.observatory.benchmark.result;
 
 public enum Status {
 

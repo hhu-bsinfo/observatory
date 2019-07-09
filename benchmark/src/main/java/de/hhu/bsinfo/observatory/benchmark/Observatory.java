@@ -1,10 +1,14 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
+import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
+import de.hhu.bsinfo.observatory.benchmark.result.Measurement;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import de.hhu.bsinfo.observatory.generated.BuildConfig;
@@ -17,40 +21,41 @@ public class Observatory {
 
     private final Benchmark benchmark;
 
-    public Observatory(Benchmark benchmark, Map<String, String> benchmarkParameters, boolean isServer, InetSocketAddress address) {
+    public Observatory(Benchmark benchmark, Map<String, String> benchmarkParameters, Map<Class<? extends MeasurementPhase>, Map<Integer, Integer>> benchmarkPhases, boolean isServer, InetSocketAddress address) {
         this.benchmark = benchmark;
 
         benchmarkParameters.forEach(benchmark::setParameter);
         benchmark.setServer(isServer);
         benchmark.setAddress(address);
+
+        benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
+        benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
+
+        for(Entry<Class<? extends MeasurementPhase>, Map<Integer, Integer>> entry : benchmarkPhases.entrySet()) {
+            MeasurementPhase phase = instantiateMeasurementPhase(entry.getKey(), isServer ? BenchmarkMode.SEND : BenchmarkMode.RECEIVE, entry.getValue());
+
+            if(phase != null) {
+                benchmark.addBenchmarkPhase(phase);
+            }
+        }
+
+        benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
     }
 
-    public void start() throws Exception {
+    public void start() {
         LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
-        runPhase(benchmark.getInitializationPhase());
-        runPhase(benchmark.getConnectionPhase());
-        runPhase(benchmark.getCleanupPhase());
+        benchmark.executePhases();
     }
 
-    private void runPhase(BenchmarkPhase phase) {
-        String phaseName = phase.getClass().getSimpleName();
-
-        LOGGER.info("Running {}", phaseName);
-
-        phase.run();
-
-        if(phase.getStatus() == Status.NOT_IMPLEMENTED) {
-            LOGGER.warn("{} returned [{}] and is being skipped", phaseName, phase.getStatus());
-            return;
+    private MeasurementPhase instantiateMeasurementPhase(Class<? extends MeasurementPhase> clazz, BenchmarkMode mode, Map<Integer, Integer> measurementOptions) {
+        try {
+            return clazz.getDeclaredConstructor(Benchmark.class, BenchmarkMode.class, Map.class).newInstance(benchmark, mode, measurementOptions);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            LOGGER.warn("Unable to create benchmark phase of type '{}'", clazz.getSimpleName());
         }
 
-        if(phase.getStatus() != Status.OK) {
-            LOGGER.error("{} failed with status [{}]", phaseName, phase.getStatus());
-            System.exit(1);
-        }
-
-        LOGGER.info("{} finished with status [{}]", phaseName, phase.getStatus());
+        return null;
     }
 
     public static void printBanner() {

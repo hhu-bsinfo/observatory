@@ -3,7 +3,7 @@ package de.hhu.bsinfo.observatory.app.config;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class BenchmarkParameter {
+public class Parameter {
 
     @SerializedName("key")
     @Expose

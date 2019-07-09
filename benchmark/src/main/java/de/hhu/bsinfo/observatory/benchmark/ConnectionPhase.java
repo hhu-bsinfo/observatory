@@ -1,6 +1,8 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-public class ConnectionPhase extends BenchmarkPhase {
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
+
+public class ConnectionPhase extends SetupPhase {
 
     ConnectionPhase(Benchmark benchmark) {
         super(benchmark);

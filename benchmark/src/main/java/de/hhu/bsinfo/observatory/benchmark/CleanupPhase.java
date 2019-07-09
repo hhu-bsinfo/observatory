@@ -1,6 +1,8 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-public class CleanupPhase extends BenchmarkPhase {
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
+
+public class CleanupPhase extends SetupPhase {
 
     CleanupPhase(Benchmark benchmark) {
         super(benchmark);

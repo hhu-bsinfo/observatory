@@ -1,20 +1,31 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
+import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
+import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Benchmark {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Benchmark.class);
 
     private boolean isServer;
     private InetSocketAddress address;
 
     private final Map<String, String> parameters = new HashMap<>();
 
-    private final InitializationPhase initializationPhase = new InitializationPhase(this);
-    private final ConnectionPhase connectionPhase = new ConnectionPhase(this);
-    private final CleanupPhase cleanupPhase = new CleanupPhase(this);
+    private final List<BenchmarkPhase> phases = new ArrayList<>();
+
+    void addBenchmarkPhase(BenchmarkPhase phase) {
+        phases.add(phase);
+    }
 
     void setParameter(final String key, final String value) {
         parameters.put(key, value);
@@ -40,16 +51,26 @@ public abstract class Benchmark {
         return address;
     }
 
-    InitializationPhase getInitializationPhase() {
-        return initializationPhase;
-    }
+    void executePhases() {
+        for(BenchmarkPhase phase : phases) {
+            String phaseName = phase.getClass().getSimpleName();
 
-    ConnectionPhase getConnectionPhase() {
-        return connectionPhase;
-    }
+            LOGGER.info("Running {}", phaseName);
 
-    CleanupPhase getCleanupPhase() {
-        return cleanupPhase;
+            phase.run();
+
+            if(phase.getStatus() == Status.NOT_IMPLEMENTED) {
+                LOGGER.warn("{} returned [{}] and is being skipped", phaseName, phase.getStatus());
+                continue;
+            }
+
+            if(phase.getStatus() != Status.OK) {
+                LOGGER.error("{} failed with status [{}]", phaseName, phase.getStatus());
+                System.exit(1);
+            }
+
+            LOGGER.info("{} finished with status [{}]", phaseName, phase.getStatus());
+        }
     }
 
     protected abstract Status initialize();
@@ -59,4 +80,6 @@ public abstract class Benchmark {
     protected abstract Status connect(final InetSocketAddress serverAddress);
 
     protected abstract Status cleanup();
+
+    protected abstract Status measureMessagingThroughput(BenchmarkMode mode, ThroughputMeasurement measurement);
 }
