@@ -4,7 +4,6 @@ import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Measurement;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
-import java.util.HashMap;
 import java.util.Map;
 
 public class MessagingThroughputPhase extends ThroughputPhase {
@@ -14,7 +13,7 @@ public class MessagingThroughputPhase extends ThroughputPhase {
     }
 
     @Override
-    protected Status execute(Measurement measurement) {
+    protected Status executeSingleMeasurement(Measurement measurement) {
         return getBenchmark().measureMessagingThroughput(getMode(), (ThroughputMeasurement) measurement);
     }
 }

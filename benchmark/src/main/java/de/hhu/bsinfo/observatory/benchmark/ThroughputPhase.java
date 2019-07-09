@@ -5,7 +5,7 @@ import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
 import java.util.Map;
 import java.util.TreeMap;
 
-public abstract class ThroughputPhase extends MeasurementPhase {
+abstract class ThroughputPhase extends MeasurementPhase {
 
     ThroughputPhase(Benchmark benchmark, BenchmarkMode mode, Map<Integer, Integer> measurementOptions) {
         super(benchmark, mode, new ThroughputMeasurement[measurementOptions.size()]);

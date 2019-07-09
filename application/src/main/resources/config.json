@@ -4,6 +4,7 @@
   "phases": [
     {
       "name": "MessagingThroughputPhase",
+      "modes": [ "unidirectional", "bidirectional" ],
       "operations": [
         { "size": 1, "count": 1000000 },
         { "size": 2, "count": 1000000 },

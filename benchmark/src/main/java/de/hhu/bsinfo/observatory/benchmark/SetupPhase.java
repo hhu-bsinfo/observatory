@@ -9,7 +9,7 @@ public abstract class SetupPhase extends BenchmarkPhase {
     }
 
     @Override
-    public final void run() {
+    public final void runPhase() {
         setStatus(execute());
     }
 

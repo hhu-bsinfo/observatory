@@ -14,7 +14,7 @@ public class ThroughputMeasurement extends Measurement {
         return totalTime;
     }
 
-    public void setMeasuredTime(double timeInNanos) {
+    public void setMeasuredTime(long timeInNanos) {
         this.totalTime = timeInNanos / 1000000000d;
 
         operationThroughput = (double) getOperationCount() / totalTime;
@@ -27,6 +27,18 @@ public class ThroughputMeasurement extends Measurement {
 
     public double getDataThroughput() {
         return dataThroughput;
+    }
+
+    public void setTotalTime(double timeInSeconds) {
+        this.totalTime = timeInSeconds;
+    }
+
+    public void setOperationThroughput(double operationThroughput) {
+        this.operationThroughput = operationThroughput;
+    }
+
+    public void setDataThroughput(double dataThroughput) {
+        this.dataThroughput = dataThroughput;
     }
 
     @Override

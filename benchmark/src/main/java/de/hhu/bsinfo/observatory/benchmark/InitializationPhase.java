@@ -4,7 +4,7 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 public class InitializationPhase extends SetupPhase {
 
-    public InitializationPhase(Benchmark benchmark) {
+    InitializationPhase(Benchmark benchmark) {
         super(benchmark);
     }
 

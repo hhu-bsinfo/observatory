@@ -6,7 +6,7 @@ public class Measurement implements Cloneable {
     private final int operationSize;
     private final long totalData;
 
-    public Measurement(int operationCount, int operationSize) {
+    Measurement(int operationCount, int operationSize) {
         this.operationCount = operationCount;
         this.operationSize = operationSize;
         totalData = (long) operationCount * (long) operationSize;
@@ -26,7 +26,7 @@ public class Measurement implements Cloneable {
 
     @Override
     public String toString() {
-        return "Measurement{" +
+        return "Measurement {" +
             "\n\t" + ValueFormatter.formatValue("operationCount", operationCount) +
             ",\n\t" + ValueFormatter.formatValue("operationSize", operationSize) +
             ",\n\t" + ValueFormatter.formatValue("totalData",totalData) +

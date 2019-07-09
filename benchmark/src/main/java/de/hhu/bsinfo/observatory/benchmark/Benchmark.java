@@ -3,7 +3,6 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ public abstract class Benchmark {
 
             LOGGER.info("Running {}", phaseName);
 
-            phase.run();
+            phase.runPhase();
 
             if(phase.getStatus() == Status.NOT_IMPLEMENTED) {
                 LOGGER.warn("{} returned [{}] and is being skipped", phaseName, phase.getStatus());

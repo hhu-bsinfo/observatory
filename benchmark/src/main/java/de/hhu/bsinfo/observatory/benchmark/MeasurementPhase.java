@@ -3,7 +3,6 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Measurement;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
-import de.hhu.bsinfo.observatory.benchmark.result.ValueFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public abstract class MeasurementPhase extends BenchmarkPhase {
         this.measurements = measurements;
     }
 
-    public Measurement[] getMeasurements() {
+    Measurement[] getMeasurements() {
         return measurements;
     }
 
@@ -30,13 +29,12 @@ public abstract class MeasurementPhase extends BenchmarkPhase {
     }
 
     @Override
-    public final void run() {
+    public final void runPhase() {
         for(Measurement measurement : measurements) {
-            LOGGER.info("Running '{}' with {} of size {}", getClass().getSimpleName(),
-                ValueFormatter.formatValue(measurement.getOperationCount(), "Operations"),
-                ValueFormatter.formatValue(measurement.getOperationSize(), "Byte"));
+            LOGGER.info("Running '{}' with {} operations of size {} byte", getClass().getSimpleName(),
+                measurement.getOperationCount(), measurement.getOperationSize());
 
-            Status status = execute(measurement);
+            Status status = executeSingleMeasurement(measurement);
 
             if (status != Status.OK) {
                 setStatus(status);
@@ -49,5 +47,5 @@ public abstract class MeasurementPhase extends BenchmarkPhase {
         setStatus(Status.OK);
     }
 
-    protected abstract Status execute(Measurement measurement);
+    protected abstract Status executeSingleMeasurement(Measurement measurement);
 }
