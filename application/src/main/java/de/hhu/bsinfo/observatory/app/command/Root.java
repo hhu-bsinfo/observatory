@@ -1,6 +1,6 @@
 package de.hhu.bsinfo.observatory.app.command;
 
-import de.hhu.bsinfo.observatory.Observatory;
+import de.hhu.bsinfo.observatory.benchmark.Observatory;
 import picocli.CommandLine;
 
 @CommandLine.Command(

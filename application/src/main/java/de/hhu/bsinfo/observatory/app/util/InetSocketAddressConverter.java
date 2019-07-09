@@ -17,7 +17,7 @@ public class InetSocketAddressConverter implements CommandLine.ITypeConverter<In
         final String[] splittedAddress = p_address.split(":");
 
         if (splittedAddress.length == 0 || splittedAddress.length > 2) {
-            throw new CommandLine.TypeConversionException("No connection string specified");
+            throw new CommandLine.TypeConversionException("Invalid connection string specified");
         }
 
         String hostname = splittedAddress[0];

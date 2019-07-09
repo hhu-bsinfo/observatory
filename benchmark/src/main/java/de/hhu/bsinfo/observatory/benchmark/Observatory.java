@@ -1,11 +1,10 @@
-package de.hhu.bsinfo.observatory;
+package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
-import de.hhu.bsinfo.observatory.benchmark.BenchmarkPhase;
-import de.hhu.bsinfo.observatory.benchmark.Status;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import de.hhu.bsinfo.observatory.generated.BuildConfig;
@@ -18,14 +17,20 @@ public class Observatory {
 
     private final Benchmark benchmark;
 
-    public Observatory(Benchmark benchmark) {
+    public Observatory(Benchmark benchmark, Map<String, String> benchmarkParameters, boolean isServer, InetSocketAddress address) {
         this.benchmark = benchmark;
+
+        benchmarkParameters.forEach(benchmark::setParameter);
+        benchmark.setServer(isServer);
+        benchmark.setAddress(address);
     }
 
     public void start() throws Exception {
         LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
         runPhase(benchmark.getInitializationPhase());
+        runPhase(benchmark.getConnectionPhase());
+        runPhase(benchmark.getCleanupPhase());
     }
 
     private void runPhase(BenchmarkPhase phase) {
@@ -36,7 +41,8 @@ public class Observatory {
         phase.run();
 
         if(phase.getStatus() == Status.NOT_IMPLEMENTED) {
-            LOGGER.warn("{} is not implemented and being skipped", phaseName);
+            LOGGER.warn("{} returned [{}] and is being skipped", phaseName, phase.getStatus());
+            return;
         }
 
         if(phase.getStatus() != Status.OK) {

@@ -6,7 +6,7 @@ public abstract class BenchmarkPhase {
 
     private Status status;
 
-    public BenchmarkPhase(Benchmark benchmark) {
+    BenchmarkPhase(Benchmark benchmark) {
         this.benchmark = benchmark;
     }
 
@@ -20,7 +20,7 @@ public abstract class BenchmarkPhase {
 
     protected abstract Status execute();
 
-    protected Benchmark getBenchmark() {
+    Benchmark getBenchmark() {
         return benchmark;
     }
 }

@@ -1,7 +1,7 @@
 package de.hhu.bsinfo.observatory.app.util;
 
 import com.google.gson.Gson;
-import de.hhu.bsinfo.observatory.Observatory;
+import de.hhu.bsinfo.observatory.benchmark.Observatory;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,10 +1,16 @@
 package de.hhu.bsinfo.observatory.app.command;
 
-import de.hhu.bsinfo.observatory.Observatory;
+import de.hhu.bsinfo.observatory.benchmark.Observatory;
 import de.hhu.bsinfo.observatory.app.util.JsonResourceLoader;
 import de.hhu.bsinfo.observatory.app.config.BenchmarkConfig;
 import de.hhu.bsinfo.observatory.app.config.BenchmarkParameter;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -26,14 +32,14 @@ public class Benchmark implements Callable<Void> {
     private String configPath;
 
     @CommandLine.Option(
-        names = "--server",
+        names = {"-s", "--server"},
         description = "Runs this instance in server mode.")
     private boolean isServer;
 
     @CommandLine.Option(
-        names = {"-p", "--port"},
-        description = "The port the server will listen on.")
-    private int port = DEFAULT_SERVER_PORT;
+        names = {"-a", "--address"},
+        description = "The address to listen on or connect to.")
+    private InetSocketAddress address = new InetSocketAddress(DEFAULT_SERVER_PORT);
 
     public Void call() throws Exception {
         LOGGER.info("Loading configuration");
@@ -48,25 +54,16 @@ public class Benchmark implements Callable<Void> {
 
         LOGGER.info("Creating benchmark instance");
 
-        new Observatory(instantiateBenchmark(config)).start();
+        Map<String, String> parameters = Arrays.stream(config.getParameters())
+            .collect(Collectors.toMap(BenchmarkParameter::getKey, BenchmarkParameter::getValue));
+
+        new Observatory(instantiateBenchmark(config), parameters, isServer, address).start();
 
         return null;
     }
 
-    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(BenchmarkConfig config) {
-        try {
-            Class<?> clazz = Observatory.class.getClassLoader().loadClass(config.getClassName());
-            de.hhu.bsinfo.observatory.benchmark.Benchmark benchmark = (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
-
-            for(BenchmarkParameter parameter : config.getParameters()) {
-                benchmark.setParameter(parameter.getKey(), parameter.getValue());
-            }
-
-            return benchmark;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
+    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(BenchmarkConfig config) throws Exception {
+        Class<?> clazz = Observatory.class.getClassLoader().loadClass(config.getClassName());
+        return (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
     }
 }

@@ -5,6 +5,8 @@
       <module name="infinibench.application.main" target="8" />
       <module name="infinibench.benchmark.main" target="8" />
       <module name="infinibench.example.main" target="8" />
+      <module name="observatory.benchmark.test" target="12" />
+      <module name="observatory.example.test" target="12" />
     </bytecodeTargetLevel>
   </component>
 </project>
