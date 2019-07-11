@@ -2,4 +2,5 @@ rootProject.name = 'observatory'
 include 'benchmark'
 include 'socket'
 include 'application'
+include 'disni'
 

@@ -19,6 +19,9 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':benchmark')
-    
+
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+    implementation ('com.ibm.disni:disni:2.1') {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
 }

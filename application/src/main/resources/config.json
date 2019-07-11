@@ -1,5 +1,5 @@
 {
-  "className": "de.hhu.bsinfo.observatory.socket.SocketBenchmark",
+  "className": "de.hhu.bsinfo.observatory.disni.DisniBenchmark",
   "parameters": [],
   "phases": [
     {

@@ -3,6 +3,7 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
