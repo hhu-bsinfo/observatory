@@ -1,9 +1,11 @@
 {
   "className": "de.hhu.bsinfo.observatory.disni.DisniBenchmark",
-  "parameters": [],
+  "parameters": [
+    { "key": "queueSize", "value": "100" }
+  ],
   "phases": [
     {
-      "name": "MessagingThroughputPhase",
+      "name": "RdmaWriteThroughputPhase",
       "modes": [ "unidirectional", "bidirectional" ],
       "operations": [
         { "size": 1, "count": 1000000 },

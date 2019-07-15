@@ -5,7 +5,6 @@ import de.hhu.bsinfo.observatory.benchmark.config.Operation;
 import de.hhu.bsinfo.observatory.benchmark.config.Phase;
 import de.hhu.bsinfo.observatory.benchmark.config.Phase.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
-import de.hhu.bsinfo.observatory.benchmark.result.Measurement;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,7 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import de.hhu.bsinfo.observatory.generated.BuildConfig;
@@ -26,13 +24,14 @@ public class Observatory {
 
     private final Benchmark benchmark;
 
-    public Observatory(Benchmark benchmark, Config config, boolean isServer, InetSocketAddress address) {
+    public Observatory(Benchmark benchmark, Config config, boolean isServer, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
         this.benchmark = benchmark;
 
         Arrays.stream(config.getParameters()).forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
 
         benchmark.setServer(isServer);
-        benchmark.setAddress(address);
+        benchmark.setBindAddress(bindAddress);
+        benchmark.setRemoteAddress(remoteAddress);
 
         benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
         benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));

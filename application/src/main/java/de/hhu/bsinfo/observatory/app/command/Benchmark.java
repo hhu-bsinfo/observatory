@@ -35,12 +35,17 @@ public class Benchmark implements Callable<Void> {
     @CommandLine.Option(
         names = {"-s", "--server"},
         description = "Runs this instance in server mode.")
-    private boolean isServer;
+    private boolean isServer = false;
 
     @CommandLine.Option(
         names = {"-a", "--address"},
-        description = "The address to listen on or connect to.")
-    private InetSocketAddress address = new InetSocketAddress(DEFAULT_SERVER_PORT);
+        description = "The address to bind to.")
+    private InetSocketAddress bindAddress = new InetSocketAddress(DEFAULT_SERVER_PORT);
+
+    @CommandLine.Option(
+        names = {"-r", "--remote"},
+        description = "The address to connect to.")
+    private InetSocketAddress remoteAddress;
 
     public Void call() throws Exception {
         LOGGER.info("Loading configuration");
@@ -55,7 +60,7 @@ public class Benchmark implements Callable<Void> {
 
         LOGGER.info("Creating benchmark instance");
 
-        new Observatory(instantiateBenchmark(config.getClassName()), config, isServer, address).start();
+        new Observatory(instantiateBenchmark(config.getClassName()), config, isServer, bindAddress, remoteAddress).start();
 
         return null;
     }

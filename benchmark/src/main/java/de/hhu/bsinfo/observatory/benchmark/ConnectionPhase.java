@@ -13,9 +13,9 @@ public class ConnectionPhase extends SetupPhase {
         Benchmark benchmark = getBenchmark();
 
         if(benchmark.isServer()) {
-            return benchmark.serve(benchmark.getAddress());
+            return benchmark.serve(benchmark.getBindAddress());
         } else {
-            return benchmark.connect(benchmark.getAddress());
+            return benchmark.connect(benchmark.getBindAddress(), benchmark.getRemoteAddress());
         }
     }
 }
