@@ -17,8 +17,8 @@ public class SocketBenchmark extends Benchmark {
 
     private Socket socket;
 
-    DataOutputStream outputStream;
-    DataInputStream inputStream;
+    private DataOutputStream outputStream;
+    private DataInputStream inputStream;
 
     private byte[] buffer;
 
@@ -44,14 +44,14 @@ public class SocketBenchmark extends Benchmark {
             return Status.NETWORK_ERROR;
         }
 
-        LOGGER.info("Connected to client {}", socket.getInetAddress());
+        LOGGER.info("Connected to client {}", socket.getRemoteSocketAddress());
 
         return Status.OK;
     }
 
     @Override
     protected Status connect(InetSocketAddress bindAddress, InetSocketAddress serverAddress) {
-        LOGGER.info("Connecting to address {}", serverAddress.toString());
+        LOGGER.info("Connecting to server {}", serverAddress.toString());
 
         try {
             socket = new Socket(serverAddress.getAddress(), serverAddress.getPort(), bindAddress.getAddress(), 0);
@@ -62,6 +62,8 @@ public class SocketBenchmark extends Benchmark {
             e.printStackTrace();
             return Status.NETWORK_ERROR;
         }
+
+        LOGGER.info("Successfully connected to server {}", socket.getRemoteSocketAddress());
 
         return Status.OK;
     }
@@ -118,5 +120,10 @@ public class SocketBenchmark extends Benchmark {
         }
 
         return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount) {
+        return Status.NOT_IMPLEMENTED;
     }
 }

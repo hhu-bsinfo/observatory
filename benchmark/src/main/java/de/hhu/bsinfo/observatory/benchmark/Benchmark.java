@@ -1,7 +1,12 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,13 +18,21 @@ public abstract class Benchmark {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Benchmark.class);
 
+    private static final String SYNC_SIGNAL = "SYNC";
+
     public enum Mode {
         SEND, RECEIVE
+    }
+
+    public enum RdmaMode {
+        READ, WRITE
     }
 
     private boolean isServer;
     private InetSocketAddress bindAddress;
     private InetSocketAddress remoteAddress;
+
+    private Socket offChannelSocket;
 
     private final Map<String, String> parameters = new HashMap<>();
 
@@ -53,6 +66,9 @@ public abstract class Benchmark {
         return Long.parseLong(parameters.getOrDefault(key, String.valueOf(defaultValue)));
     }
 
+    protected Socket getOffChannelSocket() {
+        return offChannelSocket;
+    }
 
     boolean isServer() {
         return isServer;
@@ -78,6 +94,63 @@ public abstract class Benchmark {
         return remoteAddress;
     }
 
+    Status setup() {
+        try {
+            if (isServer) {
+                ServerSocket serverSocket = new ServerSocket(bindAddress.getPort(), 0, bindAddress.getAddress());
+                offChannelSocket = serverSocket.accept();
+
+                serverSocket.close();
+            } else {
+                offChannelSocket = new Socket(remoteAddress.getAddress(), remoteAddress.getPort(),
+                        bindAddress.getAddress(), bindAddress.getPort());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.error("Unable to setup off channel communication");
+
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    void sendSync() {
+        try {
+            LOGGER.info("Sending sync signal '{}' to client", SYNC_SIGNAL);
+            new DataOutputStream(offChannelSocket.getOutputStream()).write(SYNC_SIGNAL.getBytes());
+        } catch (IOException e) {
+            LOGGER.warn("Unable to synchronize with remote benchmark");
+        }
+    }
+
+    void receiveSync() {
+        try {
+            LOGGER.info("Waiting for sync signal from server");
+
+            byte[] bytes = new byte[SYNC_SIGNAL.getBytes().length];
+            new DataInputStream(offChannelSocket.getInputStream()).readFully(bytes);
+
+            String received = new String(bytes);
+
+            if (!received.equals(SYNC_SIGNAL)) {
+                LOGGER.warn("Received invalid signal from server (Got '{}', Expected '{}'", received, SYNC_SIGNAL);
+            }
+
+            Thread.sleep(100);
+        } catch (IOException | InterruptedException e) {
+            LOGGER.warn("Unable to synchronize with remote benchmark");
+        }
+    }
+
+    void synchronize() {
+        if(isServer) {
+            sendSync();
+        } else {
+            receiveSync();
+        }
+    }
+
     void executePhases() {
         for(BenchmarkPhase phase : phases) {
             String phaseName = phase.getClass().getSimpleName();
@@ -98,6 +171,13 @@ public abstract class Benchmark {
 
             LOGGER.info("{} finished with status [{}]", phaseName, status);
         }
+
+        try {
+            offChannelSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.warn("Unable to close off channel communication");
+        }
     }
 
     protected abstract Status initialize();
@@ -115,4 +195,6 @@ public abstract class Benchmark {
     protected abstract Status benchmarkMessagingSendThroughput(int operationCount);
 
     protected abstract Status benchmarkMessagingReceiveThroughput(int operationCount);
+
+    protected abstract Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount);
 }

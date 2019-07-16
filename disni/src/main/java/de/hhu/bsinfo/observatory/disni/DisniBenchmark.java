@@ -34,8 +34,6 @@ public class DisniBenchmark extends Benchmark {
 
     private int queueSize;
 
-    private Socket socket;
-
     private RdmaConnParam connectionParameter;
     private RdmaEventChannel eventChannel;
     private RdmaCmId connectionId;
@@ -60,16 +58,13 @@ public class DisniBenchmark extends Benchmark {
 
     private MemoryRegionInformation exchangeMemoryRegionInformation() throws IOException {
         MemoryRegionInformation localInfo = new MemoryRegionInformation(receiveMemoryRegion.getAddr(), receiveMemoryRegion.getRkey());
+        byte[] remoteBytes = new byte[MemoryRegionInformation.getSizeInBytes()];
 
         LOGGER.info("Sending local memory region information:\n{}", localInfo);
 
-        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
-        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-        byte[] remoteBytes = new byte[MemoryRegionInformation.getSizeInBytes()];
+        new DataOutputStream(getOffChannelSocket().getOutputStream()).write(localInfo.toBytes());
 
-        outputStream.write(localInfo.toBytes());
-        inputStream.readFully(remoteBytes);
-
+        new DataInputStream(getOffChannelSocket().getInputStream()).readFully(remoteBytes);
         MemoryRegionInformation remoteInfo = MemoryRegionInformation.fromBytes(remoteBytes);
 
         LOGGER.info("Received remote memory region information:\n{}", remoteInfo);
@@ -164,15 +159,6 @@ public class DisniBenchmark extends Benchmark {
             eventChannel.close();
             serverId.destroyId();
 
-            LOGGER.info("Opening socket connection for off channel communication");
-
-            ServerSocket serverSocket = new ServerSocket(bindAddress.getPort(), 0, bindAddress.getAddress());
-            socket = serverSocket.accept();
-
-            LOGGER.info("Successfully connected to {}", socket.getRemoteSocketAddress());
-
-            serverSocket.close();
-
             return Status.OK;
         } catch (IOException e) {
             e.printStackTrace();
@@ -229,12 +215,6 @@ public class DisniBenchmark extends Benchmark {
             }
 
             event.ackEvent();
-
-            LOGGER.info("Opening socket connection for off channel communication");
-
-            socket = new Socket(serverAddress.getAddress(), serverAddress.getPort(), bindAddress.getAddress(), bindAddress.getPort());
-
-            LOGGER.info("Successfully connected to {}", socket.getRemoteSocketAddress());
 
             return Status.OK;
         } catch (IOException e) {
@@ -416,6 +396,68 @@ public class DisniBenchmark extends Benchmark {
             // At the end, poll the completion queue until it is empty
             while (pendingCompletions > 0) {
                 pendingCompletions -= verbs.pollCompletionQueue(CqType.RECV_CQ);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount) {
+        int remainingMessages = operationCount;
+        int pendingCompletions = 0;
+
+        try {
+            while (remainingMessages > 0) {
+                // Get the amount of free places in the queue
+                int batchSize = queueSize - pendingCompletions;
+
+                // Post in batches of 10, so that Stateful Verbs Methods can be reused
+                if (batchSize < 10) {
+                    int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+
+                    if (polled < 0) {
+                        return Status.NETWORK_ERROR;
+                    }
+
+                    pendingCompletions -= polled;
+
+                    continue;
+                }
+
+                if (batchSize > remainingMessages) {
+                    batchSize = remainingMessages;
+
+                    verbs.executeRdmaOperations(batchSize, sendScatterGatherList, mode, remoteInfo);
+
+                    pendingCompletions += batchSize;
+                    remainingMessages -= batchSize;
+                } else {
+                    int i = batchSize;
+
+                    while (i >= 10) {
+                        verbs.executeRdmaOperations(10, sendScatterGatherList, mode, remoteInfo);
+                        i -= 10;
+                    }
+
+                    pendingCompletions += batchSize - i;
+                    remainingMessages -= batchSize - i;
+                }
+
+                // Poll only a single time
+                // It is not recommended to poll the completion queue empty, as this mostly costs too much time,
+                // which would better be spent posting new work requests
+                int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+
+                pendingCompletions -= polled;
+            }
+
+            // At the end, poll the completion queue until it is empty
+            while (pendingCompletions > 0) {
+                pendingCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
             }
         } catch (IOException e) {
             e.printStackTrace();

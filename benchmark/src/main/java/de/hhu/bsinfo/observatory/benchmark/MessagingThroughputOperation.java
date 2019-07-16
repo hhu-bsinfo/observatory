@@ -24,7 +24,7 @@ class MessagingThroughputOperation extends ThroughputOperation {
 
         long time = System.nanoTime() - startTime;
 
-        ((ThroughputMeasurement) getMeasurement()).setMeasuredTime(time);
+        getMeasurement().setMeasuredTime(time);
 
         return status;
     }

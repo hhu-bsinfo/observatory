@@ -18,13 +18,15 @@ class OperationPhase extends BenchmarkPhase {
 
     @Override
     Status execute() {
-        LOGGER.info("Executing phase of type '{}' with {} phase of size {} bytes", operation.getClass().getSimpleName(),
+        LOGGER.info("Executing phase of type '{}' with {} operations of size {} bytes", operation.getClass().getSimpleName(),
                 operation.getMeasurement().getOperationCount(), operation.getMeasurement().getOperationSize());
 
         Status status = operation.execute();
 
         if(status == Status.OK) {
             LOGGER.info("Operation finished with results:\n{}", operation.getMeasurement());
+        } else if(status == Status.OK_NO_MEASUREMENT) {
+            return Status.OK;
         }
 
         return status;

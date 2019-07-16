@@ -5,8 +5,8 @@
   ],
   "operations": [
     {
-      "name": "MessagingThroughput",
-      "modes": [ "unidirectional" ],
+      "name": "RdmaWriteThroughput",
+      "modes": [ "bidirectional" ],
       "iterations": [
         { "size": 1, "count": 1000 },
         { "size": 2, "count": 1000 },

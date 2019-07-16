@@ -5,6 +5,7 @@ import de.hhu.bsinfo.observatory.benchmark.config.BenchmarkConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.IterationConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig.OperationMode;
+import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,7 +57,7 @@ public class Observatory {
                         }
 
                         if(!(sendOperation instanceof ThroughputOperation) || !(receiveOperation instanceof ThroughputOperation)) {
-                            LOGGER.error("Invalid configuration: Only throughput opertations may be executed bidirectionally");
+                            LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
                             return;
                         }
 
@@ -77,9 +78,9 @@ public class Observatory {
                     benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                     benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
                     benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getSize()));
-                    benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                    benchmark.addBenchmarkPhase(new WarmupPhase(benchmark));
-                    benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    //benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    //benchmark.addBenchmarkPhase(new WarmupPhase(benchmark));
+                    //benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
                     benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
                     benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
 
@@ -89,39 +90,19 @@ public class Observatory {
         }
     }
 
-        /*for(Measurement phaseConfig : config.getPhases()) {
-            Map<Integer, Integer> measurementOptions = Arrays.stream(phaseConfig.getOperations())
-                .collect(Collectors.toMap(Operation::getSize, Operation::getCount));
-
-            for(Mode mode : phaseConfig.getModes()) {
-                if(mode == Mode.UNIDIRECTIONAL) {
-                    BenchmarkPhase phase = instantiateMeasurementPhase("de.hhu.bsinfo.observatory.benchmark." + phaseConfig.getName(),
-                        isServer ? BenchmarkMode.SEND : BenchmarkMode.RECEIVE, measurementOptions);
-
-                    if(phase != null) {
-                        benchmark.addBenchmarkPhase(phase);
-                    }
-                } else if(mode == Mode.BIDIRECTIONAL) {
-                    ThroughputPhase sendPhase = (ThroughputPhase) instantiateMeasurementPhase(
-                        "de.hhu.bsinfo.observatory.benchmark." + phaseConfig.getName(), BenchmarkMode.SEND, measurementOptions);
-                    ThroughputPhase receivePhase = (ThroughputPhase) instantiateMeasurementPhase(
-                        "de.hhu.bsinfo.observatory.benchmark." + phaseConfig.getName(), BenchmarkMode.RECEIVE, measurementOptions);
-
-                    if(sendPhase != null && receivePhase != null) {
-                        benchmark.addBenchmarkPhase(new BidirectionalThroughputPhase(sendPhase, receivePhase, measurementOptions));
-                    }
-                }
-            }
-        }*/
-
     public void start() throws InterruptedException {
         for(Benchmark benchmark : benchmarks) {
             LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
-            // Wait for server to be ready to accept incoming connections
             if(!benchmark.isServer()) {
                 Thread.sleep(100);
             }
+
+            if(benchmark.setup() != Status.OK) {
+                return;
+            }
+
+            benchmark.synchronize();
 
             benchmark.executePhases();
         }

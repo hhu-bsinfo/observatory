@@ -2,6 +2,7 @@ package de.hhu.bsinfo.observatory.disni;
 
 import com.ibm.disni.verbs.*;
 
+import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -339,6 +340,28 @@ class VerbsWrapper {
         }
 
         getPostReceiveMethod(recvWrList).execute();
+    }
+
+    void executeRdmaOperations(int amount, LinkedList<IbvSge> scatterGatherElements, RdmaMode mode, MemoryRegionInformation remoteInfo) throws IOException {
+        if(amount <= 0) {
+            return;
+        }
+
+        sendWrList.clear();
+
+        for(int i = 0; i < amount; i++) {
+            sendWrs[i].setWr_id(1);
+            sendWrs[i].setSg_list(scatterGatherElements);
+            sendWrs[i].setOpcode(mode == RdmaMode.WRITE ? IbvSendWR.IBV_WR_RDMA_WRITE : IbvSendWR.IBV_WR_RDMA_READ);
+            sendWrs[i].setSend_flags(IbvSendWR.IBV_SEND_SIGNALED);
+
+            sendWrs[i].getRdma().setRemote_addr(remoteInfo.getAddress());
+            sendWrs[i].getRdma().setRkey(remoteInfo.getRemoteKey());
+
+            sendWrList.add(sendWrs[i]);
+        }
+
+        getPostSendMethod(sendWrList).execute();
     }
 
     /**

@@ -41,9 +41,9 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return Status.UNKNOWN_ERROR;
         }
 
-        if(sendStatus.get() != Status.OK) {
+        if(sendStatus.get() != Status.OK && sendStatus.get() != Status.OK_NO_MEASUREMENT) {
             return sendStatus.get();
-        } else if(receiveStatus.get() != Status.OK) {
+        } else if(receiveStatus.get() != Status.OK && receiveStatus.get() != Status.OK_NO_MEASUREMENT) {
             return receiveStatus.get();
         } else {
             getMeasurement().setTotalTime(sendOperation.getMeasurement().getTotalTime());
