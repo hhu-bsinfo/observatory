@@ -9,9 +9,7 @@ import com.ibm.disni.verbs.RdmaCmId;
 import com.ibm.disni.verbs.RdmaConnParam;
 import com.ibm.disni.verbs.RdmaEventChannel;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark;
-import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
-import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
 import de.hhu.bsinfo.observatory.disni.VerbsWrapper.CqType;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,6 +31,12 @@ public class DisniBenchmark extends Benchmark {
     private RdmaConnParam connectionParameter;
     private RdmaEventChannel eventChannel;
     private RdmaCmId connectionId;
+
+    private IbvMr sendMemoryRegion;
+    private IbvMr receiveMemoryRegion;
+
+    private LinkedList<IbvSge> sendScatterGatherList;
+    private LinkedList<IbvSge> receiveScatterGatherList;
 
     private VerbsWrapper verbs;
 
@@ -126,6 +130,9 @@ public class DisniBenchmark extends Benchmark {
 
             event.ackEvent();
 
+            eventChannel.close();
+            serverId.destroyId();
+
             return Status.OK;
         } catch (IOException e) {
             e.printStackTrace();
@@ -191,9 +198,54 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
+    protected Status prepare(int operationSize) {
+        try {
+            sendMemoryRegion = verbs.registerMemoryRegion(ByteBuffer.allocateDirect(operationSize));
+            receiveMemoryRegion = verbs.registerMemoryRegion(ByteBuffer.allocateDirect(operationSize));
+
+            sendScatterGatherList = new LinkedList<>();
+            receiveScatterGatherList = new LinkedList<>();
+
+            IbvSge sendSge = new IbvSge();
+            sendSge.setAddr(sendMemoryRegion.getAddr());
+            sendSge.setLength(sendMemoryRegion.getLength());
+            sendSge.setLkey(sendMemoryRegion.getLkey());
+
+            IbvSge receiveSge = new IbvSge();
+            receiveSge.setAddr(receiveMemoryRegion.getAddr());
+            receiveSge.setLength(receiveMemoryRegion.getLength());
+            receiveSge.setLkey(receiveMemoryRegion.getLkey());
+
+            sendScatterGatherList.add(sendSge);
+            receiveScatterGatherList.add(receiveSge);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.UNKNOWN_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status fillReceiveQueue() {
+        try {
+            verbs.receiveMessages(queueSize, receiveScatterGatherList);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
     protected Status cleanup() {
         try {
             verbs.destroy();
+            sendMemoryRegion.deregMr();
+            receiveMemoryRegion.deregMr();
+            connectionId.close();
+
             return Status.OK;
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,158 +254,125 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status measureMessagingThroughput(BenchmarkMode mode, ThroughputMeasurement measurement) {
-        verbs.resetStatefulCalls();
+    protected Status benchmarkMessagingSendThroughput(int operationCount) {
+        int remainingMessages = operationCount;
+        int pendingCompletions = 0;
 
         try {
-            IbvMr memoryRegion = verbs.registerMemoryRegion(ByteBuffer.allocateDirect(measurement.getOperationSize()));
+            while (remainingMessages > 0) {
+                // Get the amount of free places in the queue
+                int batchSize = queueSize - pendingCompletions;
 
-            IbvSge scatterGatherElement = new IbvSge();
-            scatterGatherElement.setAddr(memoryRegion.getAddr());
-            scatterGatherElement.setLength(memoryRegion.getLength());
-            scatterGatherElement.setLkey(memoryRegion.getLkey());
+                // Post in batches of 10, so that Stateful Verbs Methods can be reused
+                if (batchSize < 10) {
+                    int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
 
-            LinkedList<IbvSge> scatterGatherList = new LinkedList<>();
-            scatterGatherList.add(scatterGatherElement);
+                    if (polled < 0) {
+                        return Status.NETWORK_ERROR;
+                    }
 
-            if(mode == BenchmarkMode.SEND) {
-                return measureSendThroughput(measurement, scatterGatherList);
-            } else {
-                return measureReceiveThroughput(measurement, scatterGatherList);
+                    pendingCompletions -= polled;
+
+                    continue;
+                }
+
+                if (batchSize > remainingMessages) {
+                    batchSize = remainingMessages;
+
+                    verbs.sendMessages(batchSize, sendScatterGatherList);
+
+                    pendingCompletions += batchSize;
+                    remainingMessages -= batchSize;
+                } else {
+                    int i = batchSize;
+
+                    while (i >= 10) {
+                        verbs.sendMessages(10, sendScatterGatherList);
+                        i -= 10;
+                    }
+
+                    pendingCompletions += batchSize - i;
+                    remainingMessages -= batchSize - i;
+                }
+
+                // Poll only a single time
+                // It is not recommended to poll the completion queue empty, as this mostly costs too much time,
+                // which would better be spent posting new work requests
+                int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+
+                pendingCompletions -= polled;
             }
 
+            // At the end, poll the completion queue until it is empty
+            while (pendingCompletions > 0) {
+                pendingCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return Status.NETWORK_ERROR;
         }
+
+        return Status.OK;
     }
 
     @Override
-    protected Status measureRdmaThroughput(BenchmarkMode mode, RdmaMode rdmaMode, ThroughputMeasurement measurement) {
-        return Status.OK;
-    }
+    protected Status benchmarkMessagingReceiveThroughput(int operationCount) {
+        int pendingCompletions = queueSize;
+        int remainingMessages = operationCount - queueSize; // Receive queue has already been filled in prepare()
 
-    private Status measureSendThroughput(ThroughputMeasurement measurement, LinkedList<IbvSge> scatterGatherList) throws IOException {
-        int remainingMessages = measurement.getOperationCount();
-        int pendingCompletions = 0;
+        try {
+            while (remainingMessages > 0) {
+                // Get the amount of free places in the queue
+                int batchSize = queueSize - pendingCompletions;
 
-        long startTime = System.nanoTime();
+                // Post in batches of 10, so that Stateful Verbs Methods can be reused
+                if (batchSize < 10) {
+                    int polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
 
-        while(remainingMessages > 0) {
-            // Get the amount of free places in the queue
-            int batchSize = queueSize - pendingCompletions;
+                    if (polled < 0) {
+                        return Status.NETWORK_ERROR;
+                    }
 
-            // Post in batches of 10, so that Stateful Verbs Methods can be reused
-            if(batchSize < 10) {
+                    pendingCompletions -= polled;
+
+                    continue;
+                }
+
+                if (batchSize > remainingMessages) {
+                    batchSize = remainingMessages;
+
+                    verbs.receiveMessages(batchSize, receiveScatterGatherList);
+
+                    pendingCompletions += batchSize;
+                    remainingMessages -= batchSize;
+                } else {
+                    int i = batchSize;
+
+                    while (i >= 10) {
+                        verbs.receiveMessages(10, receiveScatterGatherList);
+                        i -= 10;
+                    }
+
+                    pendingCompletions += batchSize - i;
+                    remainingMessages -= batchSize - i;
+                }
+
+                // Poll only a single time
+                // It is not recommended to poll the completion queue empty, as this mostly costs too much time,
+                // which would better be spent posting new work requests
                 int polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
 
-                if(polled < 0) {
-                    return Status.NETWORK_ERROR;
-                }
-
                 pendingCompletions -= polled;
-
-                continue;
             }
 
-            if(batchSize > remainingMessages) {
-                batchSize = remainingMessages;
-
-                verbs.sendMessages(batchSize, scatterGatherList);
-
-                pendingCompletions += batchSize;
-                remainingMessages -= batchSize;
-            } else {
-                int i = batchSize;
-
-                while(i >= 10) {
-                    verbs.sendMessages(10, scatterGatherList);
-                    i -= 10;
-                }
-
-                pendingCompletions += batchSize - i;
-                remainingMessages -= batchSize - i;
+            // At the end, poll the completion queue until it is empty
+            while (pendingCompletions > 0) {
+                pendingCompletions -= verbs.pollCompletionQueue(CqType.RECV_CQ);
             }
-
-            // Poll only a single time
-            // It is not recommended to poll the completion queue empty, as this mostly costs too much time,
-            // which would better be spent posting new work requests
-            int polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
-
-            if(polled < 0) {
-                return Status.NETWORK_ERROR;
-            }
-
-            pendingCompletions -= polled;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
         }
-
-        // At the end, poll the completion queue until it is empty
-        while(pendingCompletions > 0) {
-            pendingCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
-        }
-
-        measurement.setMeasuredTime(System.nanoTime() - startTime);
-
-        return Status.OK;
-    }
-
-    private Status measureReceiveThroughput(ThroughputMeasurement measurement, LinkedList<IbvSge> scatterGatherList) throws IOException {
-        // Fill Receive Queue to avoid timeouts on sender side
-        verbs.receiveMessages(queueSize, scatterGatherList);
-        int pendingCompletions = queueSize;
-        int remainingMessages = measurement.getOperationCount() - queueSize;
-
-        long startTime = System.nanoTime();
-
-        while(remainingMessages > 0) {
-            // Get the amount of free places in the queue
-            int batchSize = queueSize - pendingCompletions;
-
-            // Post in batches of 10, so that Stateful Verbs Methods can be reused
-            if(batchSize < 10) {
-                int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
-
-                if(polled < 0) {
-                    return Status.NETWORK_ERROR;
-                }
-
-                pendingCompletions -= polled;
-
-                continue;
-            }
-
-            if(batchSize > remainingMessages) {
-                batchSize = remainingMessages;
-
-                verbs.receiveMessages(batchSize, scatterGatherList);
-
-                pendingCompletions += batchSize;
-                remainingMessages -= batchSize;
-            } else {
-                int i = batchSize;
-
-                while(i >= 10) {
-                    verbs.receiveMessages(10, scatterGatherList);
-                    i -= 10;
-                }
-
-                pendingCompletions += batchSize - i;
-                remainingMessages -= batchSize - i;
-            }
-
-            // Poll only a single time
-            // It is not recommended to poll the completion queue empty, as this mostly costs too much time,
-            // which would better be spent posting new work requests
-            int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
-
-            if(polled < 0) {
-                return Status.NETWORK_ERROR;
-            }
-
-            pendingCompletions -= polled;
-        }
-
-        measurement.setMeasuredTime(System.nanoTime() - startTime);
 
         return Status.OK;
     }

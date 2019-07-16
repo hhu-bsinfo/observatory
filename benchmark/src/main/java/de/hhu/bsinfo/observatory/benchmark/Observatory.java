@@ -1,17 +1,18 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.config.Config;
-import de.hhu.bsinfo.observatory.benchmark.config.Operation;
-import de.hhu.bsinfo.observatory.benchmark.config.Phase;
-import de.hhu.bsinfo.observatory.benchmark.config.Phase.Mode;
-import de.hhu.bsinfo.observatory.benchmark.result.BenchmarkMode;
+import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
+import de.hhu.bsinfo.observatory.benchmark.config.BenchmarkConfig;
+import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig;
+import de.hhu.bsinfo.observatory.benchmark.config.IterationConfig;
+import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig.OperationMode;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import de.hhu.bsinfo.observatory.generated.BuildConfig;
@@ -22,27 +23,79 @@ public class Observatory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Observatory.class);
 
-    private final Benchmark benchmark;
+    private final List<Benchmark> benchmarks = new ArrayList<>();
 
-    public Observatory(Benchmark benchmark, Config config, boolean isServer, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
-        this.benchmark = benchmark;
+    public Observatory(BenchmarkConfig config, boolean isServer, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
+        for (OperationConfig operationConfig : config.getOperations()) {
+            for(OperationMode mode : operationConfig.getModes()) {
+                String operationClassName =
+                        "de.hhu.bsinfo.observatory.benchmark." + operationConfig.getName() + "Operation";
 
-        Arrays.stream(config.getParameters()).forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
+                for (IterationConfig iterationConfig : operationConfig.getIterations()) {
+                    Benchmark benchmark = instantiateBenchmark(config.getClassName());
 
-        benchmark.setServer(isServer);
-        benchmark.setBindAddress(bindAddress);
-        benchmark.setRemoteAddress(remoteAddress);
+                    if (benchmark == null) {
+                        return;
+                    }
 
-        benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
-        benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
+                    Operation operation = null;
 
-        for(Phase phaseConfig : config.getPhases()) {
+                    if (mode == OperationMode.UNIDIRECTIONAL) {
+                        operation = instantiateOperation(operationClassName, benchmark,
+                                isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
+                                iterationConfig.getSize());
+                    } else if (mode == OperationMode.BIDIRECTIONAL) {
+                        Operation sendOperation = instantiateOperation(operationClassName, benchmark,
+                                Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
+
+                        Operation receiveOperation = instantiateOperation(operationClassName, benchmark,
+                                Mode.RECEIVE, iterationConfig.getCount(), iterationConfig.getSize());
+
+                        if(sendOperation == null || receiveOperation == null) {
+                            return;
+                        }
+
+                        if(!(sendOperation instanceof ThroughputOperation) || !(receiveOperation instanceof ThroughputOperation)) {
+                            LOGGER.error("Invalid configuration: Only throughput opertations may be executed bidirectionally");
+                            return;
+                        }
+
+                        operation = new BidirectionalThroughputOperation((ThroughputOperation) sendOperation, (ThroughputOperation) receiveOperation);
+                    }
+
+                    if (operation == null) {
+                        return;
+                    }
+
+                    Arrays.stream(config.getParameters())
+                            .forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
+
+                    benchmark.setServer(isServer);
+                    benchmark.setBindAddress(bindAddress);
+                    benchmark.setRemoteAddress(remoteAddress);
+
+                    benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
+                    benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
+                    benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getSize()));
+                    benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    benchmark.addBenchmarkPhase(new WarmupPhase(benchmark));
+                    benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
+                    benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
+
+                    benchmarks.add(benchmark);
+                }
+            }
+        }
+    }
+
+        /*for(Measurement phaseConfig : config.getPhases()) {
             Map<Integer, Integer> measurementOptions = Arrays.stream(phaseConfig.getOperations())
                 .collect(Collectors.toMap(Operation::getSize, Operation::getCount));
 
             for(Mode mode : phaseConfig.getModes()) {
                 if(mode == Mode.UNIDIRECTIONAL) {
-                    MeasurementPhase phase = instantiateMeasurementPhase("de.hhu.bsinfo.observatory.benchmark." + phaseConfig.getName(),
+                    BenchmarkPhase phase = instantiateMeasurementPhase("de.hhu.bsinfo.observatory.benchmark." + phaseConfig.getName(),
                         isServer ? BenchmarkMode.SEND : BenchmarkMode.RECEIVE, measurementOptions);
 
                     if(phase != null) {
@@ -59,28 +112,45 @@ public class Observatory {
                     }
                 }
             }
-        }
+        }*/
 
-        benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
+    public void start() throws InterruptedException {
+        for(Benchmark benchmark : benchmarks) {
+            LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
+
+            // Wait for server to be ready to accept incoming connections
+            if(!benchmark.isServer()) {
+                Thread.sleep(100);
+            }
+
+            benchmark.executePhases();
+        }
     }
 
-    public void start() {
-        LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
+    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(String className) {
+        try {
+            Class<?> clazz = Observatory.class.getClassLoader().loadClass(className);
+            return (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
+        } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
+            e.printStackTrace();
+            LOGGER.error("Unable to create benchmark of type '{}'", className);
 
-        benchmark.executePhases();
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private MeasurementPhase instantiateMeasurementPhase(String className, BenchmarkMode mode, Map<Integer, Integer> measurementOptions) {
+    private static Operation instantiateOperation(String className, Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
         try {
-            Class<? extends MeasurementPhase> clazz = (Class<? extends MeasurementPhase>) Class.forName(className);
+            Class<? extends Operation> clazz = (Class<? extends Operation>) Class.forName(className);
 
-            return clazz.getDeclaredConstructor(Benchmark.class, BenchmarkMode.class, Map.class).newInstance(benchmark, mode, measurementOptions);
+            return clazz.getDeclaredConstructor(Benchmark.class, Mode.class, int.class, int.class).newInstance(benchmark, mode, operationCount, operationSize);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            LOGGER.warn("Unable to create benchmark phase of type '{}'", className);
-        }
+            e.printStackTrace();
+            LOGGER.error("Unable to create benchmark phase of type '{}'", className);
 
-        return null;
+            return null;
+        }
     }
 
     public static void printBanner() {

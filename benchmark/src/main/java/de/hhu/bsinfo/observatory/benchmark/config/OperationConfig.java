@@ -3,9 +3,9 @@ package de.hhu.bsinfo.observatory.benchmark.config;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Phase {
+public class OperationConfig {
 
-    public enum Mode {
+    public enum OperationMode {
         @SerializedName("unidirectional") UNIDIRECTIONAL,
         @SerializedName("bidirectional") BIDIRECTIONAL
     }
@@ -16,21 +16,21 @@ public class Phase {
 
     @SerializedName("modes")
     @Expose
-    private Mode[] modes;
+    private OperationMode[] modes;
 
-    @SerializedName("operations")
+    @SerializedName("iterations")
     @Expose
-    private Operation[] operations;
+    private IterationConfig[] iterations;
 
     public String getName() {
         return name;
     }
 
-    public Mode[] getModes() {
+    public OperationMode[] getModes() {
         return modes;
     }
 
-    public Operation[] getOperations() {
-        return operations;
+    public IterationConfig[] getIterations() {
+        return iterations;
     }
 }

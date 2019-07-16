@@ -2,10 +2,10 @@ package de.hhu.bsinfo.observatory.disni;
 
 import com.ibm.disni.verbs.*;
 
-import com.ibm.disni.verbs.IbvSendWR.IbvWrOcode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +18,6 @@ import org.slf4j.LoggerFactory;
 class VerbsWrapper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VerbsWrapper.class);
-
-    /**
-     * Size of the queue pair and completion queue.
-     */
-    private int queueSize;
 
     /**
      * Connection id for the connection to the remote host.
@@ -67,9 +62,14 @@ class VerbsWrapper {
     private IbvQP queuePair;
 
     /**
-     * An array, which holds all work completions.
+     * An array, which holds all work completions for the send completion queue.
      */
-    private IbvWC[] workComps;
+    private IbvWC[] sendWorkComps;
+
+    /**
+     * An array, which holds all work completions for the receive completion queue.
+     */
+    private IbvWC[] receiveWorkComps;
 
     /**
      * Stateful Verbs Method for posting Send Work Requests.
@@ -137,11 +137,9 @@ class VerbsWrapper {
      * @param queueSize Desired size of the queue pair and completion queue
      */
     VerbsWrapper(RdmaCmId id, int queueSize) throws IOException {
-        this.queueSize = queueSize;
-
         // Get context
-        this.connectionId = id;
-        this.context = id.getVerbs();
+        connectionId = id;
+        context = id.getVerbs();
 
         // Create protection domain
         protDom = context.allocPd();
@@ -166,29 +164,38 @@ class VerbsWrapper {
 
         queuePair = id.createQP(protDom, attr);
 
-        // Create work completion list
-        workComps = new IbvWC[queueSize];
+        // Create work completion lists
+        sendWorkComps = new IbvWC[queueSize];
+        receiveWorkComps = new IbvWC[queueSize];
 
-        for(int i = 0; i < this.workComps.length; i++) {
-            this.workComps[i] = new IbvWC();
+        for(int i = 0; i < this.sendWorkComps.length; i++) {
+            sendWorkComps[i] = new IbvWC();
+        }
+
+        for(int i = 0; i < this.receiveWorkComps.length; i++) {
+            receiveWorkComps[i] = new IbvWC();
         }
 
         lastSend = -1;
         lastReceive = -1;
 
-        this.sendWrs = new IbvSendWR[queueSize];
-        this.recvWrs = new IbvRecvWR[queueSize];
+        sendWrs = new IbvSendWR[queueSize];
+        recvWrs = new IbvRecvWR[queueSize];
 
         for(int i = 0; i < this.sendWrs.length; i++) {
-            this.sendWrs[i] = new IbvSendWR();
+            sendWrs[i] = new IbvSendWR();
         }
 
         for(int i = 0; i < this.sendWrs.length; i++) {
-            this.recvWrs[i] = new IbvRecvWR();
+            recvWrs[i] = new IbvRecvWR();
         }
 
-        this.sendWrList = new LinkedList<>();
-        this.recvWrList = new LinkedList<>();
+        sendWrList = new LinkedList<>();
+        recvWrList = new LinkedList<>();
+
+
+        sendCqMethod = sendCompQueue.poll(sendWorkComps, queueSize);
+        recvCqMethod = recvCompQueue.poll(receiveWorkComps, queueSize);
     }
 
     /**
@@ -210,7 +217,7 @@ class VerbsWrapper {
         }
 
         if(!postSendMethod.isValid()) {
-            LOGGER.error("PostSendMethod invalid!");
+            throw new IOException("PostSendMethod invalid!");
         }
 
         return postSendMethod;
@@ -235,52 +242,23 @@ class VerbsWrapper {
         }
 
         if(!postReceiveMethod.isValid()) {
-            LOGGER.error("PostReceiveMethod invalid!");
+            throw new IOException("PostSendMethod invalid!");
         }
 
         return postReceiveMethod;
     }
 
     /**
-     * Get a stateful verbs call, that can be used to poll the completion queue.
-     *
-     * @param type Whether to poll the send or the receive completion queue
-     *
-     * @return The stateful verbs call
-     */
-    private SVCPollCq getPollCqMethod(CqType type) throws IOException {
-        SVCPollCq pollCqMethod;
-
-        if(type == CqType.SEND_CQ) {
-            if(sendCqMethod == null) {
-                sendCqMethod = sendCompQueue.poll(workComps, queueSize);
-            }
-
-            pollCqMethod = sendCqMethod;
-        } else {
-            if(recvCqMethod == null) {
-                recvCqMethod = recvCompQueue.poll(workComps, queueSize);
-            }
-
-            pollCqMethod = recvCqMethod;
-        }
-
-        if (!pollCqMethod.isValid()) {
-            LOGGER.error("PollCqMethod invalid!");
-        }
-
-        return pollCqMethod;
-    }
-
-    /**
      * Get the work completion array.
      *
-     * Can be used to retrieve the work completion after the completion queue has been polled.
+     * Can be used to retrieve the work completions after the completion queue has been polled.
+     *
+     * @param type Whether to get the send or receive work completions
      *
      * @return The work completions
      */
-    private IbvWC[] getWorkCompletions() {
-        return workComps;
+    private IbvWC[] getWorkCompletions(CqType type) {
+        return type == CqType.SEND_CQ ? sendWorkComps : receiveWorkComps;
     }
 
     /**
@@ -291,9 +269,9 @@ class VerbsWrapper {
      * @return The registered memory region
      */
     IbvMr registerMemoryRegion(ByteBuffer buffer) throws IOException {
-        int accessFlags = IbvMr.IBV_ACCESS_LOCAL_WRITE  |
-            IbvMr.IBV_ACCESS_REMOTE_WRITE |
-            IbvMr.IBV_ACCESS_REMOTE_READ;
+        int accessFlags = IbvMr.IBV_ACCESS_LOCAL_WRITE |
+                IbvMr.IBV_ACCESS_REMOTE_WRITE |
+                IbvMr.IBV_ACCESS_REMOTE_READ;
 
         return protDom.regMr(buffer, accessFlags).execute().free().getMr();
     }
@@ -306,22 +284,21 @@ class VerbsWrapper {
      * @return The amount of polled work completions, or -1 if an error has occurred
      */
     int pollCompletionQueue(VerbsWrapper.CqType type) throws IOException {
-        SVCPollCq pollMethod = getPollCqMethod(type);
+        SVCPollCq pollMethod = type == CqType.SEND_CQ ? sendCqMethod : recvCqMethod;
 
         if(!pollMethod.isValid()) {
-            return -1;
+            throw new IOException("PollCqMethod invalid!");
         }
 
         pollMethod.execute();
 
         int polled = pollMethod.getPolls();
 
-        IbvWC[] workComps = getWorkCompletions();
+        IbvWC[] workComps = getWorkCompletions(type);
 
         for(int i = 0; i < polled; i++) {
             if(workComps[i].getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
-                LOGGER.error("Work completion failed with status [{}]", workComps[i].getStatus());
-                return -1;
+                throw new IOException("Work completion failed with status [" + workComps[i].getStatus() + "]");
             }
         }
 
@@ -364,27 +341,12 @@ class VerbsWrapper {
         getPostReceiveMethod(recvWrList).execute();
     }
 
-    void resetStatefulCalls() {
-        lastSend = -1;
-        lastReceive = -1;
-
-        if(postSendMethod != null) {
-            postSendMethod.free();
-            postSendMethod = null;
-        }
-
-        if(postReceiveMethod != null) {
-            postReceiveMethod.free();
-            postReceiveMethod = null;
-        }
-    }
-
     /**
      * Destroy all JVerbs resources.
      */
     void destroy() throws Exception {
-        postSendMethod.free();
-        postSendMethod.free();
+        if(postSendMethod != null) postSendMethod.free();
+        if(postReceiveMethod != null) postReceiveMethod.free();
         sendCqMethod.free();
         recvCqMethod.free();
 

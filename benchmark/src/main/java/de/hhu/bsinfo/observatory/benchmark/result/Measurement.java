@@ -32,9 +32,4 @@ public class Measurement implements Cloneable {
             ",\n\t" + ValueFormatter.formatValue("totalData",totalData) +
             "\n}";
     }
-
-    @Override
-    public Measurement clone() throws CloneNotSupportedException {
-        return (Measurement) super.clone();
-    }
 }

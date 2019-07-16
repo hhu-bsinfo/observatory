@@ -2,14 +2,14 @@ package de.hhu.bsinfo.observatory.benchmark;
 
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
-public class ConnectionPhase extends SetupPhase {
+class ConnectionPhase extends BenchmarkPhase {
 
     ConnectionPhase(Benchmark benchmark) {
         super(benchmark);
     }
 
     @Override
-    protected Status execute() {
+    Status execute() {
         Benchmark benchmark = getBenchmark();
 
         if(benchmark.isServer()) {

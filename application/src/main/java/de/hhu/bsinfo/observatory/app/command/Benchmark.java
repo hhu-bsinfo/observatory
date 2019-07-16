@@ -1,17 +1,11 @@
 package de.hhu.bsinfo.observatory.app.command;
 
 import de.hhu.bsinfo.observatory.app.Application;
-import de.hhu.bsinfo.observatory.benchmark.config.Operation;
-import de.hhu.bsinfo.observatory.benchmark.MeasurementPhase;
 import de.hhu.bsinfo.observatory.benchmark.Observatory;
 import de.hhu.bsinfo.observatory.app.util.JsonResourceLoader;
-import de.hhu.bsinfo.observatory.benchmark.config.Config;
-import de.hhu.bsinfo.observatory.benchmark.config.Parameter;
+import de.hhu.bsinfo.observatory.benchmark.config.BenchmarkConfig;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -48,25 +42,29 @@ public class Benchmark implements Callable<Void> {
     private InetSocketAddress remoteAddress;
 
     public Void call() throws Exception {
-        LOGGER.info("Loading configuration");
-
-        Config config;
-
-        if(configPath == null) {
-            config = JsonResourceLoader.loadJsonObjectFromResource("config.json", Config.class);
-        } else {
-            config = JsonResourceLoader.loadJsonObjectFromFile(configPath, Config.class);
+        if(!isServer && remoteAddress == null) {
+            LOGGER.error("Please specify the server address");
+            return null;
         }
 
-        LOGGER.info("Creating benchmark instance");
+        LOGGER.info("Loading configuration");
 
-        new Observatory(instantiateBenchmark(config.getClassName()), config, isServer, bindAddress, remoteAddress).start();
+        BenchmarkConfig config;
+
+        if(configPath == null) {
+            config = JsonResourceLoader.loadJsonObjectFromResource("config.json", BenchmarkConfig.class);
+        } else {
+            config = JsonResourceLoader.loadJsonObjectFromFile(configPath, BenchmarkConfig.class);
+        }
+
+        if(!isServer) {
+            bindAddress = new InetSocketAddress(bindAddress.getAddress(), 0);
+        }
+
+        LOGGER.info("Creating observatory instance");
+
+        new Observatory(config, isServer, bindAddress, remoteAddress).start();
 
         return null;
-    }
-
-    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(String className) throws Exception {
-        Class<?> clazz = Observatory.class.getClassLoader().loadClass(className);
-        return (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
     }
 }
