@@ -1,12 +1,12 @@
 {
-  "className": "de.hhu.bsinfo.observatory.socket.SocketBenchmark",
+  "className": "de.hhu.bsinfo.observatory.disni.DisniBenchmark",
   "parameters": [
     { "key": "queueSize", "value": 200 }
   ],
   "operations": [
     {
       "name": "MessagingThroughput",
-      "modes": [ "bidirectional" ],
+      "modes": [ "unidirectional" ],
       "iterations": [
         { "size": 1, "count": 1000 },
         { "size": 2, "count": 1000 },

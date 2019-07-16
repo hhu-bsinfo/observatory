@@ -11,9 +11,15 @@ import com.ibm.disni.verbs.RdmaEventChannel;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import de.hhu.bsinfo.observatory.disni.VerbsWrapper.CqType;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +34,8 @@ public class DisniBenchmark extends Benchmark {
 
     private int queueSize;
 
+    private Socket socket;
+
     private RdmaConnParam connectionParameter;
     private RdmaEventChannel eventChannel;
     private RdmaCmId connectionId;
@@ -38,6 +46,8 @@ public class DisniBenchmark extends Benchmark {
     private LinkedList<IbvSge> sendScatterGatherList;
     private LinkedList<IbvSge> receiveScatterGatherList;
 
+    private MemoryRegionInformation remoteInfo;
+
     private VerbsWrapper verbs;
 
     private RdmaCmEvent getEvent() throws IOException {
@@ -46,6 +56,25 @@ public class DisniBenchmark extends Benchmark {
         LOGGER.info("Received event of type [{}]", event.getEvent());
 
         return event;
+    }
+
+    private MemoryRegionInformation exchangeMemoryRegionInformation() throws IOException {
+        MemoryRegionInformation localInfo = new MemoryRegionInformation(receiveMemoryRegion.getAddr(), receiveMemoryRegion.getRkey());
+
+        LOGGER.info("Sending local memory region information:\n{}", localInfo);
+
+        DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
+        DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+        byte[] remoteBytes = new byte[MemoryRegionInformation.getSizeInBytes()];
+
+        outputStream.write(localInfo.toBytes());
+        inputStream.readFully(remoteBytes);
+
+        MemoryRegionInformation remoteInfo = MemoryRegionInformation.fromBytes(remoteBytes);
+
+        LOGGER.info("Received remote memory region information:\n{}", remoteInfo);
+
+        return remoteInfo;
     }
 
     @Override
@@ -130,8 +159,19 @@ public class DisniBenchmark extends Benchmark {
 
             event.ackEvent();
 
+            LOGGER.info("Successfully connected to {}", connectionId.getSource());
+
             eventChannel.close();
             serverId.destroyId();
+
+            LOGGER.info("Opening socket connection for off channel communication");
+
+            ServerSocket serverSocket = new ServerSocket(bindAddress.getPort(), 0, bindAddress.getAddress());
+            socket = serverSocket.accept();
+
+            LOGGER.info("Successfully connected to {}", socket.getRemoteSocketAddress());
+
+            serverSocket.close();
 
             return Status.OK;
         } catch (IOException e) {
@@ -190,6 +230,12 @@ public class DisniBenchmark extends Benchmark {
 
             event.ackEvent();
 
+            LOGGER.info("Opening socket connection for off channel communication");
+
+            socket = new Socket(serverAddress.getAddress(), serverAddress.getPort(), bindAddress.getAddress(), bindAddress.getPort());
+
+            LOGGER.info("Successfully connected to {}", socket.getRemoteSocketAddress());
+
             return Status.OK;
         } catch (IOException e) {
             e.printStackTrace();
@@ -218,6 +264,8 @@ public class DisniBenchmark extends Benchmark {
 
             sendScatterGatherList.add(sendSge);
             receiveScatterGatherList.add(receiveSge);
+
+            remoteInfo = exchangeMemoryRegionInformation();
         } catch (IOException e) {
             e.printStackTrace();
             return Status.UNKNOWN_ERROR;
