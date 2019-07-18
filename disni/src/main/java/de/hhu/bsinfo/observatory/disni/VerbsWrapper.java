@@ -194,7 +194,6 @@ class VerbsWrapper {
         sendWrList = new LinkedList<>();
         recvWrList = new LinkedList<>();
 
-
         sendCqMethod = sendCompQueue.poll(sendWorkComps, queueSize);
         recvCqMethod = recvCompQueue.poll(receiveWorkComps, queueSize);
     }
@@ -282,7 +281,7 @@ class VerbsWrapper {
      *
      * @param type Whether to poll the send or the receive completion queue
      *
-     * @return The amount of polled work completions, or -1 if an error has occurred
+     * @return The amount of polled work completions
      */
     int pollCompletionQueue(VerbsWrapper.CqType type) throws IOException {
         SVCPollCq pollMethod = type == CqType.SEND_CQ ? sendCqMethod : recvCqMethod;

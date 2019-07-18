@@ -154,7 +154,7 @@ public class DisniBenchmark extends Benchmark {
 
             event.ackEvent();
 
-            LOGGER.info("Successfully connected to {}", connectionId.getSource());
+            LOGGER.info("Successfully connected to {}", connectionId.getDestination());
 
             eventChannel.close();
             serverId.destroyId();

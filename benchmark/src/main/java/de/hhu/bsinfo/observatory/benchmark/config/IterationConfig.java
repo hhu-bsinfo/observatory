@@ -13,11 +13,19 @@ public class IterationConfig {
     @Expose
     private Integer count;
 
+    @SerializedName("warmUp")
+    @Expose
+    private Integer warmUpIterations;
+
     public Integer getSize() {
         return size;
     }
 
     public Integer getCount() {
         return count;
+    }
+
+    public Integer getWarmUpIterations() {
+        return warmUpIterations;
     }
 }

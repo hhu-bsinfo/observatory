@@ -21,6 +21,41 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
 
 
     @Override
+    boolean needsFilledReceiveQueue() {
+        return sendOperation.needsFilledReceiveQueue() || receiveOperation.needsFilledReceiveQueue();
+    }
+
+    @Override
+    Status warmUp(int operationCount) {
+        LOGGER.info("Executing warm up for bidirectional phase of type '{}'", sendOperation.getClass().getSimpleName());
+
+        AtomicReference<Status> sendStatus = new AtomicReference<>();
+        AtomicReference<Status> receiveStatus = new AtomicReference<>();
+
+        Thread sendThread = new Thread(() -> sendStatus.set(sendOperation.warmUp(operationCount)));
+        Thread receiveThread = new Thread(() -> receiveStatus.set(receiveOperation.warmUp(operationCount)));
+
+        sendThread.start();
+        receiveThread.start();
+
+        try {
+            sendThread.join();
+            receiveThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return Status.UNKNOWN_ERROR;
+        }
+
+        if(sendStatus.get() != Status.OK && sendStatus.get() != Status.OK_NO_MEASUREMENT) {
+            return sendStatus.get();
+        } else if(receiveStatus.get() != Status.OK && receiveStatus.get() != Status.OK_NO_MEASUREMENT) {
+            return receiveStatus.get();
+        } else {
+            return Status.OK;
+        }
+    }
+
+    @Override
     Status execute() {
         LOGGER.info("Executing bidirectional phase of type '{}'", sendOperation.getClass().getSimpleName());
 

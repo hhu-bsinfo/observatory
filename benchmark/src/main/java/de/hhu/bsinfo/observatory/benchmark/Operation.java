@@ -28,5 +28,9 @@ abstract class Operation {
         return mode;
     }
 
+    abstract boolean needsFilledReceiveQueue();
+
+    abstract Status warmUp(int operationCount);
+
     abstract Status execute();
 }

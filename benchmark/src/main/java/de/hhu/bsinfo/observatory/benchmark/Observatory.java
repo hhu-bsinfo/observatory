@@ -78,10 +78,19 @@ public class Observatory {
                     benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                     benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
                     benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getSize()));
-                    //benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                    //benchmark.addBenchmarkPhase(new WarmupPhase(benchmark));
-                    //benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+
+                    if(operation.needsFilledReceiveQueue()) {
+                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    }
+
+                    benchmark.addBenchmarkPhase(new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
+
+                    if(operation.needsFilledReceiveQueue()) {
+                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                    }
+
                     benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
+
                     benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
 
                     benchmarks.add(benchmark);

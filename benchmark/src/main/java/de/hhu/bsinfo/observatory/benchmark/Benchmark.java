@@ -95,13 +95,19 @@ public abstract class Benchmark {
     }
 
     Status setup() {
+        LOGGER.info("Setting up connection for off channel communication");
+
         try {
             if (isServer) {
+                LOGGER.info("Listening on address {}", bindAddress.toString());
+
                 ServerSocket serverSocket = new ServerSocket(bindAddress.getPort(), 0, bindAddress.getAddress());
                 offChannelSocket = serverSocket.accept();
 
                 serverSocket.close();
             } else {
+                LOGGER.info("Connecting to server {}", remoteAddress.toString());
+
                 offChannelSocket = new Socket(remoteAddress.getAddress(), remoteAddress.getPort(),
                         bindAddress.getAddress(), bindAddress.getPort());
             }
@@ -112,12 +118,14 @@ public abstract class Benchmark {
             return Status.NETWORK_ERROR;
         }
 
+        LOGGER.info("Succesfully connected to {}", offChannelSocket.getRemoteSocketAddress());
+
         return Status.OK;
     }
 
     void sendSync() {
         try {
-            LOGGER.info("Sending sync signal '{}' to client", SYNC_SIGNAL);
+            LOGGER.info("Sending sync signal '{}' to remote benchmark", SYNC_SIGNAL);
             new DataOutputStream(offChannelSocket.getOutputStream()).write(SYNC_SIGNAL.getBytes());
         } catch (IOException e) {
             LOGGER.warn("Unable to synchronize with remote benchmark");
@@ -126,7 +134,7 @@ public abstract class Benchmark {
 
     void receiveSync() {
         try {
-            LOGGER.info("Waiting for sync signal from server");
+            LOGGER.info("Waiting for sync signal from remote benchmark");
 
             byte[] bytes = new byte[SYNC_SIGNAL.getBytes().length];
             new DataInputStream(offChannelSocket.getInputStream()).readFully(bytes);
@@ -134,7 +142,7 @@ public abstract class Benchmark {
             String received = new String(bytes);
 
             if (!received.equals(SYNC_SIGNAL)) {
-                LOGGER.warn("Received invalid signal from server (Got '{}', Expected '{}'", received, SYNC_SIGNAL);
+                LOGGER.warn("Received invalid signal (Got '{}', Expected '{}'", received, SYNC_SIGNAL);
             }
 
             Thread.sleep(100);
@@ -144,11 +152,8 @@ public abstract class Benchmark {
     }
 
     void synchronize() {
-        if(isServer) {
-            sendSync();
-        } else {
-            receiveSync();
-        }
+        sendSync();
+        receiveSync();
     }
 
     void executePhases() {
