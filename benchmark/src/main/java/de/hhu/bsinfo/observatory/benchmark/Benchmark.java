@@ -123,7 +123,7 @@ public abstract class Benchmark {
         return Status.OK;
     }
 
-    void sendSync() {
+    private void sendSync() {
         try {
             LOGGER.info("Sending sync signal '{}' to remote benchmark", SYNC_SIGNAL);
             new DataOutputStream(offChannelSocket.getOutputStream()).write(SYNC_SIGNAL.getBytes());
@@ -132,7 +132,7 @@ public abstract class Benchmark {
         }
     }
 
-    void receiveSync() {
+    private void receiveSync() {
         try {
             LOGGER.info("Waiting for sync signal from remote benchmark");
 
@@ -144,9 +144,7 @@ public abstract class Benchmark {
             if (!received.equals(SYNC_SIGNAL)) {
                 LOGGER.warn("Received invalid signal (Got '{}', Expected '{}'", received, SYNC_SIGNAL);
             }
-
-            Thread.sleep(100);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             LOGGER.warn("Unable to synchronize with remote benchmark");
         }
     }
@@ -154,6 +152,14 @@ public abstract class Benchmark {
     void synchronize() {
         sendSync();
         receiveSync();
+
+        if(!isServer) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                LOGGER.warn("Unable to synchronize with remote benchmark");
+            }
+        }
     }
 
     void executePhases() {
@@ -202,4 +208,10 @@ public abstract class Benchmark {
     protected abstract Status benchmarkMessagingReceiveThroughput(int operationCount);
 
     protected abstract Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount);
+
+    protected abstract Status benchmarkSendSingleMessageLatency();
+
+    protected abstract Status benchmarkReceiveSingleMessageLatency();
+
+    protected abstract Status benchmarkSingleRdmaOperationLatency(RdmaMode mode);
 }

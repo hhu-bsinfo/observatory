@@ -4,30 +4,64 @@ public class ValueFormatter {
 
     private ValueFormatter() {}
 
-    private static final char[] metricTable = {
+    private static final char[] highMetricTable = {
         0,
-        'k',
-        'm',
-        'g',
-        't',
-        'p',
-        'e'
+        'K',
+        'M',
+        'G',
+        'T',
+        'P',
+        'E'
     };
 
-    public static String formatValue(final double value, final String unit) {
+    private static final char[] lowMetricTable = {
+            0,
+            'm',
+            'u',
+            'n',
+            'p',
+            'f',
+            'a'
+    };
+
+    private static String formatHighValue(final double value, final String unit) {
         double formattedValue = value;
 
         int counter = 0;
-        while (formattedValue > 1000 && counter < metricTable.length) {
-            formattedValue = formattedValue / 1000;
+        while (formattedValue > 1000 && counter < highMetricTable.length) {
+            formattedValue /= 1000;
             counter++;
         }
 
         if(value == (long) value) {
-            return String.format("%.3f %c%s (%d)", formattedValue, metricTable[counter], unit, (long) value);
+            return String.format("%.3f %c%s (%d)", formattedValue, highMetricTable[counter], unit, (long) value);
         }
 
-        return String.format("%.3f %c%s (%f)", formattedValue, metricTable[counter], unit, value);
+        return String.format("%.3f %c%s (%f)", formattedValue, highMetricTable[counter], unit, value);
+    }
+
+    private static String formatLowValue(final double value, final String unit) {
+        double formattedValue = value;
+
+        int counter = 0;
+        while (formattedValue < 1 && counter < lowMetricTable.length) {
+            formattedValue *= 1000;
+            counter++;
+        }
+
+        if(value == (long) value) {
+            return String.format("%.3f %c%s (%d)", formattedValue, lowMetricTable[counter], unit, (long) value);
+        }
+
+        return String.format("%.3f %c%s (%s)", formattedValue, lowMetricTable[counter], unit, Double.toString(value));
+    }
+
+    public static String formatValue(final double value, final String unit) {
+        if(value >= 1) {
+            return formatHighValue(value, unit);
+        } else {
+            return formatLowValue(value, unit);
+        }
     }
 
     public static String formatValue(final double value) {

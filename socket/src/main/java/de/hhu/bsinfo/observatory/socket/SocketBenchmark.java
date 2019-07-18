@@ -99,6 +99,7 @@ public class SocketBenchmark extends Benchmark {
         try {
             for (int i = 0; i < operationCount; i++) {
                 outputStream.write(buffer);
+                outputStream.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,6 +125,38 @@ public class SocketBenchmark extends Benchmark {
 
     @Override
     protected Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount) {
+        return Status.NOT_IMPLEMENTED;
+    }
+
+    @Override
+    protected Status benchmarkSendSingleMessageLatency() {
+        try {
+            outputStream.write(buffer);
+
+            outputStream.flush();
+            socket.getOutputStream().flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkReceiveSingleMessageLatency() {
+        try {
+            inputStream.readFully(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkSingleRdmaOperationLatency(RdmaMode mode) {
         return Status.NOT_IMPLEMENTED;
     }
 }

@@ -466,4 +466,44 @@ public class DisniBenchmark extends Benchmark {
 
         return Status.OK;
     }
+
+    @Override
+    protected Status benchmarkSendSingleMessageLatency() {
+        try {
+            verbs.sendMessages(1, sendScatterGatherList);
+            while(verbs.pollCompletionQueue(CqType.SEND_CQ) == 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkReceiveSingleMessageLatency() {
+
+        try {
+            verbs.receiveMessages(1, receiveScatterGatherList);
+            while(verbs.pollCompletionQueue(CqType.RECV_CQ) == 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status benchmarkSingleRdmaOperationLatency(RdmaMode mode) {
+        try {
+            verbs.executeRdmaOperations(1, sendScatterGatherList, mode, remoteInfo);
+            while(verbs.pollCompletionQueue(CqType.SEND_CQ) == 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
 }
