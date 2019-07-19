@@ -44,7 +44,7 @@ public class LatencyMeasurement extends Measurement {
 
     @Override
     public String toString() {
-        return "ThroughputMeasurement {" +
+        return "LatencyMeasurement {" +
                 "\n\t" + ValueFormatter.formatValue("operationCount", getOperationCount()) +
                 ",\n\t" + ValueFormatter.formatValue("operationSize", getOperationSize(), "Byte") +
                 ",\n\t" + ValueFormatter.formatValue("totalData", getTotalData(), "Byte") +

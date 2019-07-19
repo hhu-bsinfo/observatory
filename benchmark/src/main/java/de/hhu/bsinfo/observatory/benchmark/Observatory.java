@@ -26,7 +26,7 @@ public class Observatory {
 
     private final List<Benchmark> benchmarks = new ArrayList<>();
 
-    public Observatory(BenchmarkConfig config, boolean isServer, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
+    public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
                 String operationClassName =
@@ -72,6 +72,8 @@ public class Observatory {
                             .forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
 
                     benchmark.setServer(isServer);
+                    benchmark.setConnectionRetries(connectionRetries);
+
                     benchmark.setBindAddress(bindAddress);
                     benchmark.setRemoteAddress(remoteAddress);
 
@@ -102,10 +104,6 @@ public class Observatory {
     public void start() throws InterruptedException {
         for(Benchmark benchmark : benchmarks) {
             LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
-
-            if(!benchmark.isServer()) {
-                Thread.sleep(100);
-            }
 
             if(benchmark.setup() != Status.OK) {
                 return;

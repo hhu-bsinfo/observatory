@@ -29,6 +29,8 @@ public abstract class Benchmark {
     }
 
     private boolean isServer;
+    private int connectionRetries;
+
     private InetSocketAddress bindAddress;
     private InetSocketAddress remoteAddress;
 
@@ -74,16 +76,8 @@ public abstract class Benchmark {
         return isServer;
     }
 
-    void setBindAddress(final InetSocketAddress bindAddress) {
-        this.bindAddress = bindAddress;
-    }
-
-    void setRemoteAddress(final InetSocketAddress remoteAddress) {
-        this.remoteAddress = remoteAddress;
-    }
-
-    void setServer(boolean server) {
-        isServer = server;
+    int getConnectionRetries() {
+        return connectionRetries;
     }
 
     InetSocketAddress getBindAddress() {
@@ -94,28 +88,64 @@ public abstract class Benchmark {
         return remoteAddress;
     }
 
+    void setServer(boolean server) {
+        isServer = server;
+    }
+
+    void setConnectionRetries(int connectionRetries) {
+        this.connectionRetries = connectionRetries;
+    }
+
+    void setBindAddress(final InetSocketAddress bindAddress) {
+        this.bindAddress = bindAddress;
+    }
+
+    void setRemoteAddress(final InetSocketAddress remoteAddress) {
+        this.remoteAddress = remoteAddress;
+    }
+
     Status setup() {
         LOGGER.info("Setting up connection for off channel communication");
 
-        try {
-            if (isServer) {
-                LOGGER.info("Listening on address {}", bindAddress.toString());
+        if (isServer) {
+            LOGGER.info("Listening on address {}", bindAddress.toString());
 
+            try {
                 ServerSocket serverSocket = new ServerSocket(bindAddress.getPort(), 0, bindAddress.getAddress());
                 offChannelSocket = serverSocket.accept();
 
                 serverSocket.close();
-            } else {
-                LOGGER.info("Connecting to server {}", remoteAddress.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+                LOGGER.error("Unable to setup off channel communication");
 
-                offChannelSocket = new Socket(remoteAddress.getAddress(), remoteAddress.getPort(),
-                        bindAddress.getAddress(), bindAddress.getPort());
+                return Status.NETWORK_ERROR;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error("Unable to setup off channel communication");
+        } else {
+            LOGGER.info("Connecting to server {}", remoteAddress.toString());
 
-            return Status.NETWORK_ERROR;
+            int attempt = 0;
+            while(true) {
+                try {
+                    offChannelSocket = new Socket(remoteAddress.getAddress(), remoteAddress.getPort(),
+                            bindAddress.getAddress(), bindAddress.getPort());
+
+                    break;
+                } catch (IOException e) {
+                    if(attempt < connectionRetries) {
+                        attempt++;
+
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ignored) {}
+                    } else {
+                        e.printStackTrace();
+                        LOGGER.error("Unable to setup off channel communication");
+
+                        return Status.NETWORK_ERROR;
+                    }
+                }
+            }
         }
 
         LOGGER.info("Succesfully connected to {}", offChannelSocket.getRemoteSocketAddress());
@@ -152,14 +182,6 @@ public abstract class Benchmark {
     void synchronize() {
         sendSync();
         receiveSync();
-
-        if(!isServer) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                LOGGER.warn("Unable to synchronize with remote benchmark");
-            }
-        }
     }
 
     void executePhases() {

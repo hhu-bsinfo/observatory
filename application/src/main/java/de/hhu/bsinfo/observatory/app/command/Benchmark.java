@@ -32,6 +32,11 @@ public class Benchmark implements Callable<Void> {
     private boolean isServer = false;
 
     @CommandLine.Option(
+            names = {"-t", "--retries"},
+            description = "The amount of connection attempts.")
+    private int connectionRetries = 10;
+
+    @CommandLine.Option(
         names = {"-a", "--address"},
         description = "The address to bind to.")
     private InetSocketAddress bindAddress = new InetSocketAddress(DEFAULT_SERVER_PORT);
@@ -44,6 +49,11 @@ public class Benchmark implements Callable<Void> {
     public Void call() throws Exception {
         if(!isServer && remoteAddress == null) {
             LOGGER.error("Please specify the server address");
+            return null;
+        }
+
+        if(connectionRetries <= 0) {
+            LOGGER.error("The amount of connection retries must be at greater than zero");
             return null;
         }
 
@@ -63,7 +73,7 @@ public class Benchmark implements Callable<Void> {
 
         LOGGER.info("Creating observatory instance");
 
-        new Observatory(config, isServer, bindAddress, remoteAddress).start();
+        new Observatory(config, isServer, connectionRetries, bindAddress, remoteAddress).start();
 
         return null;
     }

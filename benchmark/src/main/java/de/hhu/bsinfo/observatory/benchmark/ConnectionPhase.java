@@ -15,7 +15,21 @@ class ConnectionPhase extends BenchmarkPhase {
         if(benchmark.isServer()) {
             return benchmark.serve(benchmark.getBindAddress());
         } else {
-            return benchmark.connect(benchmark.getBindAddress(), benchmark.getRemoteAddress());
+            Status status = Status.UNKNOWN_ERROR;
+
+            for(int i = 0; i < getBenchmark().getConnectionRetries(); i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {}
+
+                status = benchmark.connect(benchmark.getBindAddress(), benchmark.getRemoteAddress());
+
+                if(status == Status.OK || status == Status.NOT_IMPLEMENTED) {
+                    return status;
+                }
+            }
+
+            return status;
         }
     }
 }

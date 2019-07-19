@@ -15,11 +15,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +214,6 @@ public class DisniBenchmark extends Benchmark {
 
             return Status.OK;
         } catch (IOException e) {
-            e.printStackTrace();
             return Status.NETWORK_ERROR;
         }
     }

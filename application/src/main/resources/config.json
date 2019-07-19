@@ -1,5 +1,5 @@
 {
-  "className": "de.hhu.bsinfo.observatory.disni.DisniBenchmark",
+  "className": "de.hhu.bsinfo.observatory.socket.SocketBenchmark",
   "parameters": [
     { "key": "queueSize", "value": 200 }
   ],

@@ -40,7 +40,6 @@ public class SocketBenchmark extends Benchmark {
 
             serverSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
             return Status.NETWORK_ERROR;
         }
 
