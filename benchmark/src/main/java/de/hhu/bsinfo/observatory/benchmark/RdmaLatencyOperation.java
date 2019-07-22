@@ -23,7 +23,7 @@ public class RdmaLatencyOperation extends LatencyOperation {
     Status warmUp(int operationCount) {
         if(getMode() == Mode.SEND) {
             for(int i = 0; i < operationCount; i++) {
-                Status status = getBenchmark().benchmarkSingleRdmaOperationLatency(rdmaMode);
+                Status status = getBenchmark().performSingleRdmaOperation(rdmaMode);
 
                 if(status != Status.OK) {
                     return status;
@@ -38,12 +38,12 @@ public class RdmaLatencyOperation extends LatencyOperation {
 
     @Override
     public Status execute() {
-        Status status = Status.OK_NO_MEASUREMENT;
+        Status status = Status.OK;
 
         if(getMode() == Mode.SEND) {
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
-                status = getBenchmark().benchmarkSingleRdmaOperationLatency(rdmaMode);
+                status = getBenchmark().performSingleRdmaOperation(rdmaMode);
                 getMeasurement().stopSingleMeasurement();
 
                 if(status != Status.OK) {

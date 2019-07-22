@@ -116,8 +116,7 @@ public abstract class Benchmark {
 
                 serverSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
-                LOGGER.error("Unable to setup off channel communication");
+                LOGGER.error("Setting up off channel communication failed", e);
 
                 return Status.NETWORK_ERROR;
             }
@@ -139,8 +138,7 @@ public abstract class Benchmark {
                             Thread.sleep(100);
                         } catch (InterruptedException ignored) {}
                     } else {
-                        e.printStackTrace();
-                        LOGGER.error("Unable to setup off channel communication");
+                        LOGGER.error("Setting up off channel communication failed", e);
 
                         return Status.NETWORK_ERROR;
                     }
@@ -156,6 +154,7 @@ public abstract class Benchmark {
     private void sendSync() {
         try {
             LOGGER.info("Sending sync signal '{}' to remote benchmark", SYNC_SIGNAL);
+
             new DataOutputStream(offChannelSocket.getOutputStream()).write(SYNC_SIGNAL.getBytes());
         } catch (IOException e) {
             LOGGER.warn("Unable to synchronize with remote benchmark");
@@ -171,8 +170,10 @@ public abstract class Benchmark {
 
             String received = new String(bytes);
 
-            if (!received.equals(SYNC_SIGNAL)) {
-                LOGGER.warn("Received invalid signal (Got '{}', Expected '{}'", received, SYNC_SIGNAL);
+            if (received.equals(SYNC_SIGNAL)) {
+                LOGGER.info("Received sync signal '{}' from remote benchmark", SYNC_SIGNAL);
+            } else {
+                LOGGER.warn("Received invalid signal (Got '{}', Expected '{}')", received, SYNC_SIGNAL);
             }
         } catch (IOException e) {
             LOGGER.warn("Unable to synchronize with remote benchmark");
@@ -208,8 +209,7 @@ public abstract class Benchmark {
         try {
             offChannelSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.warn("Unable to close off channel communication");
+            LOGGER.error("Closing off channel communication failed", e);
         }
     }
 
@@ -225,15 +225,17 @@ public abstract class Benchmark {
 
     protected abstract Status cleanup();
 
-    protected abstract Status benchmarkMessagingSendThroughput(int operationCount);
+    protected abstract Status sendMultipleMessages(int messageCount);
 
-    protected abstract Status benchmarkMessagingReceiveThroughput(int operationCount);
+    protected abstract Status receiveMultipleMessage(int messageCount);
 
-    protected abstract Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount);
+    protected abstract Status performMultipleRdmaOperations(RdmaMode mode, int operationCount);
 
-    protected abstract Status benchmarkSendSingleMessageLatency();
+    protected abstract Status sendSingleMessage();
 
-    protected abstract Status benchmarkReceiveSingleMessageLatency();
+    protected abstract Status performSingleRdmaOperation(RdmaMode mode);
 
-    protected abstract Status benchmarkSingleRdmaOperationLatency(RdmaMode mode);
+    protected abstract Status performPingPongIterationServer();
+
+    protected abstract Status performPingPongIterationClient();
 }

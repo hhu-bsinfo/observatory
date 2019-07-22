@@ -29,6 +29,8 @@ public class DisniBenchmark extends Benchmark {
     private static final int DEFAULT_QUEUE_SIZE = 100;
 
     private int queueSize;
+    private int pendingSendCompletions;
+    private int pendingReceiveCompletions;
 
     private RdmaConnParam connectionParameter;
     private RdmaEventChannel eventChannel;
@@ -101,7 +103,7 @@ public class DisniBenchmark extends Benchmark {
         try {
             eventChannel = RdmaEventChannel.createEventChannel();
         } catch (IOException e) {
-            LOGGER.error("Unable to create event channel");
+            LOGGER.error("Unable to create event channel", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -157,7 +159,7 @@ public class DisniBenchmark extends Benchmark {
 
             return Status.OK;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Connecting to client failed", e);
             return Status.NETWORK_ERROR;
         }
     }
@@ -214,6 +216,7 @@ public class DisniBenchmark extends Benchmark {
 
             return Status.OK;
         } catch (IOException e) {
+            LOGGER.error("Connecting to server failed", e);
             return Status.NETWORK_ERROR;
         }
     }
@@ -242,7 +245,7 @@ public class DisniBenchmark extends Benchmark {
 
             remoteInfo = exchangeMemoryRegionInformation();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Allocating resources failed", e);
             return Status.UNKNOWN_ERROR;
         }
 
@@ -252,9 +255,12 @@ public class DisniBenchmark extends Benchmark {
     @Override
     protected Status fillReceiveQueue() {
         try {
-            verbs.receiveMessages(queueSize, receiveScatterGatherList);
+            int batch = queueSize - pendingReceiveCompletions;
+
+            verbs.receiveMessages(batch, receiveScatterGatherList);
+            pendingReceiveCompletions += batch;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Posting receive work request failed");
             return Status.NETWORK_ERROR;
         }
 
@@ -271,30 +277,25 @@ public class DisniBenchmark extends Benchmark {
 
             return Status.OK;
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Destroying resources failed", e);
             return Status.UNKNOWN_ERROR;
         }
     }
 
     @Override
-    protected Status benchmarkMessagingSendThroughput(int operationCount) {
-        int remainingMessages = operationCount;
-        int pendingCompletions = 0;
+    protected Status sendMultipleMessages(int messageCount) {
+        int remainingMessages = messageCount;
 
         try {
             while (remainingMessages > 0) {
                 // Get the amount of free places in the queue
-                int batchSize = queueSize - pendingCompletions;
+                int batchSize = queueSize - pendingSendCompletions;
 
                 // Post in batches of 10, so that Stateful Verbs Methods can be reused
                 if (batchSize < 10) {
                     int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
 
-                    if (polled < 0) {
-                        return Status.NETWORK_ERROR;
-                    }
-
-                    pendingCompletions -= polled;
+                    pendingSendCompletions -= polled;
 
                     continue;
                 }
@@ -304,7 +305,7 @@ public class DisniBenchmark extends Benchmark {
 
                     verbs.sendMessages(batchSize, sendScatterGatherList);
 
-                    pendingCompletions += batchSize;
+                    pendingSendCompletions += batchSize;
                     remainingMessages -= batchSize;
                 } else {
                     int i = batchSize;
@@ -314,7 +315,7 @@ public class DisniBenchmark extends Benchmark {
                         i -= 10;
                     }
 
-                    pendingCompletions += batchSize - i;
+                    pendingSendCompletions += batchSize - i;
                     remainingMessages -= batchSize - i;
                 }
 
@@ -323,15 +324,15 @@ public class DisniBenchmark extends Benchmark {
                 // which would better be spent posting new work requests
                 int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
 
-                pendingCompletions -= polled;
+                pendingSendCompletions -= polled;
             }
 
             // At the end, poll the completion queue until it is empty
-            while (pendingCompletions > 0) {
-                pendingCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
+            while (pendingSendCompletions > 0) {
+                pendingSendCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Sending messages failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -339,24 +340,19 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkMessagingReceiveThroughput(int operationCount) {
-        int pendingCompletions = queueSize;
-        int remainingMessages = operationCount - queueSize; // Receive queue has already been filled in prepare()
+    protected Status receiveMultipleMessage(int messageCount) {
+        int remainingMessages = messageCount - pendingReceiveCompletions; // Receive queue has already been filled in fillReceiveQueue()
 
         try {
             while (remainingMessages > 0) {
                 // Get the amount of free places in the queue
-                int batchSize = queueSize - pendingCompletions;
+                int batchSize = queueSize - pendingReceiveCompletions;
 
                 // Post in batches of 10, so that Stateful Verbs Methods can be reused
                 if (batchSize < 10) {
                     int polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
 
-                    if (polled < 0) {
-                        return Status.NETWORK_ERROR;
-                    }
-
-                    pendingCompletions -= polled;
+                    pendingReceiveCompletions -= polled;
 
                     continue;
                 }
@@ -366,7 +362,7 @@ public class DisniBenchmark extends Benchmark {
 
                     verbs.receiveMessages(batchSize, receiveScatterGatherList);
 
-                    pendingCompletions += batchSize;
+                    pendingReceiveCompletions += batchSize;
                     remainingMessages -= batchSize;
                 } else {
                     int i = batchSize;
@@ -376,7 +372,7 @@ public class DisniBenchmark extends Benchmark {
                         i -= 10;
                     }
 
-                    pendingCompletions += batchSize - i;
+                    pendingReceiveCompletions += batchSize - i;
                     remainingMessages -= batchSize - i;
                 }
 
@@ -385,15 +381,15 @@ public class DisniBenchmark extends Benchmark {
                 // which would better be spent posting new work requests
                 int polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
 
-                pendingCompletions -= polled;
+                pendingReceiveCompletions -= polled;
             }
 
             // At the end, poll the completion queue until it is empty
-            while (pendingCompletions > 0) {
-                pendingCompletions -= verbs.pollCompletionQueue(CqType.RECV_CQ);
+            while (pendingReceiveCompletions > 0) {
+                pendingReceiveCompletions -= verbs.pollCompletionQueue(CqType.RECV_CQ);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Receiving messages failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -401,24 +397,19 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount) {
+    protected Status performMultipleRdmaOperations(RdmaMode mode, int operationCount) {
         int remainingMessages = operationCount;
-        int pendingCompletions = 0;
 
         try {
             while (remainingMessages > 0) {
                 // Get the amount of free places in the queue
-                int batchSize = queueSize - pendingCompletions;
+                int batchSize = queueSize - pendingSendCompletions;
 
                 // Post in batches of 10, so that Stateful Verbs Methods can be reused
                 if (batchSize < 10) {
                     int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
 
-                    if (polled < 0) {
-                        return Status.NETWORK_ERROR;
-                    }
-
-                    pendingCompletions -= polled;
+                    pendingSendCompletions -= polled;
 
                     continue;
                 }
@@ -428,7 +419,7 @@ public class DisniBenchmark extends Benchmark {
 
                     verbs.executeRdmaOperations(batchSize, sendScatterGatherList, mode, remoteInfo);
 
-                    pendingCompletions += batchSize;
+                    pendingSendCompletions += batchSize;
                     remainingMessages -= batchSize;
                 } else {
                     int i = batchSize;
@@ -438,7 +429,7 @@ public class DisniBenchmark extends Benchmark {
                         i -= 10;
                     }
 
-                    pendingCompletions += batchSize - i;
+                    pendingSendCompletions += batchSize - i;
                     remainingMessages -= batchSize - i;
                 }
 
@@ -447,15 +438,15 @@ public class DisniBenchmark extends Benchmark {
                 // which would better be spent posting new work requests
                 int polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
 
-                pendingCompletions -= polled;
+                pendingSendCompletions -= polled;
             }
 
             // At the end, poll the completion queue until it is empty
-            while (pendingCompletions > 0) {
-                pendingCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
+            while (pendingSendCompletions > 0) {
+                pendingSendCompletions -= verbs.pollCompletionQueue(VerbsWrapper.CqType.SEND_CQ);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Performing RDMA operations failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -463,12 +454,17 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkSendSingleMessageLatency() {
+    protected Status sendSingleMessage() {
+        int polled;
+
         try {
             verbs.sendMessages(1, sendScatterGatherList);
-            while(verbs.pollCompletionQueue(CqType.SEND_CQ) == 0);
+
+            do {
+                polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+            } while(polled == 0);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Sending single message failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -476,26 +472,65 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkReceiveSingleMessageLatency() {
+    protected Status performSingleRdmaOperation(RdmaMode mode) {
+        int polled;
 
-        try {
-            verbs.receiveMessages(1, receiveScatterGatherList);
-            while(verbs.pollCompletionQueue(CqType.RECV_CQ) == 0);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Status.NETWORK_ERROR;
-        }
-
-        return Status.OK;
-    }
-
-    @Override
-    protected Status benchmarkSingleRdmaOperationLatency(RdmaMode mode) {
         try {
             verbs.executeRdmaOperations(1, sendScatterGatherList, mode, remoteInfo);
-            while(verbs.pollCompletionQueue(CqType.SEND_CQ) == 0);
+
+            do {
+                polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+            } while(polled == 0);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Performing single RDMA operation failed", e);
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status performPingPongIterationServer() {
+        int polled;
+
+        try {
+            verbs.sendMessages(1, sendScatterGatherList);
+
+            do {
+                polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+            } while(polled == 0);
+
+            do {
+                polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
+            } while(polled == 0);
+
+            verbs.receiveMessages(1, receiveScatterGatherList);
+        } catch (IOException e) {
+            LOGGER.error("Performing ping pong iteration failed", e);
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
+    }
+
+    @Override
+    protected Status performPingPongIterationClient() {
+        int polled;
+
+        try {
+            do {
+                polled = verbs.pollCompletionQueue(CqType.RECV_CQ);
+            } while(polled == 0);
+
+            verbs.sendMessages(1, sendScatterGatherList);
+
+            verbs.receiveMessages(1, receiveScatterGatherList);
+
+            do {
+                polled = verbs.pollCompletionQueue(CqType.SEND_CQ);
+            } while(polled == 0);
+        } catch (IOException e) {
+            LOGGER.error("Performing ping pong iteration failed", e);
             return Status.NETWORK_ERROR;
         }
 

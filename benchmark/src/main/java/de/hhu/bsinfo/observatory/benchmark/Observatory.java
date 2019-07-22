@@ -79,7 +79,7 @@ public class Observatory {
 
                     benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                     benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
-                    benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getSize()));
+                    benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize()));
 
                     if(operation.needsFilledReceiveQueue()) {
                         benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
@@ -101,7 +101,7 @@ public class Observatory {
         }
     }
 
-    public void start() throws InterruptedException {
+    public void start()  {
         for(Benchmark benchmark : benchmarks) {
             LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
@@ -120,8 +120,7 @@ public class Observatory {
             Class<?> clazz = Observatory.class.getClassLoader().loadClass(className);
             return (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
         } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
-            e.printStackTrace();
-            LOGGER.error("Unable to create benchmark of type '{}'", className);
+            LOGGER.error("Unable to create benchmark of type '{}'", className, e);
 
             return null;
         }
@@ -134,8 +133,7 @@ public class Observatory {
 
             return clazz.getDeclaredConstructor(Benchmark.class, Mode.class, int.class, int.class).newInstance(benchmark, mode, operationCount, operationSize);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-            LOGGER.error("Unable to create benchmark phase of type '{}'", className);
+            LOGGER.error("Unable to create benchmark operation of type '{}'", className, e);
 
             return null;
         }

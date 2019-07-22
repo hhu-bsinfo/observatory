@@ -40,6 +40,7 @@ public class SocketBenchmark extends Benchmark {
 
             serverSocket.close();
         } catch (IOException e) {
+            LOGGER.error("Connecting to client failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -58,7 +59,7 @@ public class SocketBenchmark extends Benchmark {
             inputStream = new DataInputStream(socket.getInputStream());
             outputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Connecting to server failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -86,7 +87,7 @@ public class SocketBenchmark extends Benchmark {
         try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Closing socket failed");
             return Status.NETWORK_ERROR;
         }
 
@@ -94,14 +95,16 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkMessagingSendThroughput(int operationCount) {
+    protected Status sendMultipleMessages(int messageCount) {
         try {
-            for (int i = 0; i < operationCount; i++) {
+            for (int i = 0; i < messageCount; i++) {
                 outputStream.write(buffer);
-                outputStream.flush();
             }
+
+            outputStream.flush();
+            socket.getOutputStream().flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Sending messages failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -109,13 +112,13 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkMessagingReceiveThroughput(int operationCount) {
+    protected Status receiveMultipleMessage(int messageCount) {
         try {
-            for (int i = 0; i < operationCount; i++) {
+            for (int i = 0; i < messageCount; i++) {
                 inputStream.readFully(buffer);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Receiving messages failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -123,19 +126,19 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkRdmaThroughput(RdmaMode mode, int operationCount) {
+    protected Status performMultipleRdmaOperations(RdmaMode mode, int operationCount) {
         return Status.NOT_IMPLEMENTED;
     }
 
     @Override
-    protected Status benchmarkSendSingleMessageLatency() {
+    protected Status sendSingleMessage() {
         try {
             outputStream.write(buffer);
 
             outputStream.flush();
             socket.getOutputStream().flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Sending single message failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -143,11 +146,21 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkReceiveSingleMessageLatency() {
+    protected Status performSingleRdmaOperation(RdmaMode mode) {
+        return Status.NOT_IMPLEMENTED;
+    }
+
+    @Override
+    protected Status performPingPongIterationServer() {
         try {
+            outputStream.write(buffer);
+
+            outputStream.flush();
+            socket.getOutputStream().flush();
+
             inputStream.readFully(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Performing ping pong iteration failed", e);
             return Status.NETWORK_ERROR;
         }
 
@@ -155,7 +168,19 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status benchmarkSingleRdmaOperationLatency(RdmaMode mode) {
-        return Status.NOT_IMPLEMENTED;
+    protected Status performPingPongIterationClient() {
+        try {
+            inputStream.readFully(buffer);
+
+            outputStream.write(buffer);
+
+            outputStream.flush();
+            socket.getOutputStream().flush();
+        } catch (IOException e) {
+            LOGGER.error("Performing ping pong iteration failed", e);
+            return Status.NETWORK_ERROR;
+        }
+
+        return Status.OK;
     }
 }

@@ -11,34 +11,28 @@ class MessagingThroughputOperation extends ThroughputOperation {
 
     @Override
     boolean needsFilledReceiveQueue() {
-        return getMode() == Mode.SEND;
+        return !(getMode() == Mode.SEND);
     }
 
     @Override
     Status warmUp(int operationCount) {
         if(getMode() == Mode.SEND) {
-            return getBenchmark().benchmarkMessagingSendThroughput(operationCount);
+            return getBenchmark().sendMultipleMessages(operationCount);
         } else {
-            return getBenchmark().benchmarkMessagingReceiveThroughput(operationCount);
+            return getBenchmark().receiveMultipleMessage(operationCount);
         }
     }
 
     @Override
     public Status execute() {
-        Status status;
-
-        long startTime = System.nanoTime();
-
         if(getMode() == Mode.SEND) {
-            status = getBenchmark().benchmarkMessagingSendThroughput(getMeasurement().getOperationCount());
+            long startTime = System.nanoTime();
+            Status status = getBenchmark().sendMultipleMessages(getMeasurement().getOperationCount());
+            getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
+
+            return status;
         } else {
-            status = getBenchmark().benchmarkMessagingReceiveThroughput(getMeasurement().getOperationCount());
+            return getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
         }
-
-        long time = System.nanoTime() - startTime;
-
-        getMeasurement().setMeasuredTime(time);
-
-        return status;
     }
 }

@@ -5,7 +5,7 @@
   ],
   "operations": [
     {
-      "name": "MessagingLatency",
+      "name": "MessagingPingPong",
       "modes": [ "unidirectional" ],
       "iterations": [
         { "size": 1, "count": 1000000, "warmUp": 10000 },

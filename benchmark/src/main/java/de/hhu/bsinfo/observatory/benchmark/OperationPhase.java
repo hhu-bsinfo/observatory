@@ -25,10 +25,8 @@ class OperationPhase extends BenchmarkPhase {
 
         Status status = operation.execute();
 
-        if(status == Status.OK) {
+        if(status == Status.OK && getBenchmark().isServer()) {
             LOGGER.info("Operation finished with results:\n{}", operation.getMeasurement());
-        } else if(status == Status.OK_NO_MEASUREMENT) {
-            return Status.OK;
         }
 
         return status;

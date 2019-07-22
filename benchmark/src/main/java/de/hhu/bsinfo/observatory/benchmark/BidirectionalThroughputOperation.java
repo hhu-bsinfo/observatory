@@ -42,13 +42,13 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             sendThread.join();
             receiveThread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Joining threads failed", e);
             return Status.UNKNOWN_ERROR;
         }
 
-        if(sendStatus.get() != Status.OK && sendStatus.get() != Status.OK_NO_MEASUREMENT) {
+        if(sendStatus.get() != Status.OK) {
             return sendStatus.get();
-        } else if(receiveStatus.get() != Status.OK && receiveStatus.get() != Status.OK_NO_MEASUREMENT) {
+        } else if(receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
         } else {
             return Status.OK;
@@ -72,13 +72,13 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             sendThread.join();
             receiveThread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Joining threads failed", e);
             return Status.UNKNOWN_ERROR;
         }
 
-        if(sendStatus.get() != Status.OK && sendStatus.get() != Status.OK_NO_MEASUREMENT) {
+        if(sendStatus.get() != Status.OK) {
             return sendStatus.get();
-        } else if(receiveStatus.get() != Status.OK && receiveStatus.get() != Status.OK_NO_MEASUREMENT) {
+        } else if(receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
         } else {
             getMeasurement().setTotalTime(sendOperation.getMeasurement().getTotalTime());

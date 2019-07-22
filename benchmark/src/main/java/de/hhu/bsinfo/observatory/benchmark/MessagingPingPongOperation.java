@@ -3,32 +3,38 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
-public class MessagingLatencyOperation extends LatencyOperation {
+public class MessagingPingPongOperation extends LatencyOperation {
 
-    MessagingLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
+    MessagingPingPongOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
         super(benchmark, mode, operationCount, operationSize);
     }
 
     @Override
     boolean needsFilledReceiveQueue() {
-        return !(getMode() == Mode.SEND);
+        return true;
     }
 
     @Override
     Status warmUp(int operationCount) {
         if(getMode() == Mode.SEND) {
             for(int i = 0; i < operationCount; i++) {
-                Status status = getBenchmark().sendSingleMessage();
+                Status status = getBenchmark().performPingPongIterationServer();
 
                 if(status != Status.OK) {
                     return status;
                 }
             }
-
-            return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessage(operationCount);
+            for(int i = 0; i < operationCount; i++) {
+                Status status = getBenchmark().performPingPongIterationClient();
+
+                if(status != Status.OK) {
+                    return status;
+                }
+            }
         }
+
+        return Status.OK;
     }
 
     @Override
@@ -36,7 +42,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
         if(getMode() == Mode.SEND) {
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
-                Status status = getBenchmark().sendSingleMessage();
+                Status status = getBenchmark().performPingPongIterationServer();
                 getMeasurement().stopSingleMeasurement();
 
                 if(status != Status.OK) {
@@ -48,7 +54,15 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
             return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
+            for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
+                Status status = getBenchmark().performPingPongIterationClient();
+
+                if(status != Status.OK) {
+                    return status;
+                }
+            }
+
+            return Status.OK;
         }
     }
 }

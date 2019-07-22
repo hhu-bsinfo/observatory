@@ -24,7 +24,7 @@ public class RdmaThroughputOperation extends ThroughputOperation {
         Status status = Status.OK;
 
         if(getMode() == Mode.SEND) {
-            status = getBenchmark().benchmarkRdmaThroughput(rdmaMode, operationCount);
+            status = getBenchmark().performMultipleRdmaOperations(rdmaMode, operationCount);
         }
 
         getBenchmark().synchronize();
@@ -34,12 +34,11 @@ public class RdmaThroughputOperation extends ThroughputOperation {
 
     @Override
     public Status execute() {
-        Status status = Status.OK_NO_MEASUREMENT;
+        Status status = Status.OK;
 
         if(getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
-
-            status = getBenchmark().benchmarkRdmaThroughput(rdmaMode, getMeasurement().getOperationCount());
+            status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
             getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
 
             if(status != Status.OK) {
