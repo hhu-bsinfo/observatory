@@ -109,7 +109,9 @@ public class Observatory {
                 return;
             }
 
-            benchmark.synchronize();
+            if(!benchmark.synchronize()) {
+                return;
+            }
 
             benchmark.executePhases();
         }

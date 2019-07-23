@@ -151,38 +151,45 @@ public abstract class Benchmark {
         return Status.OK;
     }
 
-    private void sendSync() {
+    private boolean sendSync() {
         try {
-            LOGGER.info("Sending sync signal '{}' to remote benchmark", SYNC_SIGNAL);
-
             new DataOutputStream(offChannelSocket.getOutputStream()).write(SYNC_SIGNAL.getBytes());
+
+            return true;
         } catch (IOException e) {
-            LOGGER.warn("Unable to synchronize with remote benchmark");
+            return false;
         }
     }
 
-    private void receiveSync() {
+    private boolean receiveSync() {
         try {
-            LOGGER.info("Waiting for sync signal from remote benchmark");
-
             byte[] bytes = new byte[SYNC_SIGNAL.getBytes().length];
             new DataInputStream(offChannelSocket.getInputStream()).readFully(bytes);
 
             String received = new String(bytes);
 
-            if (received.equals(SYNC_SIGNAL)) {
-                LOGGER.info("Received sync signal '{}' from remote benchmark", SYNC_SIGNAL);
-            } else {
-                LOGGER.warn("Received invalid signal (Got '{}', Expected '{}')", received, SYNC_SIGNAL);
+            if (!received.equals(SYNC_SIGNAL)) {
+                LOGGER.error("Received invalid signal (Got '{}', Expected '{}')", received, SYNC_SIGNAL);
+                return false;
             }
+
+            return true;
         } catch (IOException e) {
-            LOGGER.warn("Unable to synchronize with remote benchmark");
+            return false;
         }
     }
 
-    void synchronize() {
-        sendSync();
-        receiveSync();
+    boolean synchronize() {
+        LOGGER.info("Synchronizing with remote benchmark");
+
+        if(!sendSync() || !receiveSync()) {
+            LOGGER.error("Unable to synchronize with remote benchmark");
+            return false;
+        }
+
+        LOGGER.info("Synchronized with remote benchmark");
+
+        return true;
     }
 
     void executePhases() {
@@ -221,9 +228,9 @@ public abstract class Benchmark {
 
     protected abstract Status prepare(final int operationSize);
 
-    protected abstract Status fillReceiveQueue();
-
     protected abstract Status cleanup();
+
+    protected abstract Status fillReceiveQueue();
 
     protected abstract Status sendMultipleMessages(int messageCount);
 

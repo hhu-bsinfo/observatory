@@ -2,11 +2,11 @@ package de.hhu.bsinfo.observatory.disni;
 
 import com.ibm.disni.verbs.*;
 
+import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,15 +121,6 @@ class VerbsWrapper {
      * List of receive work requests.
      */
     private LinkedList<IbvRecvWR> recvWrList;
-
-    /**
-     * Used by Connection.pollCompletionQueue(JVerbsWrapper.CqType type) to determine whether
-     * the send or the completion queue shall be polled.
-     */
-    enum CqType {
-        SEND_CQ,    /**< Send completion queue */
-        RECV_CQ     /**< Receive completion queue */
-    }
 
     /**
      * Constructor.
@@ -253,12 +244,12 @@ class VerbsWrapper {
      *
      * Can be used to retrieve the work completions after the completion queue has been polled.
      *
-     * @param type Whether to get the send or receive work completions
+     * @param mode Whether to get the send or receive work completions
      *
      * @return The work completions
      */
-    private IbvWC[] getWorkCompletions(CqType type) {
-        return type == CqType.SEND_CQ ? sendWorkComps : receiveWorkComps;
+    private IbvWC[] getWorkCompletions(Mode mode) {
+        return mode == Mode.SEND ? sendWorkComps : receiveWorkComps;
     }
 
     /**
@@ -279,12 +270,12 @@ class VerbsWrapper {
     /**
      * Poll the completion queue a single time and get the amount of polled work completions.
      *
-     * @param type Whether to poll the send or the receive completion queue
+     * @param mode Whether to poll the send or the receive completion queue
      *
      * @return The amount of polled work completions
      */
-    int pollCompletionQueue(VerbsWrapper.CqType type) throws IOException {
-        SVCPollCq pollMethod = type == CqType.SEND_CQ ? sendCqMethod : recvCqMethod;
+    int pollCompletionQueue(Mode mode) throws IOException {
+        SVCPollCq pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
 
         if(!pollMethod.isValid()) {
             throw new IOException("PollCqMethod invalid!");
@@ -294,7 +285,7 @@ class VerbsWrapper {
 
         int polled = pollMethod.getPolls();
 
-        IbvWC[] workComps = getWorkCompletions(type);
+        IbvWC[] workComps = getWorkCompletions(mode);
 
         for(int i = 0; i < polled; i++) {
             if(workComps[i].getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {

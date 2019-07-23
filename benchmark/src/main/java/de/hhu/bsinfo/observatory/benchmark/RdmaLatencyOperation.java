@@ -31,7 +31,9 @@ public class RdmaLatencyOperation extends LatencyOperation {
             }
         }
 
-        getBenchmark().synchronize();
+        if(!getBenchmark().synchronize()) {
+            return Status.SYNC_ERROR;
+        }
 
         return Status.OK;
     }
@@ -54,7 +56,9 @@ public class RdmaLatencyOperation extends LatencyOperation {
             getMeasurement().finishMeasuring();
         }
 
-        getBenchmark().synchronize();
+        if(!getBenchmark().synchronize()) {
+            return Status.SYNC_ERROR;
+        }
 
         return status;
     }

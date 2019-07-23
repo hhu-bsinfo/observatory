@@ -10,11 +10,7 @@ class InitializationPhase extends BenchmarkPhase {
 
     @Override
     protected Status execute() {
-        Status status = getBenchmark().initialize();
-
-        getBenchmark().synchronize();
-
-        return status;
+        return getBenchmark().initialize();
     }
 
 }

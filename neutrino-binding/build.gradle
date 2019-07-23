@@ -1,12 +1,9 @@
 plugins {
-    id 'application'
+    id 'java-library'
 }
 
 group = 'de.hhu.bsinfo'
 version = getProperty('projectVersion')
-
-mainClassName = 'de.hhu.bsinfo.observatory.app.Application'
-applicationName = 'observatory'
 
 compileJava {
     sourceCompatibility = '8'
@@ -16,7 +13,7 @@ compileJava {
 
 repositories {
     mavenCentral()
-    
+
     maven {
         url "https://dl.bintray.com/hhu-bsinfo/dxram"
     }
@@ -30,11 +27,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':benchmark')
-    implementation project(':socket-binding')
-    implementation project(':disni-binding')
-    implementation project(':neutrino-binding')
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'info.picocli:picocli:3.9.6'
+    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation 'de.hhu.bsinfo:neutrino:0.1.0-SNAPSHOT'
 }

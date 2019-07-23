@@ -82,7 +82,7 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return receiveStatus.get();
         } else {
             getMeasurement().setTotalTime(sendOperation.getMeasurement().getTotalTime());
-            getMeasurement().setOperationThroughput(sendOperation.getMeasurement().getOperationThroughput() + receiveOperation.getMeasurement().getDataThroughput());
+            getMeasurement().setOperationThroughput(sendOperation.getMeasurement().getOperationThroughput() + receiveOperation.getMeasurement().getOperationThroughput());
             getMeasurement().setDataThroughput(sendOperation.getMeasurement().getDataThroughput() + receiveOperation.getMeasurement().getDataThroughput());
 
             return Status.OK;

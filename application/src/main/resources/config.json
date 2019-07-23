@@ -1,12 +1,14 @@
 {
-  "className": "de.hhu.bsinfo.observatory.socket.SocketBenchmark",
+  "className": "de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark",
   "parameters": [
+    { "key":  "deviceNumber", "value":  0 },
+    { "key":  "portNumber", "value":  1 },
     { "key": "queueSize", "value": 200 }
   ],
   "operations": [
     {
-      "name": "MessagingPingPong",
-      "modes": [ "unidirectional" ],
+      "name": "RdmaWriteThroughput",
+      "modes": [ "bidirectional" ],
       "iterations": [
         { "size": 1, "count": 1000000, "warmUp": 10000 },
         { "size": 2, "count": 1000000, "warmUp": 10000 },

@@ -1,36 +1,36 @@
-package de.hhu.bsinfo.observatory.disni;
+package de.hhu.bsinfo.observatory.neutrino;
 
 import java.nio.ByteBuffer;
 
-public class MemoryRegionInformation {
+class MemoryRegionInformation {
 
     private long address;
     private int remoteKey;
 
-    public MemoryRegionInformation(long address, int remoteKey) {
+    MemoryRegionInformation(long address, int remoteKey) {
         this.address = address;
         this.remoteKey = remoteKey;
     }
 
-    public static int getSizeInBytes() {
+    static int getSizeInBytes() {
         return Long.BYTES + Integer.BYTES;
     }
 
-    public static MemoryRegionInformation fromBytes(byte[] bytes) {
+    static MemoryRegionInformation fromBytes(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
         return new MemoryRegionInformation(buffer.getLong(), buffer.getInt());
     }
 
-    public long getAddress() {
+    long getAddress() {
         return address;
     }
 
-    public int getRemoteKey() {
+    int getRemoteKey() {
         return remoteKey;
     }
 
-    public byte[] toBytes() {
+    byte[] toBytes() {
         ByteBuffer buffer = ByteBuffer.allocate(getSizeInBytes());
 
         buffer.putLong(address);

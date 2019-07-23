@@ -1,6 +1,6 @@
 rootProject.name = 'observatory'
-include 'benchmark'
-include 'socket'
-include 'disni'
 include 'application'
-
+include 'benchmark'
+include 'socket-binding'
+include 'disni-binding'
+include 'neutrino-binding'

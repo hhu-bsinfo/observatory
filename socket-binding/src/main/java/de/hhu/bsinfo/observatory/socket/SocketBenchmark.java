@@ -76,11 +76,6 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status fillReceiveQueue() {
-        return Status.NOT_IMPLEMENTED;
-    }
-
-    @Override
     protected Status cleanup() {
         LOGGER.info("Closing socket");
 
@@ -92,6 +87,11 @@ public class SocketBenchmark extends Benchmark {
         }
 
         return Status.OK;
+    }
+
+    @Override
+    protected Status fillReceiveQueue() {
+        return Status.NOT_IMPLEMENTED;
     }
 
     @Override

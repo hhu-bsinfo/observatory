@@ -5,8 +5,16 @@
       <module name="infinibench.application.main" target="8" />
       <module name="infinibench.benchmark.main" target="8" />
       <module name="infinibench.example.main" target="8" />
+      <module name="observatory.disni.main" target="8" />
+      <module name="observatory.disni.test" target="12" />
       <module name="observatory.example.main" target="8" />
       <module name="observatory.example.test" target="12" />
+      <module name="observatory.neutrino-bench.main" target="8" />
+      <module name="observatory.neutrino-bench.test" target="12" />
+      <module name="observatory.neutrino.main" target="8" />
+      <module name="observatory.neutrino.test" target="12" />
+      <module name="observatory.socket.main" target="8" />
+      <module name="observatory.socket.test" target="12" />
     </bytecodeTargetLevel>
   </component>
 </project>

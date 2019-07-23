@@ -32,7 +32,11 @@ class MessagingThroughputOperation extends ThroughputOperation {
 
             return status;
         } else {
-            return getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
+            long startTime = System.nanoTime();
+            Status status = getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
+            getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
+
+            return status;
         }
     }
 }

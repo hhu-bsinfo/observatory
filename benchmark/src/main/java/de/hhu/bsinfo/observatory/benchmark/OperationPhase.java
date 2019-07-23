@@ -21,7 +21,9 @@ class OperationPhase extends BenchmarkPhase {
         LOGGER.info("Executing phase of type '{}' with {} operations of size {} bytes", operation.getClass().getSimpleName(),
                 operation.getMeasurement().getOperationCount(), operation.getMeasurement().getOperationSize());
 
-        getBenchmark().synchronize();
+        if(!getBenchmark().synchronize()) {
+            return Status.SYNC_ERROR;
+        }
 
         Status status = operation.execute();
 

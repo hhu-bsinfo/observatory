@@ -3,8 +3,16 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RdmaThroughputOperation extends ThroughputOperation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RdmaThroughputOperation.class);
 
     private final RdmaMode rdmaMode;
 
@@ -27,7 +35,9 @@ public class RdmaThroughputOperation extends ThroughputOperation {
             status = getBenchmark().performMultipleRdmaOperations(rdmaMode, operationCount);
         }
 
-        getBenchmark().synchronize();
+        if(!getBenchmark().synchronize()) {
+            return Status.SYNC_ERROR;
+        }
 
         return status;
     }
@@ -39,14 +49,34 @@ public class RdmaThroughputOperation extends ThroughputOperation {
         if(getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
             status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
-            getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
+            long time = System.nanoTime() - startTime;
+
+            getMeasurement().setMeasuredTime(time);
+
+            ByteBuffer timeBuffer = ByteBuffer.allocate(Long.BYTES);
+            timeBuffer.putLong(time);
+
+            try {
+                new DataOutputStream(getBenchmark().getOffChannelSocket().getOutputStream()).write(timeBuffer.array());
+            } catch (IOException e) {
+                LOGGER.error("Sending measured time to remote benchmark failed", e);
+            }
 
             if(status != Status.OK) {
                 return status;
             }
-        }
+        } else {
+            try {
+                byte[] timeBytes = new byte[Long.BYTES];
+                new DataInputStream(getBenchmark().getOffChannelSocket().getInputStream()).readFully(timeBytes);
 
-        getBenchmark().synchronize();
+                ByteBuffer timeBuffer = ByteBuffer.wrap(timeBytes);
+
+                getMeasurement().setMeasuredTime(timeBuffer.getLong());
+            } catch (IOException e) {
+                LOGGER.error("Receiving measured time from remote benchmark failed", e);
+            }
+        }
 
         return status;
     }
