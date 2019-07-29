@@ -4,7 +4,28 @@ dist: xenial
 stages:
   - name: build
 
+before_install:
+  - wget -O ibm-installer.bin http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/${IBM_SDK_VERSION}/linux/x86_64/ibm-java-sdk-$(sed -e 's/\./-/2' <<<${IBM_SDK_VERSION})-x86_64-archive.bin
+  - chmod +x ibm-installer.bin
+  - mkdir /tmp/ibm-jdk
+  - PS1=">" ./ibm-installer.bin -i silent -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=/tmp/ibm-jdk/
+
+install:
+  - ./gradlew -Dibm.path=/tmp/ibm-jdk assemble
+
 jobs:
   include:
     - stage: build
-      script: ./gradlew distTar
+      script: ./gradlew -Dibm.path=/tmp/ibm-jdk build
+
+before_deploy: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar --exclude-task test
+
+deploy:
+  provider: releases
+  api_key: ${ACCESS_TOKEN}
+  skip_cleanup: true
+  file: $(ls -1 build/application/distributions/)
+  on:
+    repo: hhu-bsinfo/observatory
+    branch: master
+    tags: true

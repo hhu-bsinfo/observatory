@@ -1,7 +1,22 @@
-package de.hhu.bsinfo.observatory.disni;
+package de.hhu.bsinfo.observatory.jverbs;
 
-import com.ibm.disni.verbs.*;
-
+import com.ibm.net.rdma.jverbs.cm.ConnectionId;
+import com.ibm.net.rdma.jverbs.verbs.CompletionChannel;
+import com.ibm.net.rdma.jverbs.verbs.CompletionQueue;
+import com.ibm.net.rdma.jverbs.verbs.MemoryRegion;
+import com.ibm.net.rdma.jverbs.verbs.PollCQMethod;
+import com.ibm.net.rdma.jverbs.verbs.PostReceiveMethod;
+import com.ibm.net.rdma.jverbs.verbs.PostSendMethod;
+import com.ibm.net.rdma.jverbs.verbs.ProtectionDomain;
+import com.ibm.net.rdma.jverbs.verbs.QueuePair;
+import com.ibm.net.rdma.jverbs.verbs.QueuePair.Type;
+import com.ibm.net.rdma.jverbs.verbs.QueuePairInitAttribute;
+import com.ibm.net.rdma.jverbs.verbs.ReceiveWorkRequest;
+import com.ibm.net.rdma.jverbs.verbs.ScatterGatherElement;
+import com.ibm.net.rdma.jverbs.verbs.SendWorkRequest;
+import com.ibm.net.rdma.jverbs.verbs.VerbsContext;
+import com.ibm.net.rdma.jverbs.verbs.WorkCompletion;
+import com.ibm.net.rdma.jverbs.verbs.WorkCompletion.Status;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
 import java.io.IOException;
@@ -25,62 +40,62 @@ class VerbsWrapper {
      *
      * Required to get the verbs context.
      */
-    private RdmaCmId connectionId;
+    private ConnectionId connectionId;
 
     /**
      * JVerbs context.
      */
-    private IbvContext context;
+    private VerbsContext context;
 
     /**
      * The protection domain, in which all infiniband resources will be registered.
      */
-    private IbvPd protDom;
+    private ProtectionDomain protDom;
 
     /**
      * Send Completion channel (Unused, but required for the creation of a completion queue).
      */
-    private IbvCompChannel sendCompChannel;
+    private CompletionChannel sendCompChannel;
 
     /**
      * Receive Completion channel (Unused, but required for the creation of a completion queue).
      */
-    private IbvCompChannel recvCompChannel;
+    private CompletionChannel recvCompChannel;
 
     /**
      * The send completion queue.
      */
-    private IbvCQ sendCompQueue;
+    private CompletionQueue sendCompQueue;
 
     /**
      * The receive completion queue.
      */
-    private IbvCQ recvCompQueue;
+    private CompletionQueue recvCompQueue;
 
     /**
      * The queue pair.
      */
-    private IbvQP queuePair;
+    private QueuePair queuePair;
 
     /**
      * An array, which holds all work completions for the send completion queue.
      */
-    private IbvWC[] sendWorkComps;
+    private WorkCompletion[] sendWorkComps;
 
     /**
      * An array, which holds all work completions for the receive completion queue.
      */
-    private IbvWC[] receiveWorkComps;
+    private WorkCompletion[] receiveWorkComps;
 
     /**
      * Stateful Verbs Method for posting Send Work Requests.
      */
-    private SVCPostSend postSendMethod;
+    private PostSendMethod postSendMethod;
 
     /**
      * Stateful Verbs Method for posting Receive Work Requests.
      */
-    private SVCPostRecv postReceiveMethod;
+    private PostReceiveMethod postReceiveMethod;
 
     /**
      * Amount of last posted send work requests.
@@ -95,32 +110,32 @@ class VerbsWrapper {
     /**
      * Stateful Verbs Method for polling the send completion queue.
      */
-    private SVCPollCq sendCqMethod;
+    private PollCQMethod sendCqMethod;
 
     /**
      * Stateful Verbs Method for polling the receive completion queue.
      */
-    private SVCPollCq recvCqMethod;
+    private PollCQMethod recvCqMethod;
 
     /**
      * Reusable send work requests.
      */
-    private IbvSendWR[] sendWrs;
+    private SendWorkRequest[] sendWrs;
 
     /**
      * Reusable receive work requests.
      */
-    private IbvRecvWR[] recvWrs;
+    private ReceiveWorkRequest[] recvWrs;
 
     /**
      * List of send work requests.
      */
-    private LinkedList<IbvSendWR> sendWrList;
+    private LinkedList<SendWorkRequest> sendWrList;
 
     /**
      * List of receive work requests.
      */
-    private LinkedList<IbvRecvWR> recvWrList;
+    private LinkedList<ReceiveWorkRequest> recvWrList;
 
     /**
      * Constructor.
@@ -128,65 +143,65 @@ class VerbsWrapper {
      * @param id The connection id, from which to get the context
      * @param queueSize Desired size of the queue pair and completion queue
      */
-    VerbsWrapper(RdmaCmId id, int queueSize) throws IOException {
+    VerbsWrapper(ConnectionId id, int queueSize) throws IOException {
         // Get context
         connectionId = id;
-        context = id.getVerbs();
+        context = id.getVerbsContext();
 
         // Create protection domain
-        protDom = context.allocPd();
+        protDom = context.allocProtectionDomain();
 
         // Create send completion queue
-        sendCompChannel = context.createCompChannel();
-        sendCompQueue = context.createCQ(sendCompChannel, queueSize, 0);
+        sendCompChannel = context.createCompletionChannel();
+        sendCompQueue = context.createCompletionQueue(sendCompChannel, queueSize, 0);
 
         // Create receive completion queue
-        recvCompChannel = context.createCompChannel();
-        recvCompQueue = context.createCQ(recvCompChannel, queueSize, 0);
+        recvCompChannel = context.createCompletionChannel();
+        recvCompQueue = context.createCompletionQueue(recvCompChannel, queueSize, 0);
 
         // Create queue pair
-        IbvQPInitAttr attr = new IbvQPInitAttr();
-        attr.cap().setMax_recv_sge(1);
-        attr.cap().setMax_recv_wr(queueSize);
-        attr.cap().setMax_send_sge(1);
-        attr.cap().setMax_send_wr(queueSize);
-        attr.setQp_type(IbvQP.IBV_QPT_RC);
-        attr.setSend_cq(sendCompQueue);
-        attr.setRecv_cq(recvCompQueue);
+        QueuePairInitAttribute attr = new QueuePairInitAttribute();
+        attr.getCap().setMaxReceiveSge(1);
+        attr.getCap().setMaxReceiveWorkRequest(queueSize);
+        attr.getCap().setMaxSendSge(1);
+        attr.getCap().setMaxSendWorkRequest(queueSize);
+        attr.setQueuePairType(Type.IBV_QPT_RC);
+        attr.setSendCompletionQueue(sendCompQueue);
+        attr.setReceiveCompletionQueue(recvCompQueue);
 
-        queuePair = id.createQP(protDom, attr);
+        queuePair = id.createQueuePair(protDom, attr);
 
         // Create work completion lists
-        sendWorkComps = new IbvWC[queueSize];
-        receiveWorkComps = new IbvWC[queueSize];
+        sendWorkComps = new WorkCompletion[queueSize];
+        receiveWorkComps = new WorkCompletion[queueSize];
 
         for(int i = 0; i < this.sendWorkComps.length; i++) {
-            sendWorkComps[i] = new IbvWC();
+            sendWorkComps[i] = new WorkCompletion();
         }
 
         for(int i = 0; i < this.receiveWorkComps.length; i++) {
-            receiveWorkComps[i] = new IbvWC();
+            receiveWorkComps[i] = new WorkCompletion();
         }
 
         lastSend = -1;
         lastReceive = -1;
 
-        sendWrs = new IbvSendWR[queueSize];
-        recvWrs = new IbvRecvWR[queueSize];
+        sendWrs = new SendWorkRequest[queueSize];
+        recvWrs = new ReceiveWorkRequest[queueSize];
 
         for(int i = 0; i < this.sendWrs.length; i++) {
-            sendWrs[i] = new IbvSendWR();
+            sendWrs[i] = new SendWorkRequest();
         }
 
         for(int i = 0; i < this.sendWrs.length; i++) {
-            recvWrs[i] = new IbvRecvWR();
+            recvWrs[i] = new ReceiveWorkRequest();
         }
 
         sendWrList = new LinkedList<>();
         recvWrList = new LinkedList<>();
 
-        sendCqMethod = sendCompQueue.poll(sendWorkComps, queueSize);
-        recvCqMethod = recvCompQueue.poll(receiveWorkComps, queueSize);
+        sendCqMethod = sendCompQueue.pollCQ(sendWorkComps, queueSize);
+        recvCqMethod = recvCompQueue.pollCQ(receiveWorkComps, queueSize);
     }
 
     /**
@@ -196,7 +211,7 @@ class VerbsWrapper {
      *
      * @return The stateful verbs call
      */
-    private SVCPostSend getPostSendMethod(LinkedList<IbvSendWR> sendWrs) throws IOException {
+    private PostSendMethod getPostSendMethod(LinkedList<SendWorkRequest> sendWrs) throws IOException {
         if(lastSend != sendWrs.size()) {
             lastSend = sendWrs.size();
 
@@ -204,7 +219,7 @@ class VerbsWrapper {
                 postSendMethod.free();
             }
 
-            postSendMethod = queuePair.postSend(sendWrs, null);
+            postSendMethod = queuePair.preparePostSend(sendWrs);
         }
 
         if(!postSendMethod.isValid()) {
@@ -221,7 +236,7 @@ class VerbsWrapper {
      *
      * @return The stateful verbs call
      */
-    private SVCPostRecv getPostReceiveMethod(LinkedList<IbvRecvWR> recvWrs) throws IOException {
+    private PostReceiveMethod getPostReceiveMethod(LinkedList<ReceiveWorkRequest> recvWrs) throws IOException {
         if(lastReceive != recvWrs.size()) {
             lastReceive = recvWrs.size();
 
@@ -229,11 +244,11 @@ class VerbsWrapper {
                 postReceiveMethod.free();
             }
 
-            postReceiveMethod = queuePair.postRecv(recvWrs, null);
+            postReceiveMethod = queuePair.preparePostReceive(recvWrs);
         }
 
         if(!postReceiveMethod.isValid()) {
-            throw new IOException("PostReceiveMethod invalid!");
+            throw new IOException("PostSendMethod invalid!");
         }
 
         return postReceiveMethod;
@@ -248,7 +263,7 @@ class VerbsWrapper {
      *
      * @return The work completions
      */
-    private IbvWC[] getWorkCompletions(Mode mode) {
+    private WorkCompletion[] getWorkCompletions(Mode mode) {
         return mode == Mode.SEND ? sendWorkComps : receiveWorkComps;
     }
 
@@ -259,12 +274,23 @@ class VerbsWrapper {
      *
      * @return The registered memory region
      */
-    IbvMr registerMemoryRegion(ByteBuffer buffer) throws IOException {
-        int accessFlags = IbvMr.IBV_ACCESS_LOCAL_WRITE |
-                IbvMr.IBV_ACCESS_REMOTE_WRITE |
-                IbvMr.IBV_ACCESS_REMOTE_READ;
+    MemoryRegion registerMemoryRegion(ByteBuffer buffer) throws IOException {
+        int accessFlags = MemoryRegion.IBV_ACCESS_LOCAL_WRITE |
+                MemoryRegion.IBV_ACCESS_REMOTE_WRITE |
+                MemoryRegion.IBV_ACCESS_REMOTE_READ;
 
-        return protDom.regMr(buffer, accessFlags).execute().free().getMr();
+        return protDom.registerMemoryRegion(buffer, accessFlags).execute().free().getMemoryRegion();
+    }
+
+    /**
+     * Deregister a memory region.
+     *
+     * @param memoryRegion The memory region to be deregistered
+     *
+     * @return The registered memory region
+     */
+    void deregisterMemoryRegion(MemoryRegion memoryRegion) throws IOException {
+        protDom.deregisterMemoryRegion(memoryRegion).execute().free();
     }
 
     /**
@@ -275,7 +301,7 @@ class VerbsWrapper {
      * @return The amount of polled work completions
      */
     int pollCompletionQueue(Mode mode) throws IOException {
-        SVCPollCq pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
+        PollCQMethod pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
 
         if(!pollMethod.isValid()) {
             throw new IOException("PollCqMethod invalid!");
@@ -285,10 +311,10 @@ class VerbsWrapper {
 
         int polled = pollMethod.getPolls();
 
-        IbvWC[] workComps = getWorkCompletions(mode);
+        WorkCompletion[] workComps = getWorkCompletions(mode);
 
         for(int i = 0; i < polled; i++) {
-            if(workComps[i].getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
+            if(workComps[i].getStatus() != Status.IBV_WC_SUCCESS) {
                 throw new IOException("Work completion failed with status [" + workComps[i].getStatus() + "]");
             }
         }
@@ -296,7 +322,7 @@ class VerbsWrapper {
         return polled;
     }
 
-    void sendMessages(int amount, LinkedList<IbvSge> scatterGatherElements) throws IOException {
+    void sendMessages(int amount, LinkedList<ScatterGatherElement> scatterGatherElements) throws IOException {
         if(amount <= 0) {
             return;
         }
@@ -304,10 +330,10 @@ class VerbsWrapper {
         sendWrList.clear();
 
         for(int i = 0; i < amount; i++) {
-            sendWrs[i].setWr_id(1);
-            sendWrs[i].setSg_list(scatterGatherElements);
-            sendWrs[i].setOpcode(IbvSendWR.IBV_WR_SEND);
-            sendWrs[i].setSend_flags(IbvSendWR.IBV_SEND_SIGNALED);
+            sendWrs[i].setWorkRequestId(1);
+            sendWrs[i].setSgeList(scatterGatherElements);
+            sendWrs[i].setOpcode(SendWorkRequest.Opcode.IBV_WR_SEND);
+            sendWrs[i].setSendFlags(SendWorkRequest.IBV_SEND_SIGNALED);
 
             sendWrList.add(sendWrs[i]);
         }
@@ -315,7 +341,7 @@ class VerbsWrapper {
         getPostSendMethod(sendWrList).execute();
     }
 
-    void receiveMessages(int amount, LinkedList<IbvSge> scatterGatherElements) throws IOException {
+    void receiveMessages(int amount, LinkedList<ScatterGatherElement> scatterGatherElements) throws IOException {
         if(amount <= 0) {
             return;
         }
@@ -323,8 +349,8 @@ class VerbsWrapper {
         recvWrList.clear();
 
         for(int i = 0; i < amount; i++) {
-            recvWrs[i].setWr_id(1);
-            recvWrs[i].setSg_list(scatterGatherElements);
+            recvWrs[i].setWorkRequestId(1);
+            recvWrs[i].setSgeList(scatterGatherElements);
 
             recvWrList.add(recvWrs[i]);
         }
@@ -332,7 +358,7 @@ class VerbsWrapper {
         getPostReceiveMethod(recvWrList).execute();
     }
 
-    void executeRdmaOperations(int amount, LinkedList<IbvSge> scatterGatherElements, RdmaMode mode, MemoryRegionInformation remoteInfo) throws IOException {
+    void executeRdmaOperations(int amount, LinkedList<ScatterGatherElement> scatterGatherElements, RdmaMode mode, MemoryRegionInformation remoteInfo) throws IOException {
         if(amount <= 0) {
             return;
         }
@@ -340,13 +366,13 @@ class VerbsWrapper {
         sendWrList.clear();
 
         for(int i = 0; i < amount; i++) {
-            sendWrs[i].setWr_id(1);
-            sendWrs[i].setSg_list(scatterGatherElements);
-            sendWrs[i].setOpcode(mode == RdmaMode.WRITE ? IbvSendWR.IBV_WR_RDMA_WRITE : IbvSendWR.IBV_WR_RDMA_READ);
-            sendWrs[i].setSend_flags(IbvSendWR.IBV_SEND_SIGNALED);
+            sendWrs[i].setWorkRequestId(1);
+            sendWrs[i].setSgeList(scatterGatherElements);
+            sendWrs[i].setOpcode(mode == RdmaMode.WRITE ? SendWorkRequest.Opcode.IBV_WR_RDMA_WRITE : SendWorkRequest.Opcode.IBV_WR_RDMA_READ);
+            sendWrs[i].setSendFlags(SendWorkRequest.IBV_SEND_SIGNALED);
 
-            sendWrs[i].getRdma().setRemote_addr(remoteInfo.getAddress());
-            sendWrs[i].getRdma().setRkey(remoteInfo.getRemoteKey());
+            sendWrs[i].getRdma().setRemoteAddress(remoteInfo.getAddress());
+            sendWrs[i].getRdma().setRemoteKey(remoteInfo.getRemoteKey());
 
             sendWrList.add(sendWrs[i]);
         }
@@ -363,11 +389,11 @@ class VerbsWrapper {
         sendCqMethod.free();
         recvCqMethod.free();
 
-        sendCompQueue.destroyCQ();
-        recvCompQueue.destroyCQ();
-        sendCompChannel.destroyCompChannel();
-        recvCompChannel.destroyCompChannel();
-        connectionId.destroyQP();
-        protDom.deallocPd();
+        context.destroyCompletionQueue(sendCompQueue);
+        context.destroyCompletionQueue(recvCompQueue);
+        context.destroyCompletionChannel(sendCompChannel);
+        context.destroyCompletionChannel(recvCompChannel);
+        connectionId.destroyQueuePair();
+        context.deallocProtectionDomain(protDom);
     }
 }

@@ -1,6 +1,8 @@
 rootProject.name = 'observatory'
+
 include 'application'
 include 'benchmark'
 include 'socket-binding'
 include 'disni-binding'
 include 'neutrino-binding'
+include 'jverbs-binding'

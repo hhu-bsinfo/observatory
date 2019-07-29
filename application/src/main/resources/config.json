@@ -1,5 +1,5 @@
 {
-  "className": "de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark",
+  "className": "de.hhu.bsinfo.observatory.jverbs.JVerbsBenchmark",
   "parameters": [
     { "key":  "deviceNumber", "value":  0 },
     { "key":  "portNumber", "value":  1 },
@@ -7,8 +7,8 @@
   ],
   "operations": [
     {
-      "name": "RdmaWriteThroughput",
-      "modes": [ "bidirectional" ],
+      "name": "MessagingPingPong",
+      "modes": [ "unidirectional" ],
       "iterations": [
         { "size": 1, "count": 1000000, "warmUp": 10000 },
         { "size": 2, "count": 1000000, "warmUp": 10000 },

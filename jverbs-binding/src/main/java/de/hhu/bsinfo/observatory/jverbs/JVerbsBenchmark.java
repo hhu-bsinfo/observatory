@@ -1,13 +1,13 @@
-package de.hhu.bsinfo.observatory.disni;
+package de.hhu.bsinfo.observatory.jverbs;
 
-import com.ibm.disni.verbs.IbvMr;
-import com.ibm.disni.verbs.IbvSge;
-import com.ibm.disni.verbs.RdmaCm;
-import com.ibm.disni.verbs.RdmaCmEvent;
-import com.ibm.disni.verbs.RdmaCmEvent.EventType;
-import com.ibm.disni.verbs.RdmaCmId;
-import com.ibm.disni.verbs.RdmaConnParam;
-import com.ibm.disni.verbs.RdmaEventChannel;
+import com.ibm.net.rdma.jverbs.cm.ConnectionEvent;
+import com.ibm.net.rdma.jverbs.cm.ConnectionEvent.EventType;
+import com.ibm.net.rdma.jverbs.cm.ConnectionId;
+import com.ibm.net.rdma.jverbs.cm.ConnectionParameter;
+import com.ibm.net.rdma.jverbs.cm.EventChannel;
+import com.ibm.net.rdma.jverbs.cm.PortSpace;
+import com.ibm.net.rdma.jverbs.verbs.MemoryRegion;
+import com.ibm.net.rdma.jverbs.verbs.ScatterGatherElement;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
@@ -19,9 +19,9 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DisniBenchmark extends Benchmark {
+public class JVerbsBenchmark extends Benchmark {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DisniBenchmark.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JVerbsBenchmark.class);
 
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
 
@@ -31,30 +31,30 @@ public class DisniBenchmark extends Benchmark {
     private int pendingSendCompletions;
     private int pendingReceiveCompletions;
 
-    private RdmaConnParam connectionParameter;
-    private RdmaEventChannel eventChannel;
-    private RdmaCmId connectionId;
+    private ConnectionParameter connectionParameter;
+    private EventChannel eventChannel;
+    private ConnectionId connectionId;
 
-    private IbvMr sendMemoryRegion;
-    private IbvMr receiveMemoryRegion;
+    private MemoryRegion sendMemoryRegion;
+    private MemoryRegion receiveMemoryRegion;
 
-    private LinkedList<IbvSge> sendScatterGatherList;
-    private LinkedList<IbvSge> receiveScatterGatherList;
+    private LinkedList<ScatterGatherElement> sendScatterGatherList;
+    private LinkedList<ScatterGatherElement> receiveScatterGatherList;
 
     private MemoryRegionInformation remoteInfo;
 
     private VerbsWrapper verbs;
 
-    private RdmaCmEvent getEvent() throws IOException {
-        RdmaCmEvent event = eventChannel.getCmEvent(-1);
+    private ConnectionEvent getEvent() throws IOException {
+        ConnectionEvent event = eventChannel.getConnectionEvent(-1);
 
-        LOGGER.info("Received event of type [{}]", event.getEvent());
+        LOGGER.info("Received event of type [{}]", event.getEventType());
 
         return event;
     }
 
     private MemoryRegionInformation exchangeMemoryRegionInformation() throws IOException {
-        MemoryRegionInformation localInfo = new MemoryRegionInformation(receiveMemoryRegion.getAddr(), receiveMemoryRegion.getRkey());
+        MemoryRegionInformation localInfo = new MemoryRegionInformation(receiveMemoryRegion.getAddress(), receiveMemoryRegion.getRemoteKey());
         byte[] remoteBytes = new byte[MemoryRegionInformation.getSizeInBytes()];
 
         LOGGER.info("Sending local memory region information:\n{}", localInfo);
@@ -75,34 +75,15 @@ public class DisniBenchmark extends Benchmark {
     protected Status initialize() {
         queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
 
-        connectionParameter = new RdmaConnParam();
+        connectionParameter = new ConnectionParameter();
+
+        connectionParameter.setInitiatorDepth(1);
+        connectionParameter.setResponderResources(1);
+        connectionParameter.setRetryCount(7);
+        connectionParameter.setRnrRetryCount(7);
 
         try {
-            this.connectionParameter.setInitiator_depth((byte) 1);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to set connection parameter 'Initiator depth'!");
-        }
-
-        try {
-            this.connectionParameter.setResponder_resources((byte) 1);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to set connection parameter 'Responder resources'!");
-        }
-
-        try{
-            this.connectionParameter.setRetry_count((byte) 7);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to set connection parameter 'Retry count'!");
-        }
-
-        try {
-            this.connectionParameter.setRnr_retry_count((byte) 7);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to set connection parameter 'RNR Retry count'!");
-        }
-
-        try {
-            eventChannel = RdmaEventChannel.createEventChannel();
+            eventChannel = EventChannel.createEventChannel();
         } catch (IOException e) {
             LOGGER.error("Creating event channel failed", e);
             return Status.NETWORK_ERROR;
@@ -115,11 +96,11 @@ public class DisniBenchmark extends Benchmark {
 
     @Override
     protected Status serve(InetSocketAddress bindAddress) {
-        RdmaCmEvent event;
+        ConnectionEvent event;
 
         try {
-            RdmaCmId serverId = eventChannel.createId(RdmaCm.RDMA_PS_TCP);
-            serverId.bindAddr(bindAddress);
+            ConnectionId serverId = ConnectionId.create(eventChannel, PortSpace.RDMA_PS_TCP);
+            serverId.bindAddress(bindAddress);
 
             LOGGER.info("Created connection id");
 
@@ -129,14 +110,14 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal()) {
-                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal());
+            if(event.getEventType() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST) {
+                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST);
                 return Status.NETWORK_ERROR;
             }
 
-            connectionId = event.getConnIdPriv();
+            connectionId = event.getConnectionId();
 
-            event.ackEvent();
+            eventChannel.ackConnectionEvent(event);
 
             LOGGER.info("Establishing connection");
 
@@ -146,17 +127,21 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
-                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal());
+            if(event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
+                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST);
                 return Status.NETWORK_ERROR;
             }
 
-            event.ackEvent();
+            eventChannel.ackConnectionEvent(event);
 
-            LOGGER.info("Successfully connected to {}", connectionId.getDestination());
+            LOGGER.info("Successfully connected to {}", connectionId.getDestinationAddress());
 
-            eventChannel.close();
-            serverId.destroyId();
+            eventChannel.destroyEventChannel();
+
+            // Do not destroy the connection id, as this will hang up the application for some reason.
+            // The following line can be uncommented, once this bug is fixed in the IBM SDK.
+
+            // serverId.destroy();
 
             return Status.OK;
         } catch (IOException e) {
@@ -167,25 +152,25 @@ public class DisniBenchmark extends Benchmark {
 
     @Override
     protected Status connect(InetSocketAddress bindAddress, InetSocketAddress serverAddress) {
-        RdmaCmEvent event;
+        ConnectionEvent event;
 
         try {
-            connectionId = eventChannel.createId(RdmaCm.RDMA_PS_TCP);
+            connectionId = ConnectionId.create(eventChannel, PortSpace.RDMA_PS_TCP);
 
             LOGGER.info("Created connection id");
 
             LOGGER.info("Resolving server address");
 
-            connectionId.resolveAddr(bindAddress, serverAddress, 5000);
+            connectionId.resolveAddress(bindAddress, serverAddress, 5000);
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED.ordinal()) {
-                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ADDR_RESOLVED.ordinal());
+            if(event.getEventType() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED) {
+                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ADDR_RESOLVED);
                 return Status.NETWORK_ERROR;
             }
 
-            event.ackEvent();
+            eventChannel.ackConnectionEvent(event);
 
             LOGGER.info("Resolving route");
 
@@ -193,12 +178,12 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED.ordinal()) {
-                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ROUTE_RESOLVED.ordinal());
+            if(event.getEventType() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED) {
+                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ROUTE_RESOLVED);
                 return Status.NETWORK_ERROR;
             }
 
-            event.ackEvent();
+            eventChannel.ackConnectionEvent(event);
 
             LOGGER.info("Establishing connection");
 
@@ -208,16 +193,16 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
-                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal());
+            if(event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
+                LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ESTABLISHED);
                 return Status.NETWORK_ERROR;
             }
 
-            event.ackEvent();
+            eventChannel.ackConnectionEvent(event);
 
-            LOGGER.info("Successfully connected to {}", connectionId.getDestination());
+            LOGGER.info("Successfully connected to {}", connectionId.getDestinationAddress());
 
-            eventChannel.close();
+            eventChannel.destroyEventChannel();
 
             return Status.OK;
         } catch (IOException e) {
@@ -235,15 +220,15 @@ public class DisniBenchmark extends Benchmark {
             sendScatterGatherList = new LinkedList<>();
             receiveScatterGatherList = new LinkedList<>();
 
-            IbvSge sendSge = new IbvSge();
-            sendSge.setAddr(sendMemoryRegion.getAddr());
+            ScatterGatherElement sendSge = new ScatterGatherElement();
+            sendSge.setAddress(sendMemoryRegion.getAddress());
             sendSge.setLength(sendMemoryRegion.getLength());
-            sendSge.setLkey(sendMemoryRegion.getLkey());
+            sendSge.setLocalKey(sendMemoryRegion.getLocalKey());
 
-            IbvSge receiveSge = new IbvSge();
-            receiveSge.setAddr(receiveMemoryRegion.getAddr());
+            ScatterGatherElement receiveSge = new ScatterGatherElement();
+            receiveSge.setAddress(receiveMemoryRegion.getAddress());
             receiveSge.setLength(receiveMemoryRegion.getLength());
-            receiveSge.setLkey(receiveMemoryRegion.getLkey());
+            receiveSge.setLocalKey(receiveMemoryRegion.getLocalKey());
 
             sendScatterGatherList.add(sendSge);
             receiveScatterGatherList.add(receiveSge);
@@ -261,9 +246,13 @@ public class DisniBenchmark extends Benchmark {
     protected Status cleanup() {
         try {
             verbs.destroy();
-            sendMemoryRegion.deregMr();
-            receiveMemoryRegion.deregMr();
-            connectionId.close();
+            verbs.deregisterMemoryRegion(sendMemoryRegion);
+            verbs.deregisterMemoryRegion(receiveMemoryRegion);
+
+            // Do not destroy the connection id, as this will hang up the application for some reason.
+            // The following line can be uncommented, once this bug is fixed in the IBM SDK.
+
+            // connectionId.destroy();
 
             return Status.OK;
         } catch (Exception e) {
