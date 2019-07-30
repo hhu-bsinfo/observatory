@@ -1,0 +1,48 @@
+package de.hhu.bsinfo.observatory.benchmark.result;
+
+public class OverheadMeasurement {
+
+    private long rawTotalData;
+    private double overheadData;
+    private double overheadFactor;
+
+    private double rawDataThroughput;
+    private double overheadDataThroughput;
+
+    public OverheadMeasurement(long rawTotalData, Measurement measurement) {
+        this.rawTotalData = rawTotalData;
+
+        overheadData = rawTotalData - measurement.getTotalData();
+        overheadFactor = (double) rawTotalData / (double) measurement.getTotalData();
+
+        rawDataThroughput = (double) rawTotalData / measurement.getTotalTime();
+        overheadDataThroughput = (double) (rawTotalData - measurement.getTotalData()) / measurement.getTotalTime();
+    }
+
+    public long getRawTotalData() {
+        return rawTotalData;
+    }
+
+    public double getRawDataThroughput() {
+        return rawDataThroughput;
+    }
+
+    public void setRawTotalData(long rawTotalData) {
+        this.rawTotalData = rawTotalData;
+    }
+
+    public void setRawDataThroughput(double rawDataThroughput) {
+        this.rawDataThroughput = rawDataThroughput;
+    }
+
+    @Override
+    public String toString() {
+        return "OverheadMeasurement {" +
+                "\n\t" + ValueFormatter.formatValue("rawTotalData", rawTotalData, "Byte") +
+                ",\n\t" + ValueFormatter.formatValue("overheadData", overheadData, "Byte") +
+                ",\n\t" + ValueFormatter.formatValue("overheadFactor", overheadFactor) +
+                ",\n\t" + ValueFormatter.formatValue("rawDataThroughput", rawDataThroughput, "Byte/s") +
+                ",\n\t" + ValueFormatter.formatValue("overheadDataThroughput", overheadDataThroughput, "Byte/s") +
+                "\n}";
+    }
+}

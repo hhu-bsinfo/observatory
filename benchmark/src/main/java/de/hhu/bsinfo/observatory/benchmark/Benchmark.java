@@ -1,5 +1,13 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
+import de.hhu.bsinfo.jdetector.lib.IbFabric;
+import de.hhu.bsinfo.jdetector.lib.IbPerfCounter;
+import de.hhu.bsinfo.jdetector.lib.exception.IbFileException;
+import de.hhu.bsinfo.jdetector.lib.exception.IbMadException;
+import de.hhu.bsinfo.jdetector.lib.exception.IbNetDiscException;
+import de.hhu.bsinfo.jdetector.lib.exception.IbVerbsException;
+import de.hhu.bsinfo.observatory.benchmark.config.DetectorConfig;
+import de.hhu.bsinfo.observatory.benchmark.config.DetectorConfig.MeasurementMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -34,7 +42,12 @@ public abstract class Benchmark {
     private InetSocketAddress bindAddress;
     private InetSocketAddress remoteAddress;
 
+    private DetectorConfig detectorConfig;
+
     private Socket offChannelSocket;
+
+    private IbFabric fabric;
+    private IbPerfCounter perfCounter;
 
     private final Map<String, String> parameters = new HashMap<>();
 
@@ -88,11 +101,19 @@ public abstract class Benchmark {
         return remoteAddress;
     }
 
-    void setServer(boolean server) {
+    boolean measureOverhead() {
+        return detectorConfig.isEnabled();
+    }
+
+    IbPerfCounter getPerfCounter() {
+        return perfCounter;
+    }
+
+    void setServer(final boolean server) {
         isServer = server;
     }
 
-    void setConnectionRetries(int connectionRetries) {
+    void setConnectionRetries(final int connectionRetries) {
         this.connectionRetries = connectionRetries;
     }
 
@@ -104,7 +125,33 @@ public abstract class Benchmark {
         this.remoteAddress = remoteAddress;
     }
 
+    void setDetectorConfig(final DetectorConfig detectorConfig) {
+        this.detectorConfig = detectorConfig;
+    }
+
     Status setup() {
+        if(detectorConfig.isEnabled()) {
+            LOGGER.info("Initializing jDetector");
+
+            try {
+                fabric = new IbFabric(false, detectorConfig.getMode() == MeasurementMode.COMPAT);
+            } catch (IbFileException | IbMadException | IbVerbsException | IbNetDiscException e) {
+                LOGGER.error("Unable to initialize jDetector, overhead measurements will be disabled", e);
+                return Status.UNKNOWN_ERROR;
+            }
+
+            if (fabric.getNumNodes() == 0) {
+                LOGGER.error("Fabric scanned by jDetector: 0 devices found, overhead measurements will be disabled");
+                return Status.UNKNOWN_ERROR;
+            } else {
+                LOGGER.info("Fabric scanned by jDetector: {} {} were found", fabric.getNumNodes(), fabric.getNumNodes() == 1 ? "device" : "devices");
+            }
+
+            LOGGER.info("Measuring overhead on {}", fabric.getNodes()[detectorConfig.getDeviceNumber()].getDescription());
+
+            perfCounter = fabric.getNodes()[detectorConfig.getDeviceNumber()];
+        }
+
         LOGGER.info("Setting up connection for off channel communication");
 
         if (isServer) {

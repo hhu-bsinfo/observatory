@@ -1,10 +1,11 @@
 package de.hhu.bsinfo.observatory.benchmark.result;
 
-public class Measurement implements Cloneable {
+public abstract class Measurement implements Cloneable {
 
     private final int operationCount;
     private final int operationSize;
-    private final long totalData;
+
+    private long totalData;
 
     Measurement(int operationCount, int operationSize) {
         this.operationCount = operationCount;
@@ -22,6 +23,12 @@ public class Measurement implements Cloneable {
 
     public long getTotalData() {
         return totalData;
+    }
+
+    public abstract double getTotalTime();
+
+    public void setTotalData(long totalData) {
+        this.totalData = totalData;
     }
 
     @Override

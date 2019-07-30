@@ -74,6 +74,8 @@ public class Observatory {
                     benchmark.setServer(isServer);
                     benchmark.setConnectionRetries(connectionRetries);
 
+                    benchmark.setDetectorConfig(config.getDetectorConfig());
+
                     benchmark.setBindAddress(bindAddress);
                     benchmark.setRemoteAddress(remoteAddress);
 

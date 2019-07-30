@@ -9,6 +9,10 @@ public class BenchmarkConfig {
     @Expose
     private String className;
 
+    @SerializedName("jDetector")
+    @Expose
+    private DetectorConfig detectorConfig;
+
     @SerializedName("parameters")
     @Expose
     private ParameterConfig[] parameters;
@@ -19,6 +23,10 @@ public class BenchmarkConfig {
 
     public String getClassName() {
         return className;
+    }
+
+    public DetectorConfig getDetectorConfig() {
+        return detectorConfig;
     }
 
     public ParameterConfig[] getParameters() {

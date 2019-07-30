@@ -15,6 +15,14 @@ compileJava {
 
 repositories {
     mavenCentral()
+
+    maven {
+        url "https://dl.bintray.com/hhu-bsinfo/dxram"
+    }
+
+    maven {
+        url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
+    }
 }
 
 dependencies {
@@ -23,6 +31,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.26'
     implementation 'org.jetbrains:annotations:17.0.0'
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'de.hhu.bsinfo:jdetector:0.1.0-SNAPSHOT'
 }
 
 buildConfig {
