@@ -32,72 +32,78 @@ public class Observatory {
                 String operationClassName =
                         "de.hhu.bsinfo.observatory.benchmark." + operationConfig.getName() + "Operation";
 
-                for (IterationConfig iterationConfig : operationConfig.getIterations()) {
-                    Benchmark benchmark = instantiateBenchmark(config.getClassName());
+                    for (IterationConfig iterationConfig : operationConfig.getIterations()) {
+                        for (int i = 0; i < operationConfig.getRepetitions(); i++) {
+                        Benchmark benchmark = instantiateBenchmark(config.getClassName());
 
-                    if (benchmark == null) {
-                        return;
-                    }
-
-                    Operation operation = null;
-
-                    if (mode == OperationMode.UNIDIRECTIONAL) {
-                        operation = instantiateOperation(operationClassName, benchmark,
-                                isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
-                                iterationConfig.getSize());
-                    } else if (mode == OperationMode.BIDIRECTIONAL) {
-                        Operation sendOperation = instantiateOperation(operationClassName, benchmark,
-                                Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
-
-                        Operation receiveOperation = instantiateOperation(operationClassName, benchmark,
-                                Mode.RECEIVE, iterationConfig.getCount(), iterationConfig.getSize());
-
-                        if(sendOperation == null || receiveOperation == null) {
+                        if (benchmark == null) {
                             return;
                         }
 
-                        if(!(sendOperation instanceof ThroughputOperation) || !(receiveOperation instanceof ThroughputOperation)) {
-                            LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
+                        Operation operation = null;
+
+                        if (mode == OperationMode.UNIDIRECTIONAL) {
+                            operation = instantiateOperation(operationClassName, benchmark,
+                                    isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
+                                    iterationConfig.getSize());
+                        } else if (mode == OperationMode.BIDIRECTIONAL) {
+                            Operation sendOperation = instantiateOperation(operationClassName, benchmark,
+                                    Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
+
+                            Operation receiveOperation = instantiateOperation(operationClassName, benchmark,
+                                    Mode.RECEIVE, iterationConfig.getCount(), iterationConfig.getSize());
+
+                            if (sendOperation == null || receiveOperation == null) {
+                                return;
+                            }
+
+                            if (!(sendOperation instanceof ThroughputOperation)
+                                    || !(receiveOperation instanceof ThroughputOperation)) {
+                                LOGGER.error(
+                                        "Invalid configuration: Only throughput operations may be executed bidirectionally");
+                                return;
+                            }
+
+                            operation = new BidirectionalThroughputOperation((ThroughputOperation) sendOperation,
+                                    (ThroughputOperation) receiveOperation);
+                        }
+
+                        if (operation == null) {
                             return;
                         }
 
-                        operation = new BidirectionalThroughputOperation((ThroughputOperation) sendOperation, (ThroughputOperation) receiveOperation);
+                        Arrays.stream(config.getParameters())
+                                .forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
+
+                        benchmark.setServer(isServer);
+                        benchmark.setConnectionRetries(connectionRetries);
+
+                        benchmark.setDetectorConfig(config.getDetectorConfig());
+
+                        benchmark.setBindAddress(bindAddress);
+                        benchmark.setRemoteAddress(remoteAddress);
+
+                        benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
+                        benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
+                        benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize()));
+
+                        if (operation.needsFilledReceiveQueue()) {
+                            benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                        }
+
+                        benchmark.addBenchmarkPhase(
+                                new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
+
+                        if (operation.needsFilledReceiveQueue()) {
+                            benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
+                        }
+
+                        benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
+
+                        benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
+
+                        benchmarks.add(benchmark);
                     }
-
-                    if (operation == null) {
-                        return;
-                    }
-
-                    Arrays.stream(config.getParameters())
-                            .forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
-
-                    benchmark.setServer(isServer);
-                    benchmark.setConnectionRetries(connectionRetries);
-
-                    benchmark.setDetectorConfig(config.getDetectorConfig());
-
-                    benchmark.setBindAddress(bindAddress);
-                    benchmark.setRemoteAddress(remoteAddress);
-
-                    benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
-                    benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
-                    benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize()));
-
-                    if(operation.needsFilledReceiveQueue()) {
-                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                    }
-
-                    benchmark.addBenchmarkPhase(new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
-
-                    if(operation.needsFilledReceiveQueue()) {
-                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                    }
-
-                    benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
-
-                    benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
-
-                    benchmarks.add(benchmark);
                 }
             }
         }

@@ -14,6 +14,7 @@
     {
       "name": "MessagingThroughput",
       "modes": [ "bidirectional" ],
+      "repetitions": 3,
       "iterations": [
         { "size": 1, "count": 1000000, "warmUp": 10000 },
         { "size": 2, "count": 1000000, "warmUp": 10000 },

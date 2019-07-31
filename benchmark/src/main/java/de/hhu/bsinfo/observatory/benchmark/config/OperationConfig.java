@@ -18,6 +18,10 @@ public class OperationConfig {
     @Expose
     private OperationMode[] modes;
 
+    @SerializedName("repetitions")
+    @Expose
+    private int repetitions;
+
     @SerializedName("iterations")
     @Expose
     private IterationConfig[] iterations;
@@ -28,6 +32,10 @@ public class OperationConfig {
 
     public OperationMode[] getModes() {
         return modes;
+    }
+
+    public int getRepetitions() {
+        return repetitions;
     }
 
     public IterationConfig[] getIterations() {
