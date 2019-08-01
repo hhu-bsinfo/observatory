@@ -49,6 +49,8 @@ public abstract class Benchmark {
     private IbFabric fabric;
     private IbPerfCounter perfCounter;
 
+    private String resultPath;
+
     private final Map<String, String> parameters = new HashMap<>();
 
     private final List<BenchmarkPhase> phases = new ArrayList<>();
@@ -101,6 +103,10 @@ public abstract class Benchmark {
         return remoteAddress;
     }
 
+    String getResultPath() {
+        return resultPath;
+    }
+
     boolean measureOverhead() {
         return detectorConfig.isEnabled();
     }
@@ -123,6 +129,10 @@ public abstract class Benchmark {
 
     void setRemoteAddress(final InetSocketAddress remoteAddress) {
         this.remoteAddress = remoteAddress;
+    }
+
+    void setResultPath(final String resultPath) {
+        this.resultPath = resultPath;
     }
 
     void setDetectorConfig(final DetectorConfig detectorConfig) {

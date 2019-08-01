@@ -7,6 +7,7 @@ import de.hhu.bsinfo.observatory.benchmark.config.IterationConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig.OperationMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +27,11 @@ public class Observatory {
 
     private final List<Benchmark> benchmarks = new ArrayList<>();
 
+    private boolean isServer;
+
     public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
+        this.isServer = isServer;
+
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
                 String operationClassName =
@@ -41,11 +46,14 @@ public class Observatory {
                         }
 
                         Operation operation = null;
+                        String resultPath = "";
 
                         if (mode == OperationMode.UNIDIRECTIONAL) {
                             operation = instantiateOperation(operationClassName, benchmark,
                                     isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
                                     iterationConfig.getSize());
+
+                            resultPath = ("result/" + operationConfig.getName() + "/" + (i + 1) + "/");
                         } else if (mode == OperationMode.BIDIRECTIONAL) {
                             Operation sendOperation = instantiateOperation(operationClassName, benchmark,
                                     Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
@@ -66,6 +74,8 @@ public class Observatory {
 
                             operation = new BidirectionalThroughputOperation((ThroughputOperation) sendOperation,
                                     (ThroughputOperation) receiveOperation);
+
+                            resultPath = ("result/Bidirectional" + operationConfig.getName() + "/" + (i + 1) + "/");
                         }
 
                         if (operation == null) {
@@ -82,6 +92,8 @@ public class Observatory {
 
                         benchmark.setBindAddress(bindAddress);
                         benchmark.setRemoteAddress(remoteAddress);
+
+                        benchmark.setResultPath(resultPath);
 
                         benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                         benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
@@ -110,6 +122,13 @@ public class Observatory {
     }
 
     public void start()  {
+        if(isServer) {
+            if(!deleteDirectory(new File("result/"))) {
+                LOGGER.error("Unable to delete result directory");
+                return;
+            }
+        }
+
         for(Benchmark benchmark : benchmarks) {
             LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
@@ -147,6 +166,30 @@ public class Observatory {
 
             return null;
         }
+    }
+
+    private boolean deleteDirectory(File directory) {
+        if(!directory.exists()) {
+            return true;
+        }
+
+        File[] files = directory.listFiles();
+
+        if(files != null) {
+            for(File file : files) {
+                if(file.isFile()) {
+                    if(!file.delete()) {
+                        return false;
+                    }
+                } else {
+                    if(!deleteDirectory(file)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return directory.delete();
     }
 
     public static void printBanner() {

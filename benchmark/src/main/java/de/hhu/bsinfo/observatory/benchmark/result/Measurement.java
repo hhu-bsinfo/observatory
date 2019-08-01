@@ -1,5 +1,7 @@
 package de.hhu.bsinfo.observatory.benchmark.result;
 
+import java.io.File;
+
 public abstract class Measurement implements Cloneable {
 
     private final int operationCount;

@@ -19,6 +19,9 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
         this.receiveOperation = receiveOperation;
     }
 
+    Class getOperationType() {
+        return sendOperation.getClass();
+    }
 
     @Override
     boolean needsFilledReceiveQueue() {

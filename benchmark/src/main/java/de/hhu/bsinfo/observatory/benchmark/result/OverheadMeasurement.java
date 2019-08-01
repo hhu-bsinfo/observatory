@@ -27,6 +27,18 @@ public class OverheadMeasurement {
         return rawDataThroughput;
     }
 
+    public double getOverheadData() {
+        return overheadData;
+    }
+
+    public double getOverheadFactor() {
+        return overheadFactor;
+    }
+
+    public double getOverheadDataThroughput() {
+        return overheadDataThroughput;
+    }
+
     public void setRawTotalData(long rawTotalData) {
         this.rawTotalData = rawTotalData;
     }
