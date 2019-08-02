@@ -28,7 +28,7 @@ public class ValueFormatter {
         double formattedValue = value;
 
         int counter = 0;
-        while (formattedValue > 1000 && counter < highMetricTable.length) {
+        while(formattedValue > 1000 && formattedValue != 0 && counter < highMetricTable.length - 1) {
             formattedValue /= 1000;
             counter++;
         }
@@ -44,7 +44,7 @@ public class ValueFormatter {
         double formattedValue = value;
 
         int counter = 0;
-        while (formattedValue < 1 && counter < lowMetricTable.length) {
+        while(formattedValue < 1 && formattedValue != 0 && counter < lowMetricTable.length - 1) {
             formattedValue *= 1000;
             counter++;
         }

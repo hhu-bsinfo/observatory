@@ -10,11 +10,8 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import de.hhu.bsinfo.observatory.benchmark.result.ThroughputMeasurement;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +36,7 @@ class OperationPhase extends BenchmarkPhase {
             LOGGER.error("Unable to refresh performance counters", e);
         }
 
-        if(operation instanceof BidirectionalThroughputOperation) {
+        if(operation instanceof BidirectionalThroughputOperation || operation instanceof MessagingPingPongOperation) {
             operation.setOverheadMeasurement(new OverheadMeasurement(perfCounter.getXmitDataBytes() +
                     perfCounter.getRcvDataBytes(), operation.getMeasurement()));
         } else {
@@ -116,17 +113,19 @@ class OperationPhase extends BenchmarkPhase {
                     String.valueOf(measurement.getPercentileLatency(0.9999f)));
         }
 
-        saveSingleResult(getBenchmark().getResultPath() + "/DataOverhead/" +
-                        getBenchmark().getClass().getSimpleName() + ".csv",
-                String.valueOf(operation.getOverheadMeasurement().getOverheadData()));
+        if(getBenchmark().measureOverhead()) {
+            saveSingleResult(getBenchmark().getResultPath() + "/DataOverhead/" +
+                            getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getOverheadMeasurement().getOverheadData()));
 
-        saveSingleResult(getBenchmark().getResultPath() + "/DataOverheadFactor/" +
-                        getBenchmark().getClass().getSimpleName() + ".csv",
-                String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
+            saveSingleResult(getBenchmark().getResultPath() + "/DataOverheadFactor/" +
+                            getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
 
-        saveSingleResult(getBenchmark().getResultPath() + "/ThroughputOverhead/" +
-                        getBenchmark().getClass().getSimpleName() + ".csv",
-                String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));
+            saveSingleResult(getBenchmark().getResultPath() + "/ThroughputOverhead/" +
+                            getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));
+        }
     }
 
     @Override

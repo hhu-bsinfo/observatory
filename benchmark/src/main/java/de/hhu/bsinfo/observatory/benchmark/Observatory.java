@@ -32,6 +32,16 @@ public class Observatory {
     public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
         this.isServer = isServer;
 
+        String benchmarkName = config.getClassName().substring(config.getClassName().lastIndexOf('.') + 1);
+
+        try {
+            checkOldResults(new File("result/"), benchmarkName);
+        } catch (IllegalStateException e) {
+            LOGGER.error("Found old results of '{}'", benchmarkName);
+            LOGGER.error("Use './observatory clean' to delete old results, if you do not need them anymore");
+            return;
+        }
+
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
                 String operationClassName =
@@ -53,7 +63,7 @@ public class Observatory {
                                     isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
                                     iterationConfig.getSize());
 
-                            resultPath = ("result/" + operationConfig.getName() + "/" + (i + 1) + "/");
+                            resultPath = ("result/Unidirectional" + operationConfig.getName() + "/" + (i + 1) + "/");
                         } else if (mode == OperationMode.BIDIRECTIONAL) {
                             Operation sendOperation = instantiateOperation(operationClassName, benchmark,
                                     Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
@@ -122,13 +132,6 @@ public class Observatory {
     }
 
     public void start()  {
-        if(isServer) {
-            if(!deleteDirectory(new File("result/"))) {
-                LOGGER.error("Unable to delete result directory");
-                return;
-            }
-        }
-
         for(Benchmark benchmark : benchmarks) {
             LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
@@ -168,28 +171,20 @@ public class Observatory {
         }
     }
 
-    private boolean deleteDirectory(File directory) {
-        if(!directory.exists()) {
-            return true;
-        }
+    private static void checkOldResults(File directory, String benchmarkName) throws IllegalStateException {
+        if(directory.isFile()) {
+            if(directory.getName().toLowerCase().startsWith(benchmarkName.toLowerCase())) {
+                throw new IllegalStateException("Found already existing result file '" + directory.getPath() + "'");
+            }
+        } else {
+            File[] files = directory.listFiles();
 
-        File[] files = directory.listFiles();
-
-        if(files != null) {
-            for(File file : files) {
-                if(file.isFile()) {
-                    if(!file.delete()) {
-                        return false;
-                    }
-                } else {
-                    if(!deleteDirectory(file)) {
-                        return false;
-                    }
+            if(files != null) {
+                for (File file : files) {
+                    checkOldResults(file, benchmarkName);
                 }
             }
         }
-
-        return directory.delete();
     }
 
     public static void printBanner() {

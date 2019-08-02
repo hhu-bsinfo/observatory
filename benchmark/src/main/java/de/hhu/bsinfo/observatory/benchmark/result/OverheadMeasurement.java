@@ -13,10 +13,16 @@ public class OverheadMeasurement {
         this.rawTotalData = rawTotalData;
 
         overheadData = rawTotalData - measurement.getTotalData();
+
+        // This happens, when the benchmark is executed on an ethernet connection
+        if(overheadData < 0) {
+            overheadData = 0;
+        }
+
         overheadFactor = (double) rawTotalData / (double) measurement.getTotalData();
 
         rawDataThroughput = (double) rawTotalData / measurement.getTotalTime();
-        overheadDataThroughput = (double) (rawTotalData - measurement.getTotalData()) / measurement.getTotalTime();
+        overheadDataThroughput = overheadData / measurement.getTotalTime();
     }
 
     public long getRawTotalData() {
