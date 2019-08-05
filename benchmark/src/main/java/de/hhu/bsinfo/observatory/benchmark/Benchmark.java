@@ -275,6 +275,10 @@ public abstract class Benchmark {
         } catch (IOException e) {
             LOGGER.error("Closing off channel communication failed", e);
         }
+
+        if(detectorConfig.isEnabled()) {
+            fabric.close();
+        }
     }
 
     protected abstract Status initialize();

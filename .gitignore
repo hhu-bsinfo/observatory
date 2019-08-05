@@ -107,3 +107,7 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/gradle,intellij
+
+result/
+plot/
+!benchmark/src/main/java/de/hhu/bsinfo/observatory/benchmark/plot/

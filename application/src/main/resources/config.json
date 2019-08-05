@@ -1,18 +1,18 @@
 {
-  "className": "de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark",
+  "className": "de.hhu.bsinfo.observatory.jverbs.JVerbsBenchmark",
   "parameters": [
     { "key":  "deviceNumber", "value":  0 },
     { "key":  "portNumber", "value":  1 },
     { "key": "queueSize", "value": 200 }
   ],
   "jDetector": {
-    "enabled": "true",
+    "enabled": "false",
     "deviceNumber": 0,
     "mode": "compat"
   },
   "operations": [
     {
-      "name": "MessagingLatency",
+      "name": "RdmaWriteThroughput",
       "modes": [ "unidirectional" ],
       "repetitions": 3,
       "iterations": [
@@ -40,7 +40,7 @@
       ]
     },
     {
-      "name": "MessagingPingPong",
+      "name": "RdmaWriteLatency",
       "modes": [ "unidirectional" ],
       "repetitions": 3,
       "iterations": [

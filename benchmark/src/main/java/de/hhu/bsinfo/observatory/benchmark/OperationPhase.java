@@ -45,7 +45,7 @@ class OperationPhase extends BenchmarkPhase {
         }
     }
 
-    private void saveSingleResult(String path, String value) throws IOException {
+    private void saveSingleResult(String path, String operationSize, String value) throws IOException {
         File file = new File(path);
 
         if(!file.getParentFile().exists()) {
@@ -56,11 +56,11 @@ class OperationPhase extends BenchmarkPhase {
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
 
-        if(file.length() == 0) {
-            writer.write(value);
-        } else {
-            writer.write("," + value);
+        if(file.length() > 0) {
+            writer.write(",");
         }
+
+        writer.write(operationSize + ":" + value);
 
         writer.flush();
         writer.close();
@@ -72,58 +72,71 @@ class OperationPhase extends BenchmarkPhase {
 
             saveSingleResult(getBenchmark().getResultPath() + "/OperationThroughput/" +
                     getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getOperationThroughput()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/DataThroughput/" +
                     getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getDataThroughput()));
         } else if(operation instanceof LatencyOperation) {
             LatencyMeasurement measurement = ((LatencyOperation) operation).getMeasurement();
 
             saveSingleResult(getBenchmark().getResultPath() + "/AverageLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getAverageLatency()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/MinimumLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getMinimumLatency()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/MaximumLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getMaximumLatency()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/50thLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getPercentileLatency(0.5f)));
 
             saveSingleResult(getBenchmark().getResultPath() + "/95thLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getPercentileLatency(0.95f)));
 
             saveSingleResult(getBenchmark().getResultPath() + "/99thLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getPercentileLatency(0.99f)));
 
             saveSingleResult(getBenchmark().getResultPath() + "/999thLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getPercentileLatency(0.999f)));
 
             saveSingleResult(getBenchmark().getResultPath() + "/9999thLatency/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(measurement.getOperationSize()),
                     String.valueOf(measurement.getPercentileLatency(0.9999f)));
         }
 
         if(getBenchmark().measureOverhead()) {
             saveSingleResult(getBenchmark().getResultPath() + "/DataOverhead/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getMeasurement().getOperationSize()),
                     String.valueOf(operation.getOverheadMeasurement().getOverheadData()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/DataOverheadFactor/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getMeasurement().getOperationSize()),
                     String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
 
             saveSingleResult(getBenchmark().getResultPath() + "/ThroughputOverhead/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
+                    String.valueOf(operation.getMeasurement().getOperationSize()),
                     String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));
         }
     }

@@ -2,6 +2,7 @@ package de.hhu.bsinfo.observatory.app.command;
 
 import de.hhu.bsinfo.observatory.app.Application;
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,32 +23,30 @@ public class Clean implements Callable<Void> {
     private String benchmarkName = "";
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         if(benchmarkName.isEmpty()) {
             LOGGER.error("Please specify a benchmark name or 'all' to delete all results");
             return null;
         }
 
-        if(benchmarkName.toLowerCase().equals("all")) {
-            if (deleteDirectory(new File("result/"))) {
-                LOGGER.info("Successfully delete result directory");
+        try {
+            if (benchmarkName.toLowerCase().equals("all")) {
+                deleteDirectory(new File("result/"));
             } else {
-                LOGGER.error("Unable to deleted result directory");
+                deleteResults(new File("result/"), benchmarkName.toLowerCase());
             }
-        } else {
-            if (deleteResults(new File("result/"), benchmarkName.toLowerCase())) {
-                LOGGER.info("Successfully delete result directory");
-            } else {
-                LOGGER.error("Unable to delete result directory");
-            }
+        } catch (IOException e) {
+            LOGGER.error("Unable to delete results");
+            return null;
         }
 
+        LOGGER.info("Successfully deleted results");
         return null;
     }
 
-    private boolean deleteDirectory(File directory) {
+    private void deleteDirectory(File directory) throws IOException {
         if(!directory.exists()) {
-            return true;
+            return;
         }
 
         File[] files = directory.listFiles();
@@ -55,23 +54,19 @@ public class Clean implements Callable<Void> {
         if(files != null) {
             for(File file : files) {
                 if(file.isDirectory()) {
-                    if(!deleteDirectory(file)) {
-                        return false;
-                    }
+                    deleteDirectory(file);
                 } else {
                     if(!file.delete()) {
-                        return false;
+                        throw new IOException("Unable to delete file '" + file.getPath() + "'");
                     }
                 }
             }
         }
-
-        return directory.delete();
     }
 
-    private boolean deleteResults(File directory, String benchmarkName) {
+    private void deleteResults(File directory, String benchmarkName) throws IOException {
         if(!directory.exists()) {
-            return true;
+            return;
         }
 
         File[] files = directory.listFiles();
@@ -79,19 +74,15 @@ public class Clean implements Callable<Void> {
         if(files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    if(!deleteResults(file, benchmarkName)) {
-                        return false;
-                    }
+                    deleteResults(file, benchmarkName);
                 } else {
                     if (file.getName().toLowerCase().startsWith(benchmarkName.toLowerCase())) {
                         if (!file.delete()) {
-                            return false;
+                            throw new IOException("Unable to delete file '" + file.getPath() + "'");
                         }
                     }
                 }
             }
         }
-
-        return directory.delete();
     }
 }

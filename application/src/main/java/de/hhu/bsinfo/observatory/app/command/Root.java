@@ -6,7 +6,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
     name = "observatory",
     description = "",
-    subcommands = { Benchmark.class, Clean.class }
+    subcommands = { Benchmark.class, Clean.class, Plot.class }
 )
 public class Root implements Runnable {
 
