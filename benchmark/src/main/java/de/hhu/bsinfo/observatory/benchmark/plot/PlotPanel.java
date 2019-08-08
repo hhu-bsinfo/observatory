@@ -5,6 +5,7 @@ import de.erichseifert.gral.io.plots.DrawableWriterFactory;
 import de.erichseifert.gral.plots.XYPlot;
 import de.erichseifert.gral.plots.lines.DefaultLineRenderer2D;
 import de.erichseifert.gral.plots.lines.LineRenderer;
+import de.erichseifert.gral.plots.points.PointRenderer;
 import de.erichseifert.gral.ui.InteractivePanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -95,7 +96,13 @@ public class PlotPanel extends JPanel {
                 lineRenderer.setColor(colorList.get(i));
 
                 plot.setLineRenderers(data[i], lineRenderer);
-                plot.getPointRenderers(data[i]).get(0).setColor(colorList.get(i));
+
+                PointRenderer pointRenderer = plot.getPointRenderers(data[i]).get(0);
+                pointRenderer.setColor(colorList.get(i));
+                pointRenderer.setErrorColor(colorList.get(i));
+                pointRenderer.setErrorColumnBottom(2);
+                pointRenderer.setErrorColumnTop(2);
+                pointRenderer.setErrorVisible(true);
             }
 
             InteractivePanel graphPanel = new InteractivePanel(plot);
@@ -118,11 +125,18 @@ public class PlotPanel extends JPanel {
                     plot.add(currentData);
 
                     Color color = colorMap.get(checkBox.getText());
+
                     LineRenderer lineRenderer = new DefaultLineRenderer2D();
                     lineRenderer.setColor(color);
 
                     plot.setLineRenderers(currentData, lineRenderer);
-                    plot.getPointRenderers(currentData).get(0).setColor(color);
+
+                    PointRenderer pointRenderer = plot.getPointRenderers(currentData).get(0);
+                    pointRenderer.setColor(color);
+                    pointRenderer.setErrorColor(color);
+                    pointRenderer.setErrorColumnBottom(2);
+                    pointRenderer.setErrorColumnTop(2);
+                    pointRenderer.setErrorVisible(true);
                 } else {
                     plot.remove(plotData.getData(measurement, checkBox.getText()));
                 }

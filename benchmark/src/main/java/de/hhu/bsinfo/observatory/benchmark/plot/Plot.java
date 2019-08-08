@@ -8,6 +8,7 @@ import de.erichseifert.gral.plots.XYPlot;
 import de.erichseifert.gral.data.DataSource;
 import de.erichseifert.gral.plots.axes.AxisRenderer;
 import de.erichseifert.gral.plots.axes.LogarithmicRenderer2D;
+import de.erichseifert.gral.plots.points.PointRenderer;
 import java.util.HashMap;
 import java.util.Map;
 

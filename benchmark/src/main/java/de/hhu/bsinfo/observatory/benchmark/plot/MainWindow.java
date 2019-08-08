@@ -9,8 +9,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MainWindow extends JFrame {
 
@@ -27,7 +25,7 @@ public class MainWindow extends JFrame {
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("Observatory");
-        setSize(800, 600);
+        setSize(1280, 720);
 
         setupMenu();
         setupTabs();
