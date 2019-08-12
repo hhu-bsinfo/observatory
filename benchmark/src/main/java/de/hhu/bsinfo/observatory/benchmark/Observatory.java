@@ -72,7 +72,7 @@ public class Observatory {
                                     Mode.RECEIVE, iterationConfig.getCount(), iterationConfig.getSize());
 
                             if (sendOperation == null || receiveOperation == null) {
-                                return;
+                                continue;
                             }
 
                             if (!(sendOperation instanceof ThroughputOperation)
@@ -89,7 +89,7 @@ public class Observatory {
                         }
 
                         if (operation == null) {
-                            return;
+                            continue;
                         }
 
                         Arrays.stream(config.getParameters())

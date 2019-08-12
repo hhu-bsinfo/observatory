@@ -14,6 +14,10 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
+applicationDistribution.from('../config/') {
+    into 'config/'
+}
+
 repositories {
     mavenCentral()
 

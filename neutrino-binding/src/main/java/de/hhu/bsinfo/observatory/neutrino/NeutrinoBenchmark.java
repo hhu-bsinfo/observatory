@@ -24,6 +24,14 @@ public class NeutrinoBenchmark extends Benchmark {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NeutrinoBenchmark.class);
 
+    private static final String PARAM_KEY_DEVICE_NUMBER = "deviceNumber";
+    private static final String PARAM_KEY_PORT_NUMBER = "portNumber";
+    private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
+
+    private static final int DEFAULT_DEVICE_NUMBER = 0;
+    private static final int DEFAULT_PORT_NUMBER = 1;
+    private static final int DEFAULT_QUEUE_SIZE = 100;
+
     private int queueSize;
 
     private int pendingSendCompletions;
@@ -50,9 +58,9 @@ public class NeutrinoBenchmark extends Benchmark {
 
     @Override
     protected Status initialize() {
-        int deviceNumber = getParameter("deviceNumber", 0);
-        int portNumber = getParameter("portNumber", 1);
-        queueSize = getParameter("queueSize", 100);
+        int deviceNumber = getParameter(PARAM_KEY_DEVICE_NUMBER, DEFAULT_DEVICE_NUMBER);
+        int portNumber = getParameter(PARAM_KEY_PORT_NUMBER, DEFAULT_PORT_NUMBER);
+        queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
 
         sendCompletionArray = new CompletionQueue.WorkCompletionArray(queueSize);
         receiveCompletionArray = new CompletionQueue.WorkCompletionArray(queueSize);
@@ -60,7 +68,7 @@ public class NeutrinoBenchmark extends Benchmark {
         try {
             context = new ConnectionContext(deviceNumber, portNumber, queueSize);
         } catch (IOException e) {
-            LOGGER.error("Initializing infiniband resources failed", e);
+            LOGGER.error("Initializing InfiniBand resources failed", e);
             return Status.UNKNOWN_ERROR;
         }
 

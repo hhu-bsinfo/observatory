@@ -48,7 +48,7 @@ class VerbsWrapper {
     private VerbsContext context;
 
     /**
-     * The protection domain, in which all infiniband resources will be registered.
+     * The protection domain, in which all InfiniBand resources will be registered.
      */
     private ProtectionDomain protDom;
 

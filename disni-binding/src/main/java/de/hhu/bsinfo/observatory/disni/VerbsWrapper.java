@@ -33,7 +33,7 @@ class VerbsWrapper {
     private IbvContext context;
 
     /**
-     * The protection domain, in which all infiniband resources will be registered.
+     * The protection domain, in which all InfiniBand resources will be registered.
      */
     private IbvPd protDom;
 
