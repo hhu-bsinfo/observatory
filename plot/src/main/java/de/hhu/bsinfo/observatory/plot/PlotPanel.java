@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.observatory.benchmark.plot;
+package de.hhu.bsinfo.observatory.plot;
 
 import de.erichseifert.gral.data.DataSource;
 import de.erichseifert.gral.io.plots.DrawableWriterFactory;
@@ -28,12 +28,12 @@ import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PlotPanel extends JPanel {
+class PlotPanel extends JPanel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PlotPanel.class);
 
-    private static final HashMap<String, Color> colorMap = new HashMap<>();
-    private static final Random colorRandomizer = new Random();
+    private static final HashMap<String, Color> COLOR_MAP = new HashMap<>();
+    private static final Random COLOR_RANDOMIZER = new Random();
 
     private final File dataDirectory;
 
@@ -64,11 +64,12 @@ public class PlotPanel extends JPanel {
                 if(currentData != null) {
                     dataList.add(currentData);
 
-                    if(!colorMap.containsKey(implementation)) {
-                        colorMap.put(implementation, new Color(colorRandomizer.nextFloat(), colorRandomizer.nextFloat(), colorRandomizer.nextFloat()));
+                    if(!COLOR_MAP.containsKey(implementation)) {
+                        COLOR_MAP.put(implementation, new Color(COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER
+                                .nextFloat()));
                     }
 
-                    colorList.add(colorMap.get(implementation));
+                    colorList.add(COLOR_MAP.get(implementation));
                 }
             }
 
@@ -124,7 +125,7 @@ public class PlotPanel extends JPanel {
                     DataSource currentData =  plotData.getData(measurement, checkBox.getText());
                     plot.add(currentData);
 
-                    Color color = colorMap.get(checkBox.getText());
+                    Color color = COLOR_MAP.get(checkBox.getText());
 
                     LineRenderer lineRenderer = new DefaultLineRenderer2D();
                     lineRenderer.setColor(color);

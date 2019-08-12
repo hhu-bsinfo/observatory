@@ -110,4 +110,4 @@ gradle-app.setting
 
 result/
 plot/
-!benchmark/src/main/java/de/hhu/bsinfo/observatory/benchmark/plot/
+!plot/

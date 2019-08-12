@@ -26,11 +26,11 @@
   	</Appenders>
   	<Loggers>
     	<Root level="error">
-      		<AppenderRef ref="ConsoleAsync"/>
+				<AppenderRef ref="ConsoleAsync"/>
     	</Root>
-		<Logger name="de.hhu.bsinfo" level="debug" additivity="false">
-			<AppenderRef ref="ConsoleAsync" />
-		</Logger>
+			<Logger name="de.hhu.bsinfo" level="debug" additivity="false">
+				<AppenderRef ref="ConsoleAsync" />
+			</Logger>
   	</Loggers>
 </Configuration>
 

@@ -1,5 +1,5 @@
 {
-  "className": "de.hhu.bsinfo.observatory.jverbs.JVerbsBenchmark",
+  "className": "de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark",
   "parameters": [
     { "key":  "deviceNumber", "value":  0 },
     { "key":  "portNumber", "value":  1 },
@@ -12,7 +12,35 @@
   },
   "operations": [
     {
-      "name": "RdmaWriteThroughput",
+      "name": "MessagingThroughput",
+      "modes": [ "unidirectional", "bidirectional" ],
+      "repetitions": 3,
+      "iterations": [
+        { "size": 1, "count": 1000000, "warmUp": 10000 },
+        { "size": 2, "count": 1000000, "warmUp": 10000 },
+        { "size": 4, "count": 1000000, "warmUp": 10000 },
+        { "size": 8, "count": 1000000, "warmUp": 10000 },
+        { "size": 16, "count": 1000000, "warmUp": 10000 },
+        { "size": 32, "count": 1000000, "warmUp": 10000 },
+        { "size": 64, "count": 1000000, "warmUp": 10000 },
+        { "size": 128, "count": 1000000, "warmUp": 10000 },
+        { "size": 256, "count": 1000000, "warmUp": 10000 },
+        { "size": 512, "count": 1000000, "warmUp": 10000 },
+        { "size": 1024, "count": 1000000, "warmUp": 10000 },
+        { "size": 2048, "count": 1000000, "warmUp": 10000 },
+        { "size": 4096, "count": 1000000, "warmUp": 10000 },
+        { "size": 8192, "count": 500000, "warmUp": 5000 },
+        { "size": 16384, "count": 250000, "warmUp": 5000 },
+        { "size": 32768, "count": 125000, "warmUp": 5000 },
+        { "size": 65536, "count": 62500, "warmUp": 2500 },
+        { "size": 131072, "count": 31250, "warmUp": 2500 },
+        { "size": 262144, "count": 15625, "warmUp": 2500 },
+        { "size": 524288, "count": 7812, "warmUp": 1250 },
+        { "size": 1048576, "count": 3906, "warmUp": 1250 }
+      ]
+    },
+    {
+      "name": "MessagingLatency",
       "modes": [ "unidirectional" ],
       "repetitions": 3,
       "iterations": [
@@ -40,7 +68,7 @@
       ]
     },
     {
-      "name": "RdmaWriteLatency",
+      "name": "MessagingPingPong",
       "modes": [ "unidirectional" ],
       "repetitions": 3,
       "iterations": [

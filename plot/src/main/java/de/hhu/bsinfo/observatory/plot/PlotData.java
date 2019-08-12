@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.observatory.benchmark.plot;
+package de.hhu.bsinfo.observatory.plot;
 
 import com.google.common.math.Quantiles;
 import com.google.common.math.Stats;
@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +103,7 @@ class PlotData {
         return dataMap.get(measurement).get(benchmarkName);
     }
 
+    @SuppressWarnings("unchecked")
     private DataTable generateDataTable(List<File> dataFiles) throws IOException {
         DataTable ret = new DataTable(Double.class, Double.class, Double.class);
         Map<Double, List<Double>> valueMap = new HashMap<>();

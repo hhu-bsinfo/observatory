@@ -1,7 +1,6 @@
 package de.hhu.bsinfo.observatory.app.command;
 
-import de.hhu.bsinfo.observatory.benchmark.plot.MainWindow;
-import de.hhu.bsinfo.observatory.benchmark.plot.PlotPanel;
+import de.hhu.bsinfo.observatory.plot.MainWindow;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;

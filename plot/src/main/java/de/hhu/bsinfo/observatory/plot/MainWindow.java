@@ -1,4 +1,4 @@
-package de.hhu.bsinfo.observatory.benchmark.plot;
+package de.hhu.bsinfo.observatory.plot;
 
 import java.io.File;
 import java.io.IOException;

@@ -20,7 +20,7 @@ dependencies {
 
     implementation project(':benchmark')
 
-    implementation 'org.slf4j:slf4j-api:1.7.26'
+    implementation 'org.slf4j:slf4j-api:1.7.27'
     implementation ('com.ibm.disni:disni:2.1') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     }

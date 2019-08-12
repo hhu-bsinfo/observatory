@@ -1,8 +1,6 @@
-package de.hhu.bsinfo.observatory.benchmark.plot;
+package de.hhu.bsinfo.observatory.plot;
 
-import de.erichseifert.gral.data.Column;
 import de.erichseifert.gral.data.DataSource;
-import de.erichseifert.gral.data.statistics.Statistics;
 import de.erichseifert.gral.graphics.Label;
 import de.erichseifert.gral.plots.XYPlot;
 import de.erichseifert.gral.plots.axes.AxisRenderer;
@@ -17,9 +15,11 @@ class DataThroughoutPlot extends Plot {
 
         AxisRenderer yRenderer = new LinearRenderer2D();
         Map<Double, String> yTicks = new HashMap<>();
-        Column yData = getColumnWithHighestValue(data, 1);
+        DataSource sourceHigh = getSourceWithHighestValue(data, 1, 2);
 
-        for(long i = 0; i < yData.getStatistics(Statistics.MAX) + 500000000; i += 500000000) {
+        double highestValue = (long) (getHighestValue(sourceHigh, 1, 2) / 500000000) * 500000000 + 500000001;
+
+        for(long i = 0; i < highestValue + 500000000; i += 500000000) {
             yTicks.put((double) i, ValueFormatter.formatDataThroughputValue(i));
         }
 
@@ -29,8 +29,8 @@ class DataThroughoutPlot extends Plot {
         yRenderer.setLabelDistance(5.0);
 
         setAxisRenderer(XYPlot.AXIS_Y, yRenderer);
-        getAxis(XYPlot.AXIS_Y).setMin((long) (getColumnWithLowestValue(data, 1).getStatistics(Statistics.MIN) / 500000000) * 500000000);
-        getAxis(XYPlot.AXIS_Y).setMax((long) (yData.getStatistics(Statistics.MAX) / 500000000) * 500000000 + 500000001);
+        getAxis(XYPlot.AXIS_Y).setMin(0);
+        getAxis(XYPlot.AXIS_Y).setMax(highestValue);
         getAxis(XYPlot.AXIS_Y).setAutoscaled(false);
     }
 }

@@ -30,12 +30,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':benchmark')
+    implementation project(':plot')
     implementation project(':socket-binding')
     implementation project(':disni-binding')
     implementation project(':neutrino-binding')
     implementation project(':jverbs-binding')
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.2'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'info.picocli:picocli:3.9.6'
 }
