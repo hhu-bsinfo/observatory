@@ -108,6 +108,7 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/gradle,intellij
 
+config/
 result/
 plot/
 !plot/
