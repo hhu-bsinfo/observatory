@@ -137,7 +137,7 @@ class OperationPhase extends BenchmarkPhase {
                     String.valueOf(operation.getMeasurement().getOperationSize()),
                     String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
 
-            saveSingleResult(getBenchmark().getResultPath() + "/ThroughputOverhead/" +
+            saveSingleResult(getBenchmark().getResultPath() + "/DataThroughputOverhead/" +
                             getBenchmark().getClass().getSimpleName() + ".csv",
                     String.valueOf(operation.getMeasurement().getOperationSize()),
                     String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));

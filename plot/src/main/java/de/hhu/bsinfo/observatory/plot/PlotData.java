@@ -63,7 +63,7 @@ class PlotData {
             dataMap.put(entry.getKey(), new HashMap<>());
 
             for(Entry<String, List<File>> fileEntry : entry.getValue().entrySet()) {
-                LOGGER.info("Calculating values for '{}/{}'", name, fileEntry.getKey());
+                LOGGER.info("Calculating values for '{}/{}/{}'", name, entry.getKey(), fileEntry.getKey());
 
                 String name = fileEntry.getKey().substring(0, fileEntry.getKey().lastIndexOf('.'));
                 dataMap.get(entry.getKey()).put(name, generateDataTable(fileEntry.getValue()));
@@ -134,7 +134,7 @@ class PlotData {
         for(Entry<Double, List<Double>> entry : entries) {
             double xValue = entry.getKey();
             double yValue = Quantiles.median().compute(entry.getValue());
-            double yDeviation = Stats.of(entry.getValue()).sampleStandardDeviation();
+            double yDeviation = entry.getValue().size() <= 1 ? 0 : Stats.of(entry.getValue()).sampleStandardDeviation();
 
             ret.add(xValue, yValue, yDeviation);
         }

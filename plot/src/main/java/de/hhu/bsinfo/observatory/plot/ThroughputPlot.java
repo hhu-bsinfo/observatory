@@ -8,24 +8,32 @@ import de.erichseifert.gral.plots.axes.LinearRenderer2D;
 import java.util.HashMap;
 import java.util.Map;
 
-class DataThroughoutPlot extends Plot {
+class ThroughputPlot extends Plot {
 
-    DataThroughoutPlot(DataSource... data) {
+    ThroughputPlot(String yLabel, String unit, DataSource... data) {
         super(data);
 
         AxisRenderer yRenderer = new LinearRenderer2D();
         Map<Double, String> yTicks = new HashMap<>();
         DataSource sourceHigh = getSourceWithHighestValue(data, 1, 2);
 
-        double highestValue = (long) (getHighestValue(sourceHigh, 1, 2) / 500000000) * 500000000 + 500000001;
+        double steps = 1;
 
-        for(long i = 0; i < highestValue + 500000000; i += 500000000) {
-            yTicks.put((double) i, ValueFormatter.formatDataThroughputValue(i));
+        while(getHighestValue(sourceHigh, 1, 2) / steps > 20) {
+            steps *= 10;
+        }
+
+        steps /= 2;
+
+        double highestValue = (long) (getHighestValue(sourceHigh, 1, 2) / steps) * steps + (steps + 1);
+
+        for(long i = 0; i < highestValue + steps; i += steps) {
+            yTicks.put((double) i, ValueFormatter.formatThroughputValue(i, unit));
         }
 
         yRenderer.setCustomTicks(yTicks);
         yRenderer.setTickSpacing(Long.MAX_VALUE);
-        yRenderer.setLabel(new Label("Data Throughput"));
+        yRenderer.setLabel(new Label(yLabel));
         yRenderer.setLabelDistance(5.0);
 
         setAxisRenderer(XYPlot.AXIS_Y, yRenderer);

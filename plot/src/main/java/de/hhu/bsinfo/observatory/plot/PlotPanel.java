@@ -58,15 +58,16 @@ class PlotPanel extends JPanel {
 
             LOGGER.info("Generating plot for '{}/{}'", plotData.getName(), measurement);
 
-            for(String implementation : plotData.getImplementations(measurement)) {
+            for (String implementation : plotData.getImplementations(measurement)) {
                 DataSource currentData = plotData.getData(measurement, implementation);
 
-                if(currentData != null) {
+                if (currentData != null) {
                     dataList.add(currentData);
 
-                    if(!COLOR_MAP.containsKey(implementation)) {
-                        COLOR_MAP.put(implementation, new Color(COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER
-                                .nextFloat()));
+                    if (!COLOR_MAP.containsKey(implementation)) {
+                        COLOR_MAP.put(implementation,
+                                new Color(COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER
+                                        .nextFloat()));
                     }
 
                     colorList.add(COLOR_MAP.get(implementation));
@@ -78,18 +79,28 @@ class PlotPanel extends JPanel {
 
             XYPlot plot;
 
-            if(dataDirectory.getName().toLowerCase().contains("throughput")) {
-                if(measurement.toLowerCase().startsWith("data")) {
-                    plot = new DataThroughoutPlot(data);
-                } else if(measurement.toLowerCase().startsWith("operation")) {
-                    plot = new OperationThroughputPlot(data);
+            if(measurement.equals("DataOverheadFactor")) {
+                plot = new ThroughputPlot("Data Overhead Factor", "", data);
+            } else {
+                if(dataDirectory.getName().toLowerCase().contains("throughput")) {
+                    if(measurement.equals("DataThroughput")) {
+                        plot = new ThroughputPlot("Data Throughput", "B/s", data);
+                    } else if(measurement.equals("OperationThroughput")) {
+                        plot = new ThroughputPlot("Operation Throughput", "Op/s", data);
+                    } else if(measurement.equals("DataThroughputOverhead")) {
+                        plot = new ThroughputPlot("Data Throughput Overhead", "B/s", data);
+                    } else {
+                        continue;
+                    }
+                } else if(dataDirectory.getName().toLowerCase().contains("latency")) {
+                    if(measurement.contains("Overhead")) {
+                        continue;
+                    }
+
+                    plot = new LatencyPlot(data);
                 } else {
                     continue;
                 }
-            } else if(dataDirectory.getName().toLowerCase().contains("latency")) {
-                plot = new LatencyPlot(data);
-            } else {
-                continue;
             }
 
             for(int i = 0; i < data.length; i++) {

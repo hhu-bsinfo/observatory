@@ -154,7 +154,7 @@ public abstract class Benchmark {
                 LOGGER.error("Fabric scanned by jDetector: 0 devices found, overhead measurements will be disabled");
                 return Status.UNKNOWN_ERROR;
             } else {
-                LOGGER.info("Fabric scanned by jDetector: {} {} were found", fabric.getNumNodes(), fabric.getNumNodes() == 1 ? "device" : "devices");
+                LOGGER.info("Fabric scanned by jDetector: {} {} found", fabric.getNumNodes(), fabric.getNumNodes() == 1 ? "device was" : "devices were");
             }
 
             LOGGER.info("Measuring overhead on {}", fabric.getNodes()[detectorConfig.getDeviceNumber()].getDescription());

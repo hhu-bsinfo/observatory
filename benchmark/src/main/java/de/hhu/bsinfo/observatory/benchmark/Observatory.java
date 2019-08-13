@@ -1,5 +1,6 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
+import de.hhu.bsinfo.observatory.generated.BuildConfig;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.config.BenchmarkConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig;
@@ -16,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import de.hhu.bsinfo.observatory.generated.BuildConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +26,7 @@ public class Observatory {
 
     private final List<Benchmark> benchmarks = new ArrayList<>();
 
-    private boolean isServer;
-
     public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
-        this.isServer = isServer;
-
         String benchmarkName = config.getClassName().substring(config.getClassName().lastIndexOf('.') + 1);
 
         try {
@@ -147,10 +142,10 @@ public class Observatory {
         }
     }
 
-    private static de.hhu.bsinfo.observatory.benchmark.Benchmark instantiateBenchmark(String className) {
+    private static Benchmark instantiateBenchmark(String className) {
         try {
             Class<?> clazz = Observatory.class.getClassLoader().loadClass(className);
-            return (de.hhu.bsinfo.observatory.benchmark.Benchmark) clazz.getConstructor().newInstance();
+            return (Benchmark) clazz.getConstructor().newInstance();
         } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
             LOGGER.error("Unable to create benchmark of type '{}'", className, e);
 
