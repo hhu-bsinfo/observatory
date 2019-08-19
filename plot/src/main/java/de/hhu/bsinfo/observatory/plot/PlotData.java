@@ -134,7 +134,7 @@ class PlotData {
         for(Entry<Double, List<Double>> entry : entries) {
             double xValue = entry.getKey();
             double yValue = Quantiles.median().compute(entry.getValue());
-            double yDeviation = entry.getValue().size() <= 1 ? 0 : Stats.of(entry.getValue()).sampleStandardDeviation();
+            double yDeviation = entry.getValue().size() <= 1 ? 0 : Stats.of(entry.getValue()).populationStandardDeviation();
 
             ret.add(xValue, yValue, yDeviation);
         }

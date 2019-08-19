@@ -13,7 +13,7 @@ import java.util.Map;
 
 class Plot extends XYPlot {
 
-    Plot(DataSource... data) {
+    Plot(DataSource[] data) {
         super(data);
 
         AxisRenderer xRenderer = new LogarithmicRenderer2D();
@@ -94,12 +94,12 @@ class Plot extends XYPlot {
 
     DataSource getSourceWithLowestValue(DataSource[] dataSources, int column, int deviationColumn) {
         DataSource ret = dataSources[0];
-        double lowestValue = 0;
+        Double lowestValue = null;
 
         for(DataSource dataSource : dataSources) {
-            double value = getHighestValue(dataSource, column, deviationColumn);
+            double value = getLowestValue(dataSource, column, deviationColumn);
 
-            if(value < lowestValue) {
+            if(lowestValue == null || value < lowestValue) {
                 lowestValue = value;
                 ret = dataSource;
             }

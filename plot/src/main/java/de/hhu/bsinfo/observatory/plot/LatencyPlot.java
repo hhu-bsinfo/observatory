@@ -9,7 +9,7 @@ import java.util.Map;
 
 class LatencyPlot extends Plot {
 
-    LatencyPlot(DataSource... data) {
+    LatencyPlot(DataSource[] data) {
         super(data);
 
         AxisRenderer yRenderer = new LogarithmicRenderer2D();

@@ -10,7 +10,7 @@ import java.util.Map;
 
 class ThroughputPlot extends Plot {
 
-    ThroughputPlot(String yLabel, String unit, DataSource... data) {
+    ThroughputPlot(DataSource[] data, String yLabel, String unit) {
         super(data);
 
         AxisRenderer yRenderer = new LinearRenderer2D();

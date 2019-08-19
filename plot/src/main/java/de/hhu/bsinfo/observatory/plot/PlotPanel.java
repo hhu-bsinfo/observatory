@@ -14,9 +14,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Stack;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -34,6 +36,11 @@ class PlotPanel extends JPanel {
 
     private static final HashMap<String, Color> COLOR_MAP = new HashMap<>();
     private static final Random COLOR_RANDOMIZER = new Random();
+
+    private final Stack<Color> COLORS = new Stack<Color>() {{
+        Color.decode("#8dd3c7"); Color.decode("#ffffb3"); Color.decode("#bebada"); Color.decode("#fb8072");
+        Color.decode("#80b1d3"); Color.decode("#fdb462"); Color.decode("#b3de69"); Color.decode("#fccde5");
+        Color.decode("#d9d9d9"); Color.decode("#bc80bd"); Color.decode("#ccebc5"); Color.decode("#ffed6f"); }};
 
     private final File dataDirectory;
 
@@ -65,9 +72,11 @@ class PlotPanel extends JPanel {
                     dataList.add(currentData);
 
                     if (!COLOR_MAP.containsKey(implementation)) {
-                        COLOR_MAP.put(implementation,
-                                new Color(COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER
-                                        .nextFloat()));
+                        if(COLORS.isEmpty()) {
+                            COLOR_MAP.put(implementation,new Color(COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat(), COLOR_RANDOMIZER.nextFloat()));
+                        } else {
+                            COLOR_MAP.put(implementation, COLORS.pop());
+                        }
                     }
 
                     colorList.add(COLOR_MAP.get(implementation));
@@ -80,15 +89,15 @@ class PlotPanel extends JPanel {
             XYPlot plot;
 
             if(measurement.equals("DataOverheadFactor")) {
-                plot = new ThroughputPlot("Data Overhead Factor", "", data);
+                plot = new ThroughputPlot(data, "Data Overhead Factor", "");
             } else {
                 if(dataDirectory.getName().toLowerCase().contains("throughput")) {
                     if(measurement.equals("DataThroughput")) {
-                        plot = new ThroughputPlot("Data Throughput", "B/s", data);
+                        plot = new ThroughputPlot(data, "Data Throughput", "B/s");
                     } else if(measurement.equals("OperationThroughput")) {
-                        plot = new ThroughputPlot("Operation Throughput", "Op/s", data);
+                        plot = new ThroughputPlot(data, "Operation Throughput", "Op/s");
                     } else if(measurement.equals("DataThroughputOverhead")) {
-                        plot = new ThroughputPlot("Data Throughput Overhead", "B/s", data);
+                        plot = new ThroughputPlot(data, "Data Throughput Overhead", "B/s");
                     } else {
                         continue;
                     }
@@ -211,7 +220,6 @@ class PlotPanel extends JPanel {
             tabbedPane.addTab(measurement, tabRoot);
             graphPanel.repaint();
         }
-
 
         add(BorderLayout.CENTER, tabbedPane);
     }
