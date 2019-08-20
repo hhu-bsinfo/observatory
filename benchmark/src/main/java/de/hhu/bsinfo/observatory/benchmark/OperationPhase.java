@@ -39,7 +39,7 @@ class OperationPhase extends BenchmarkPhase {
         if(operation instanceof BidirectionalThroughputOperation || operation instanceof MessagingPingPongOperation) {
             operation.setOverheadMeasurement(new OverheadMeasurement(perfCounter.getXmitDataBytes() +
                     perfCounter.getRcvDataBytes(), operation.getMeasurement()));
-        } else if(operation instanceof RdmaReadThroughputOperation) {
+        } else if(operation instanceof RdmaReadThroughputOperation || operation instanceof RdmaReadLatencyOperation) {
             operation.setOverheadMeasurement(new OverheadMeasurement(operation.getMode() == Mode.SEND ?
                     perfCounter.getRcvDataBytes() : perfCounter.getXmitDataBytes(), operation.getMeasurement()));
         } else {

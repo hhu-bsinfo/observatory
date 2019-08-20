@@ -30,7 +30,7 @@ dependencies {
     
     implementation 'org.slf4j:slf4j-api:1.7.27'
     implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'de.hhu.bsinfo:jdetector:0.1.0-SNAPSHOT'
+    implementation 'de.hhu.bsinfo:jdetector:0.1.0'
 }
 
 buildConfig {
