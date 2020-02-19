@@ -101,7 +101,7 @@ class PlotPanel extends JPanel {
                     } else {
                         continue;
                     }
-                } else if(dataDirectory.getName().toLowerCase().contains("latency")) {
+                } else if(dataDirectory.getName().toLowerCase().contains("latency") || dataDirectory.getName().toLowerCase().contains("pingpong")) {
                     if(measurement.contains("Overhead")) {
                         continue;
                     }

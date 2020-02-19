@@ -110,12 +110,17 @@ public class NeutrinoBenchmark extends Benchmark {
         sendWorkRequests = new SendWorkRequest[queueSize];
         receiveWorkRequests = new ReceiveWorkRequest[queueSize];
 
+        SendWorkRequest.Builder sendBuilder = new SendWorkRequest.Builder()
+                .withOpCode(OpCode.SEND);
+        ReceiveWorkRequest.Builder receiveBuilder = new ReceiveWorkRequest.Builder()
+                .withScatterGatherElement(receiveScatterGatherElement);
+
         for(int i = 0; i < queueSize; i++) {
-            sendWorkRequests[i] = new SendWorkRequest();
+            sendWorkRequests[i] = sendBuilder.build();
         }
 
         for(int i = 0; i < queueSize; i++) {
-            receiveWorkRequests[i] = new ReceiveWorkRequest();
+            receiveWorkRequests[i] = receiveBuilder.build();
         }
 
         try {
@@ -351,9 +356,8 @@ public class NeutrinoBenchmark extends Benchmark {
 
         for(int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(OpCode.SEND);
-            sendWorkRequests[i].setFlags(SendFlag.SIGNALED);
-            sendWorkRequests[i].setListLength(1);
-            sendWorkRequests[i].setListHandle(sendScatterGatherElement.getHandle());
+            sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
+            sendWorkRequests[i].setScatterGatherElement(sendScatterGatherElement);
 
             sendList.add(sendWorkRequests[i]);
         }
@@ -369,9 +373,6 @@ public class NeutrinoBenchmark extends Benchmark {
         receiveList.clear();
 
         for(int i = 0; i < amount; i++) {
-            receiveWorkRequests[i].setListLength(1);
-            receiveWorkRequests[i].setListHandle(receiveScatterGatherElement.getHandle());
-
             receiveList.add(receiveWorkRequests[i]);
         }
 
@@ -387,9 +388,8 @@ public class NeutrinoBenchmark extends Benchmark {
 
         for(int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(mode == RdmaMode.WRITE ? OpCode.RDMA_WRITE : OpCode.RDMA_READ);
-            sendWorkRequests[i].setFlags(SendFlag.SIGNALED);
-            sendWorkRequests[i].setListLength(1);
-            sendWorkRequests[i].setListHandle(sendScatterGatherElement.getHandle());
+            sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
+            sendWorkRequests[i].setScatterGatherElement(sendScatterGatherElement);
 
             sendWorkRequests[i].rdma.setRemoteAddress(remoteInfo.getAddress());
             sendWorkRequests[i].rdma.setRemoteKey(remoteInfo.getRemoteKey());
