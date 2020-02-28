@@ -13,6 +13,8 @@
       <module name="observatory.neutrino-bench.test" target="12" />
       <module name="observatory.neutrino.main" target="8" />
       <module name="observatory.neutrino.test" target="12" />
+      <module name="observatory.plot.main" target="8" />
+      <module name="observatory.plot.test" target="11" />
       <module name="observatory.socket.main" target="8" />
       <module name="observatory.socket.test" target="12" />
     </bytecodeTargetLevel>

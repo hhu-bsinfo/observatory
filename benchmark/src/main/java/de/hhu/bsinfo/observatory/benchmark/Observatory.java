@@ -27,16 +27,6 @@ public class Observatory {
     private final List<Benchmark> benchmarks = new ArrayList<>();
 
     public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
-        String benchmarkName = config.getClassName().substring(config.getClassName().lastIndexOf('.') + 1);
-
-        try {
-            checkOldResults(new File("result/"), benchmarkName);
-        } catch (IllegalStateException e) {
-            LOGGER.error("Found old results of '{}'", benchmarkName);
-            LOGGER.error("Use './observatory clean' to delete old results, if you do not need them anymore");
-            return;
-        }
-
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
                 String operationClassName =
@@ -163,22 +153,6 @@ public class Observatory {
             LOGGER.error("Unable to create benchmark operation of type '{}'", className, e);
 
             return null;
-        }
-    }
-
-    private static void checkOldResults(File directory, String benchmarkName) throws IllegalStateException {
-        if(directory.isFile()) {
-            if(directory.getName().toLowerCase().startsWith(benchmarkName.toLowerCase())) {
-                throw new IllegalStateException("Found already existing result file '" + directory.getPath() + "'");
-            }
-        } else {
-            File[] files = directory.listFiles();
-
-            if(files != null) {
-                for (File file : files) {
-                    checkOldResults(file, benchmarkName);
-                }
-            }
         }
     }
 

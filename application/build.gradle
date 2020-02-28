@@ -34,7 +34,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':benchmark')
-    implementation project(':plot')
     implementation project(':socket-binding')
     implementation project(':disni-binding')
     implementation project(':neutrino-binding')

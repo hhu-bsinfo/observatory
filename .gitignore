@@ -16,6 +16,7 @@
 .idea/**/webServers.xml
 .idea/**/deployment.xml
 .idea/**/.name
+.idea/**/jarRepositories.xml
 
 # Generated files
 .idea/**/contentModel.xml

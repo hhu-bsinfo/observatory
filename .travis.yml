@@ -1,4 +1,5 @@
 language: java
+os: linux
 dist: xenial
 
 stages:
@@ -22,8 +23,7 @@ before_deploy: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar --exclude-task test
 
 deploy:
   provider: releases
-  api_key: ${ACCESS_TOKEN}
-  skip_cleanup: true
+  token: ${ACCESS_TOKEN}
   file: $(ls -1 build/application/distributions/)
   on:
     repo: hhu-bsinfo/observatory
