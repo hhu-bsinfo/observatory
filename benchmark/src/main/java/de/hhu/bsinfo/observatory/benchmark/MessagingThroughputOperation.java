@@ -13,6 +13,11 @@ class MessagingThroughputOperation extends ThroughputOperation {
     }
 
     @Override
+    String getOutputFilename() {
+        return "Messaging Throughput";
+    }
+
+    @Override
     boolean needsFilledReceiveQueue() {
         return !(getMode() == Mode.SEND);
     }

@@ -27,6 +27,11 @@ public class Benchmark implements Callable<Void> {
     private String configPath;
 
     @CommandLine.Option(
+            names = {"-o", "--output"},
+            description = "Output path for the result files. If empty, observatory will save results in './result/'.")
+    private String resultPath = "./result/";
+
+    @CommandLine.Option(
         names = {"-s", "--server"},
         description = "Runs this instance in server mode.")
     private boolean isServer = false;
@@ -73,7 +78,7 @@ public class Benchmark implements Callable<Void> {
 
         LOGGER.info("Creating observatory instance");
 
-        new Observatory(config, isServer, connectionRetries, bindAddress, remoteAddress).start();
+        new Observatory(config, resultPath, isServer, connectionRetries, bindAddress, remoteAddress).start();
 
         return null;
     }

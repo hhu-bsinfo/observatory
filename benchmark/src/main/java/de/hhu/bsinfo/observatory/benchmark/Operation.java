@@ -39,6 +39,8 @@ abstract class Operation {
         this.overheadMeasurement = overheadMeasurement;
     }
 
+    abstract String getOutputFilename();
+
     abstract boolean needsFilledReceiveQueue();
 
     abstract Status warmUp(int operationCount);

@@ -64,6 +64,10 @@ public class ValueFormatter {
         }
     }
 
+    public static String formatValue(final double value) {
+        return formatValue(value, "Units");
+    }
+
     public static String formatValue(final String name, final double value, final String unit) {
         return String.format("%-20s %s", name + ":", formatValue(value, unit));
     }

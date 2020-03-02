@@ -2,6 +2,8 @@ package de.hhu.bsinfo.observatory.benchmark.result;
 
 public class LatencyMeasurement extends Measurement {
 
+    private double totalTime;
+    private double operationThroughput;
     private LatencyStatistics latencyStatistics;
 
     public LatencyMeasurement(int operationCount, int operationSize) {
@@ -18,12 +20,15 @@ public class LatencyMeasurement extends Measurement {
         latencyStatistics.stop();
     }
 
-    public void finishMeasuring() {
+    public void finishMeasuring(double timeInNanos) {
+        totalTime = timeInNanos / 1000000000d;
+
+        operationThroughput = (double) getOperationCount() / totalTime;
         latencyStatistics.sortAscending();
     }
 
     public double getTotalTime() {
-        return latencyStatistics.getTotalNs() / 1000000000;
+        return totalTime;
     }
 
     public double getAverageLatency() {
@@ -40,6 +45,10 @@ public class LatencyMeasurement extends Measurement {
 
     public double getPercentileLatency(float percentile) {
         return latencyStatistics.getPercentilesNs(percentile) / 1000000000;
+    }
+
+    public double getOperationThroughput() {
+        return operationThroughput;
     }
 
     @Override

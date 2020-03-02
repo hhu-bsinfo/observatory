@@ -8,4 +8,9 @@ public class RdmaWriteLatencyOperation extends RdmaLatencyOperation {
     RdmaWriteLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
         super(benchmark, mode, operationCount, operationSize, RdmaMode.WRITE);
     }
+
+    @Override
+    String getOutputFilename() {
+        return "RDMA Write Latency";
+    }
 }

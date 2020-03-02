@@ -8,7 +8,6 @@ import de.hhu.bsinfo.observatory.benchmark.config.IterationConfig;
 import de.hhu.bsinfo.observatory.benchmark.config.OperationConfig.OperationMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
@@ -26,11 +25,10 @@ public class Observatory {
 
     private final List<Benchmark> benchmarks = new ArrayList<>();
 
-    public Observatory(BenchmarkConfig config, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
+    public Observatory(BenchmarkConfig config, String resultPath, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
-                String operationClassName =
-                        "de.hhu.bsinfo.observatory.benchmark." + operationConfig.getName() + "Operation";
+                String operationClassName = "de.hhu.bsinfo.observatory.benchmark." + operationConfig.getName() + "Operation";
 
                     for (IterationConfig iterationConfig : operationConfig.getIterations()) {
                         for (int i = 0; i < operationConfig.getRepetitions(); i++) {
@@ -41,14 +39,11 @@ public class Observatory {
                         }
 
                         Operation operation = null;
-                        String resultPath = "";
 
                         if (mode == OperationMode.UNIDIRECTIONAL) {
                             operation = instantiateOperation(operationClassName, benchmark,
                                     isServer ? Mode.SEND : Mode.RECEIVE, iterationConfig.getCount(),
                                     iterationConfig.getSize());
-
-                            resultPath = ("result/Unidirectional" + operationConfig.getName() + "/" + (i + 1) + "/");
                         } else if (mode == OperationMode.BIDIRECTIONAL) {
                             Operation sendOperation = instantiateOperation(operationClassName, benchmark,
                                     Mode.SEND, iterationConfig.getCount(), iterationConfig.getSize());
@@ -69,17 +64,15 @@ public class Observatory {
 
                             operation = new BidirectionalThroughputOperation((ThroughputOperation) sendOperation,
                                     (ThroughputOperation) receiveOperation);
-
-                            resultPath = ("result/Bidirectional" + operationConfig.getName() + "/" + (i + 1) + "/");
                         }
 
                         if (operation == null) {
                             continue;
                         }
 
-                        Arrays.stream(config.getParameters())
-                                .forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
+                        Arrays.stream(config.getParameters()).forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
 
+                        benchmark.setResultName(config.getResultName() == null ? config.getClassName() : config.getResultName());
                         benchmark.setServer(isServer);
                         benchmark.setConnectionRetries(connectionRetries);
 
@@ -89,6 +82,7 @@ public class Observatory {
                         benchmark.setRemoteAddress(remoteAddress);
 
                         benchmark.setResultPath(resultPath);
+                        benchmark.setIterationNumber(i);
 
                         benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                         benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
@@ -98,8 +92,7 @@ public class Observatory {
                             benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
                         }
 
-                        benchmark.addBenchmarkPhase(
-                                new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
+                        benchmark.addBenchmarkPhase(new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
 
                         if (operation.needsFilledReceiveQueue()) {
                             benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));

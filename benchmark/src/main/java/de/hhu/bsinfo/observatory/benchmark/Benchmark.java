@@ -36,6 +36,9 @@ public abstract class Benchmark {
         READ, WRITE
     }
 
+    private String resultName;
+    private int iterationNumber;
+
     private boolean isServer;
     private int connectionRetries;
 
@@ -87,6 +90,10 @@ public abstract class Benchmark {
         return offChannelSocket;
     }
 
+    public String getResultName() {
+        return resultName;
+    }
+
     boolean isServer() {
         return isServer;
     }
@@ -107,12 +114,20 @@ public abstract class Benchmark {
         return resultPath;
     }
 
+    int getIterationNumber() {
+        return iterationNumber;
+    }
+
     boolean measureOverhead() {
         return detectorConfig.isEnabled();
     }
 
     IbPerfCounter getPerfCounter() {
         return perfCounter;
+    }
+
+    public void setResultName(String name) {
+        this.resultName = name;
     }
 
     void setServer(final boolean server) {
@@ -135,6 +150,10 @@ public abstract class Benchmark {
         this.resultPath = resultPath;
     }
 
+    public void setIterationNumber(int iterationNumber) {
+        this.iterationNumber = iterationNumber;
+    }
+
     void setDetectorConfig(final DetectorConfig detectorConfig) {
         this.detectorConfig = detectorConfig;
     }
@@ -146,12 +165,12 @@ public abstract class Benchmark {
             try {
                 fabric = new IbFabric(false, detectorConfig.getMode() == MeasurementMode.COMPAT);
             } catch (IbFileException | IbMadException | IbVerbsException | IbNetDiscException e) {
-                LOGGER.error("Unable to initialize jDetector, overhead measurements will be disabled", e);
+                LOGGER.error("Unable to initialize jDetector!", e);
                 return Status.UNKNOWN_ERROR;
             }
 
             if (fabric.getNumNodes() == 0) {
-                LOGGER.error("Fabric scanned by jDetector: 0 devices found, overhead measurements will be disabled");
+                LOGGER.error("Fabric scanned by jDetector: 0 devices found!");
                 return Status.UNKNOWN_ERROR;
             } else {
                 LOGGER.info("Fabric scanned by jDetector: {} {} found", fabric.getNumNodes(), fabric.getNumNodes() == 1 ? "device was" : "devices were");

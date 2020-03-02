@@ -4,7 +4,7 @@ import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
-public class RdmaLatencyOperation extends LatencyOperation {
+public abstract class RdmaLatencyOperation extends LatencyOperation {
 
     private final RdmaMode rdmaMode;
 
@@ -43,6 +43,8 @@ public class RdmaLatencyOperation extends LatencyOperation {
         Status status = Status.OK;
 
         if(getMode() == Mode.SEND) {
+            long startTime = System.nanoTime();
+
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
                 status = getBenchmark().performSingleRdmaOperation(rdmaMode);
@@ -53,7 +55,7 @@ public class RdmaLatencyOperation extends LatencyOperation {
                 }
             }
 
-            getMeasurement().finishMeasuring();
+            getMeasurement().finishMeasuring(System.nanoTime() - startTime);
         }
 
         if(!getBenchmark().synchronize()) {

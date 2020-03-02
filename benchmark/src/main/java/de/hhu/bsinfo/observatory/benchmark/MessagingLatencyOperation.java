@@ -5,8 +5,15 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 public class MessagingLatencyOperation extends LatencyOperation {
 
+    private final String OUTPUT_FILENAME = "Messaging Latency";
+
     MessagingLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
         super(benchmark, mode, operationCount, operationSize);
+    }
+
+    @Override
+    String getOutputFilename() {
+        return OUTPUT_FILENAME;
     }
 
     @Override
@@ -34,6 +41,8 @@ public class MessagingLatencyOperation extends LatencyOperation {
     @Override
     Status execute() {
         if(getMode() == Mode.SEND) {
+            long startTime = System.nanoTime();
+
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
                 Status status = getBenchmark().sendSingleMessage();
@@ -44,7 +53,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
                 }
             }
 
-            getMeasurement().finishMeasuring();
+            getMeasurement().finishMeasuring(System.nanoTime() - startTime);
 
             return Status.OK;
         } else {

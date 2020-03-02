@@ -1,7 +1,5 @@
 package de.hhu.bsinfo.observatory.benchmark.result;
 
-import java.io.File;
-
 public class ThroughputMeasurement extends Measurement {
 
     private double totalTime;

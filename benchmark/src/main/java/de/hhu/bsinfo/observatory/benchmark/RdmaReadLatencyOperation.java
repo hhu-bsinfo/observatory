@@ -8,4 +8,9 @@ public class RdmaReadLatencyOperation extends RdmaLatencyOperation {
     RdmaReadLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
         super(benchmark, mode, operationCount, operationSize, RdmaMode.READ);
     }
+
+    @Override
+    String getOutputFilename() {
+        return "RDMA Read Latency";
+    }
 }

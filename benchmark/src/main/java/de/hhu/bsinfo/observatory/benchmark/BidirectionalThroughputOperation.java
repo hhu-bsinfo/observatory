@@ -20,6 +20,11 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
     }
 
     @Override
+    String getOutputFilename() {
+        return "Bidirectional " + sendOperation.getOutputFilename();
+    }
+
+    @Override
     boolean needsFilledReceiveQueue() {
         return sendOperation.needsFilledReceiveQueue() || receiveOperation.needsFilledReceiveQueue();
     }

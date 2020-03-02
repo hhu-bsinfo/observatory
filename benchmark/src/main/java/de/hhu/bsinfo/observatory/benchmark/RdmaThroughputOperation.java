@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RdmaThroughputOperation extends ThroughputOperation {
+public abstract class RdmaThroughputOperation extends ThroughputOperation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RdmaThroughputOperation.class);
 
