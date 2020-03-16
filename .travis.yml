@@ -12,6 +12,7 @@ before_install:
   - PS1=">" ./ibm-installer.bin -i silent -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=/tmp/ibm-jdk/
 
 install:
+  - cd java
   - ./gradlew -Dibm.path=/tmp/ibm-jdk assemble
 
 jobs:
@@ -24,7 +25,7 @@ before_deploy: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar --exclude-task test
 deploy:
   provider: releases
   token: ${ACCESS_TOKEN}
-  file: $(ls -1 build/application/distributions/)
+  file: $(ls -1 java/build/application/distributions/)
   on:
     repo: hhu-bsinfo/observatory
     branch: master
