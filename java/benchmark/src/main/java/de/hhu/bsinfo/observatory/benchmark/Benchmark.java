@@ -283,7 +283,7 @@ public abstract class Benchmark {
 
             if(status != Status.OK) {
                 LOGGER.error("{} failed with status [{}]", phaseName, status);
-                System.exit(1);
+                System.exit(status.ordinal());
             }
 
             LOGGER.info("{} finished with status [{}]", phaseName, status);

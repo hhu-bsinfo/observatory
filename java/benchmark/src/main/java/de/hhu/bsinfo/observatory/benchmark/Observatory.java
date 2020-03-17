@@ -12,9 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +21,29 @@ public class Observatory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Observatory.class);
 
-    private final List<Benchmark> benchmarks = new ArrayList<>();
+    private final BenchmarkConfig config;
+    private final String resultPath;
+    private final boolean isServer;
+    private final int connectionRetries;
+    private final InetSocketAddress bindAddress;
+    private final InetSocketAddress remoteAddress;
 
     public Observatory(BenchmarkConfig config, String resultPath, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress) {
+        this.config = config;
+        this.resultPath = resultPath;
+        this.isServer = isServer;
+        this.connectionRetries = connectionRetries;
+        this.bindAddress = bindAddress;
+        this.remoteAddress = remoteAddress;
+    }
+
+    public void start() {
         for (OperationConfig operationConfig : config.getOperations()) {
             for(OperationMode mode : operationConfig.getModes()) {
                 String operationClassName = "de.hhu.bsinfo.observatory.benchmark." + operationConfig.getName() + "Operation";
 
-                    for (IterationConfig iterationConfig : operationConfig.getIterations()) {
-                        for (int i = 0; i < operationConfig.getRepetitions(); i++) {
+                for (IterationConfig iterationConfig : operationConfig.getIterations()) {
+                    for (int i = 0; i < operationConfig.getRepetitions(); i++) {
                         Benchmark benchmark = instantiateBenchmark(config.getClassName());
 
                         if (benchmark == null) {
@@ -102,27 +114,26 @@ public class Observatory {
 
                         benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
 
-                        benchmarks.add(benchmark);
+                        executeBenchmark(benchmark);
                     }
                 }
             }
         }
     }
 
-    public void start()  {
-        for(Benchmark benchmark : benchmarks) {
-            LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
+    private static void executeBenchmark(Benchmark benchmark)  {
+        LOGGER.info("Executing benchmark '{}'", benchmark.getClass().getSimpleName());
 
-            if(benchmark.setup() != Status.OK) {
-                return;
-            }
-
-            if(!benchmark.synchronize()) {
-                return;
-            }
-
-            benchmark.executePhases();
+        Status status = benchmark.setup();
+        if(status != Status.OK) {
+            System.exit(status.ordinal());
         }
+
+        if(!benchmark.synchronize()) {
+            System.exit(Status.SYNC_ERROR.ordinal());
+        }
+
+        benchmark.executePhases();
     }
 
     private static Benchmark instantiateBenchmark(String className) {
