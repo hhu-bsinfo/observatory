@@ -1,31 +1,37 @@
-language: java
 os: linux
 dist: xenial
 
-stages:
-  - name: build
-
-before_install:
-  - wget -O ibm-installer.bin http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/${IBM_SDK_VERSION}/linux/x86_64/ibm-java-sdk-$(sed -e 's/\./-/2' <<<${IBM_SDK_VERSION})-x86_64-archive.bin
-  - chmod +x ibm-installer.bin
-  - mkdir /tmp/ibm-jdk
-  - PS1=">" ./ibm-installer.bin -i silent -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=/tmp/ibm-jdk/
-
-install:
-  - cd java
-  - ./gradlew -Dibm.path=/tmp/ibm-jdk assemble
-
-jobs:
+matrix:
   include:
-    - stage: build
-      script: ./gradlew -Dibm.path=/tmp/ibm-jdk build
+    - language: java
+      before_install:
+        - wget -O ibm-installer.bin http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/${IBM_SDK_VERSION}/linux/x86_64/ibm-java-sdk-$(sed -e 's/\./-/2' <<<${IBM_SDK_VERSION})-x86_64-archive.bin
+        - chmod +x ibm-installer.bin
+        - mkdir /tmp/ibm-jdk
+        - PS1=">" ./ibm-installer.bin -i silent -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=/tmp/ibm-jdk/
+      install:
+        - cd java
+        - ./gradlew -Dibm.path=/tmp/ibm-jdk assemble
+      script: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar
+        
+    - language: cpp
+      addons:
+        apt:
+          packages:
+            - liblog4cpp5-dev
+      install:
+        - cd cpp
+        - mkdir -p build/
+        - cd build/
+        - cmake ..
+      script: make
 
-before_deploy: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar --exclude-task test
-
+before_deploy: "tar --xform s:'build':: --xform s:'application/install/observatory':: -czvf observatory-${TRAVIS_TAG}.tar.gz cpp/build/bin/observatory java/build/application/install/observatory/ python/plot.py"
+      
 deploy:
   provider: releases
   token: ${ACCESS_TOKEN}
-  file: $(ls -1 java/build/application/distributions/)
+  file: observatory-${TRAVIS_TAG}.tar.gz
   on:
     repo: hhu-bsinfo/observatory
     branch: master
