@@ -18,7 +18,10 @@ import org.slf4j.LoggerFactory;
  */
 class VerbsWrapper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VerbsWrapper.class);
+    /**
+     * Whether to optimize performance by reusing instances StatefulVerbsMethod.
+     */
+    private boolean svmOptimizations;
 
     /**
      * Connection id for the connection to the remote host.
@@ -128,7 +131,9 @@ class VerbsWrapper {
      * @param id The connection id, from which to get the context
      * @param queueSize Desired size of the queue pair and completion queue
      */
-    VerbsWrapper(RdmaCmId id, int queueSize) throws IOException {
+    VerbsWrapper(RdmaCmId id, int queueSize, boolean svmOptimizations) throws IOException {
+        this.svmOptimizations = svmOptimizations;
+
         // Get context
         connectionId = id;
         context = id.getVerbs();
@@ -197,6 +202,10 @@ class VerbsWrapper {
      * @return The stateful verbs call
      */
     private SVCPostSend getPostSendMethod(LinkedList<IbvSendWR> sendWrs) throws IOException {
+        if(!svmOptimizations) {
+            return queuePair.postSend(sendWrs, null);
+        }
+
         if(lastSend != sendWrs.size()) {
             lastSend = sendWrs.size();
 
@@ -222,6 +231,10 @@ class VerbsWrapper {
      * @return The stateful verbs call
      */
     private SVCPostRecv getPostReceiveMethod(LinkedList<IbvRecvWR> recvWrs) throws IOException {
+        if(!svmOptimizations) {
+            return queuePair.postRecv(recvWrs, null);
+        }
+
         if(lastReceive != recvWrs.size()) {
             lastReceive = recvWrs.size();
 
@@ -275,7 +288,7 @@ class VerbsWrapper {
      * @return The amount of polled work completions
      */
     int pollCompletionQueue(Mode mode) throws IOException {
-        SVCPollCq pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
+        SVCPollCq  pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
 
         if(!pollMethod.isValid()) {
             throw new IOException("PollCqMethod invalid!");

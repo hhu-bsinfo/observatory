@@ -24,8 +24,11 @@ public class JVerbsBenchmark extends Benchmark {
     private static final Logger LOGGER = LoggerFactory.getLogger(JVerbsBenchmark.class);
 
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
+    private static final String PARAM_KEY_SVM_OPTIMIZATION = "svmOptimization";
 
     private static final int DEFAULT_QUEUE_SIZE = 100;
+
+    private boolean svmOptimization;
 
     private int queueSize;
     private int pendingSendCompletions;
@@ -74,6 +77,11 @@ public class JVerbsBenchmark extends Benchmark {
     @Override
     protected Status initialize() {
         queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
+        svmOptimization = Boolean.parseBoolean(getParameter(PARAM_KEY_SVM_OPTIMIZATION, String.valueOf(true)));
+
+        if(!svmOptimization) {
+            LOGGER.warn("Optimized use of stateful verbs methods is disabled");
+        }
 
         connectionParameter = new ConnectionParameter();
 
@@ -121,7 +129,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             LOGGER.info("Establishing connection");
 
-            verbs = new VerbsWrapper(connectionId, queueSize);
+            verbs = new VerbsWrapper(connectionId, queueSize, svmOptimization);
 
             connectionId.accept(connectionParameter);
 
@@ -187,7 +195,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             LOGGER.info("Establishing connection");
 
-            verbs = new VerbsWrapper(connectionId, queueSize);
+            verbs = new VerbsWrapper(connectionId, queueSize, svmOptimization);
 
             connectionId.connect(connectionParameter);
 
