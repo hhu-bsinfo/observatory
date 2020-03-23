@@ -26,4 +26,4 @@ set(SOURCE_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} log4cpp benchmark)
+target_link_libraries(${PROJECT_NAME} log4cpp nlohmann_json::nlohmann_json benchmark)

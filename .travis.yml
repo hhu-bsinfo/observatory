@@ -19,6 +19,7 @@ matrix:
         apt:
           packages:
             - liblog4cpp5-dev
+            - nlohmann-json3-dev
       install:
         - cd cpp
         - mkdir -p build/

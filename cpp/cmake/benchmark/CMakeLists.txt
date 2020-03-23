@@ -20,6 +20,7 @@ message(STATUS "Project " ${PROJECT_NAME})
 include_directories(${OBSERVATORY_SRC_DIR})
 
 set(SOURCE_FILES
-        ${OBSERVATORY_SRC_DIR}/observatory/BuildConfig.cpp)
+        ${OBSERVATORY_SRC_DIR}/observatory/BuildConfig.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/Observatory.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
