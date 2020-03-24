@@ -16,6 +16,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+include(ExternalProject)
+
 # Set version
 execute_process(COMMAND git describe --tags --abbrev=0 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         OUTPUT_VARIABLE OBSERVATORY_VERSION ERROR_QUIET)
@@ -45,7 +47,7 @@ endif ()
 string(TIMESTAMP OBSERVATORY_BUILD_DATE "%Y-%m-%d %H:%M:%S")
 
 # Print build information
-message("OBSERVATORY ${OBSERVATORY_VERSION} - git ${OBSERVATORY_GIT_REV}(${OBSERVATORY_GIT_BRANCH}), \
+message("Observatory ${OBSERVATORY_VERSION} - git ${OBSERVATORY_GIT_REV}(${OBSERVATORY_GIT_BRANCH}), \
 build date: ${OBSERVATORY_BUILD_DATE}")
 
 # Set preprocessor defines
@@ -70,11 +72,28 @@ if (insource)
 endif ()
 
 # Set compiler-flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -I/usr/include/infiniband")
 
 # Add nlohmann_json as external project
 find_package(nlohmann_json REQUIRED)
 
+# Add detector as external project
+ExternalProject_Add(detector_git
+        GIT_REPOSITORY https://github.com/hhu-bsinfo/detector.git
+        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/detector
+        INSTALL_COMMAND "")
+
+ExternalProject_Get_Property(detector_git binary_dir)
+ExternalProject_Get_Property(detector_git source_dir)
+
+add_library(detector STATIC IMPORTED)
+set_property(TARGET detector PROPERTY IMPORTED_LOCATION ${binary_dir}/ar/libdetector.a)
+
+add_dependencies(detector detector_git)
+
+include_directories(${source_dir}/src)
+
 # Add subdirectories
-add_subdirectory(benchmark)
 add_subdirectory(observatory)
+add_subdirectory(benchmark)
+add_subdirectory(socket-binding)

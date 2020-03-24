@@ -21,6 +21,8 @@
 
 #include <log4cpp/Category.hh>
 #include <nlohmann/json.hpp>
+#include "observatory/util/SocketAddress.h"
+#include "Benchmark.h"
 
 namespace Observatory {
 
@@ -29,7 +31,7 @@ class Observatory {
 public:
 
     Observatory(nlohmann::json &config, std::string &resultPath, bool isServer, int connectionRetries,
-                std::string &bindAddress, std::string &remoteAddress);
+                SocketAddress &bindAddress, SocketAddress &remoteAddress);
 
     Observatory(const Observatory &other) = delete;
 
@@ -37,7 +39,13 @@ public:
 
     ~Observatory() = default;
 
+    static void registerPrototypes();
+
     void start();
+
+private:
+
+    static void executeBenchmark(Benchmark &benchmark);
 
 private:
 
@@ -47,8 +55,8 @@ private:
     const std::string resultPath;
     const bool isServer;
     const int connectionRetries;
-    const std::string bindAddress;
-    const std::string remoteAddress;
+    const SocketAddress bindAddress;
+    const SocketAddress remoteAddress;
 
 };
 

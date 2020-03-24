@@ -14,21 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-project(benchmark)
+project(socket-binding)
 message(STATUS "Project " ${PROJECT_NAME})
 
 include_directories(${OBSERVATORY_SRC_DIR})
 
 set(SOURCE_FILES
-        ${OBSERVATORY_SRC_DIR}/observatory/util/SocketAddress.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/util/BenchmarkFactory.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/util/BenchmarkPhaseFactory.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/phase/InitializationPhase.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/BuildConfig.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/Benchmark.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/BenchmarkPhase.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/Observatory.cpp)
+        ${OBSERVATORY_SRC_DIR}/socket-binding/Benchmark.cpp)
 
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+add_library(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json socket-binding detector ibverbs ibmad ibnetdisc)
+target_link_libraries(${PROJECT_NAME} log4cpp benchmark)

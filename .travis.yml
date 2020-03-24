@@ -1,5 +1,5 @@
 os: linux
-dist: xenial
+dist: bionic
 
 matrix:
   include:
@@ -19,12 +19,23 @@ matrix:
         apt:
           packages:
             - liblog4cpp5-dev
-            - nlohmann-json3-dev
+            - libnet1-dev
+            - libibverbs-dev
+            - libibumad-dev
+            - libibmad-dev
+            - libibnetdisc-dev
+            - libopensm-dev
+      before_install:
+        - eval "MAIN_DIR=$(pwd)"
+        - git clone https://github.com/nlohmann/json.git /tmp/cmake/nlohmann_json
+        - cd /tmp/cmake/nlohmann_json
+        - cmake .
+        - cd ${MAIN_DIR}
       install:
         - cd cpp
         - mkdir -p build/
         - cd build/
-        - cmake ..
+        - CMAKE_PREFIX_PATH=/tmp/cmake cmake ..
       script: make
 
 before_deploy: "tar --xform s:'build':: --xform s:'application/install/observatory':: -czvf observatory-${TRAVIS_TAG}.tar.gz cpp/build/bin/observatory java/build/application/install/observatory/ python/plot.py"

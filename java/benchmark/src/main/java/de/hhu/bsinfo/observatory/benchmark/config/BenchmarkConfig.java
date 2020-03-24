@@ -13,7 +13,7 @@ public class BenchmarkConfig {
     @Expose
     private String resultName;
 
-    @SerializedName("jDetector")
+    @SerializedName("detector")
     @Expose
     private DetectorConfig detectorConfig;
 

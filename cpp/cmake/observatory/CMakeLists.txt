@@ -20,8 +20,9 @@ message(STATUS "Project " ${PROJECT_NAME})
 include_directories(${OBSERVATORY_SRC_DIR})
 
 set(SOURCE_FILES
-        ${OBSERVATORY_SRC_DIR}/application/args.hxx
-        ${OBSERVATORY_SRC_DIR}/application/LoggingLayout.cpp
+        ${OBSERVATORY_SRC_DIR}/application/util/args.hxx
+        ${OBSERVATORY_SRC_DIR}/application/util/LoggingLayout.cpp
+        ${OBSERVATORY_SRC_DIR}/application/util/SocketAddressConverter.cpp
         ${OBSERVATORY_SRC_DIR}/application/Application.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})

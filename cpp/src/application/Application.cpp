@@ -22,8 +22,9 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <observatory/Observatory.h>
-#include "args.hxx"
-#include "LoggingLayout.h"
+#include <application/util/SocketAddressConverter.h>
+#include "application/util/args.hxx"
+#include "application/util/LoggingLayout.h"
 
 static const constexpr uint16_t DEFAULT_PORT = 2998;
 
@@ -41,6 +42,8 @@ int main(int argc, char **argv) {
 
     setupLogging();
 
+    Observatory::Observatory::registerPrototypes();
+
     log4cpp::Category &LOGGER = log4cpp::Category::getInstance("APPLICATION");
 
     args::ArgumentParser parser("", "");
@@ -50,8 +53,8 @@ int main(int argc, char **argv) {
 
     args::HelpFlag help(parser, "help", "Show this help menu", {'h', "help"});
     args::Flag isServer(parser, "server", "Runs this instance in server mode.", {'s', "server"});
-    args::ValueFlag<std::string> remoteAddress(parser, "remote", "The address to connect to.", {'r', "remote"});
-    args::ValueFlag<std::string> bindAddress(parser, "address", "The address to bind to.", {'a', "address"}, std::string("0.0.0.0:").append(std::to_string(DEFAULT_PORT)));
+    args::ValueFlag<Observatory::SocketAddress, SocketAddressConverter> remoteAddress(parser, "remote", "The address to connect to.", {'r', "remote"});
+    args::ValueFlag<Observatory::SocketAddress, SocketAddressConverter> bindAddress(parser, "address", "The address to bind to.", {'a', "address"}, Observatory::SocketAddress(DEFAULT_PORT));
     args::ValueFlag<std::string> configPath(parser, "config", "Path to the config JSON file. If empty, observatory will try to load 'config.json'", {'c', "config"}, "config.json");
     args::ValueFlag<std::string> resultPath(parser, "output", "Output path for the result files. If empty, observatory will save results in './result/'.", {'o', "output"}, "./result/");
     args::ValueFlag<uint32_t> connectionRetries(parser, "retries", "The amount of connection attempts.", {'t', "retries"}, 10);
