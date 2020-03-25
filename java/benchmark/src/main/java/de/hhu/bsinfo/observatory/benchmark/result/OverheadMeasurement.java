@@ -45,14 +45,6 @@ public class OverheadMeasurement {
         return overheadDataThroughput;
     }
 
-    public void setRawTotalData(long rawTotalData) {
-        this.rawTotalData = rawTotalData;
-    }
-
-    public void setRawDataThroughput(double rawDataThroughput) {
-        this.rawDataThroughput = rawDataThroughput;
-    }
-
     @Override
     public String toString() {
         return "OverheadMeasurement {" +

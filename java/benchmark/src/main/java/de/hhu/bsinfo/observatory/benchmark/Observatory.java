@@ -83,8 +83,6 @@ public class Observatory {
                         }
 
                         Arrays.stream(config.getParameters()).forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));
-
-                        benchmark.setResultName(config.getResultName() == null ? config.getClassName() : config.getResultName());
                         benchmark.setServer(isServer);
                         benchmark.setConnectionRetries(connectionRetries);
 
@@ -93,6 +91,8 @@ public class Observatory {
                         benchmark.setBindAddress(bindAddress);
                         benchmark.setRemoteAddress(remoteAddress);
 
+
+                        benchmark.setResultName(config.getResultName() == null ? config.getClassName() : config.getResultName());
                         benchmark.setResultPath(resultPath);
                         benchmark.setIterationNumber(i);
 

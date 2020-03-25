@@ -199,30 +199,26 @@ public abstract class Benchmark {
         } else {
             LOGGER.info("Connecting to server {}", remoteAddress.toString());
 
-            int attempt = 0;
-            while(true) {
+
+            for(int i = 0; i < connectionRetries && (offChannelSocket == null || !offChannelSocket.isConnected()); i++) {
                 try {
+                    Thread.sleep(1000);
+
                     offChannelSocket = new Socket(remoteAddress.getAddress(), remoteAddress.getPort(),
                             bindAddress.getAddress(), bindAddress.getPort());
-
-                    break;
                 } catch (IOException e) {
-                    if(attempt < connectionRetries) {
-                        attempt++;
+                    LOGGER.warn("Connecting to server {} failed ({})", remoteAddress, e.getMessage());
+                } catch (InterruptedException ignored) {}
+            }
 
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {}
-                    } else {
-                        LOGGER.error("Setting up off channel communication failed", e);
+            if(offChannelSocket == null || !offChannelSocket.isConnected()) {
+                LOGGER.error("Setting up off channel communication failed (Retry amount exceeded)");
 
-                        return Status.NETWORK_ERROR;
-                    }
-                }
+                return Status.NETWORK_ERROR;
             }
         }
 
-        LOGGER.info("Succesfully connected to {}", offChannelSocket.getRemoteSocketAddress());
+        LOGGER.info("Successfully connected to {}", offChannelSocket.getRemoteSocketAddress());
 
         return Status.OK;
     }

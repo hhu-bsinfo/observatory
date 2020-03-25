@@ -20,7 +20,7 @@ public class LatencyMeasurement extends Measurement {
         latencyStatistics.stop();
     }
 
-    public void finishMeasuring(double timeInNanos) {
+    public void finishMeasuring(long timeInNanos) {
         totalTime = timeInNanos / 1000000000d;
 
         operationThroughput = (double) getOperationCount() / totalTime;

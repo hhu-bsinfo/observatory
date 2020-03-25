@@ -1,7 +1,5 @@
 package de.hhu.bsinfo.observatory.benchmark.result;
 
-import java.io.File;
-
 public abstract class Measurement implements Cloneable {
 
     private final int operationCount;
@@ -37,8 +35,8 @@ public abstract class Measurement implements Cloneable {
     public String toString() {
         return "Measurement {" +
             "\n\t" + ValueFormatter.formatValue("operationCount", operationCount) +
-            ",\n\t" + ValueFormatter.formatValue("operationSize", operationSize) +
-            ",\n\t" + ValueFormatter.formatValue("totalData",totalData) +
+            ",\n\t" + ValueFormatter.formatValue("operationSize", operationSize, "Byte") +
+            ",\n\t" + ValueFormatter.formatValue("totalData", totalData, "Byte") +
             "\n}";
     }
 }
