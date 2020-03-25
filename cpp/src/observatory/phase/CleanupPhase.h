@@ -14,25 +14,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_INITIALIZATIONPHASE_H
-#define OBSERVATORY_INITIALIZATIONPHASE_H
+#ifndef OBSERVATORY_CLEANUPPHASE_H
+#define OBSERVATORY_CLEANUPPHASE_H
 
 #include <memory>
 #include "observatory/BenchmarkPhase.h"
 
 namespace Observatory {
 
-class InitializationPhase : public BenchmarkPhase {
+class CleanupPhase : public BenchmarkPhase {
 
 public:
 
-    explicit InitializationPhase(Benchmark &benchmark);
+    explicit CleanupPhase(Benchmark &benchmark);
 
-    InitializationPhase(const InitializationPhase &other) = delete;
+    CleanupPhase(const CleanupPhase &other) = delete;
 
-    InitializationPhase& operator=(const InitializationPhase &other) = delete;
+    CleanupPhase& operator=(const CleanupPhase &other) = delete;
 
-    ~InitializationPhase() override = default;
+    ~CleanupPhase() override = default;
 
     const char* getName() override;
 

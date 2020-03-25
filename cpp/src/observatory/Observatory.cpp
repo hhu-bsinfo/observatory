@@ -1,5 +1,11 @@
 #include <socket-binding/Benchmark.h>
-#include "util/BenchmarkFactory.h"
+#include <observatory/phase/ConnectionPhase.h>
+#include <observatory/phase/PreparationPhase.h>
+#include <observatory/phase/FillReceiveQueuePhase.h>
+#include <observatory/phase/WarmupPhase.h>
+#include <observatory/phase/OperationPhase.h>
+#include <observatory/phase/CleanupPhase.h>
+#include "observatory/util/Factory.h"
 #include "observatory/phase/InitializationPhase.h"
 #include "Observatory.h"
 
@@ -16,12 +22,10 @@ Observatory::Observatory(nlohmann::json &config, std::string &resultPath, bool i
 
 void Observatory::registerPrototypes() {
     BENCHMARK_REGISTER(Socket::Benchmark)
-
-    BENCHMARK_PHASE_REGISTER(InitializationPhase)
 }
 
 void Observatory::start() {
-    std::string benchmarkClassName = config["className"];
+    const std::string &benchmarkClassName = config["className"];
 
     for(const auto &operationConfig : config["operations"]) {
         for(const auto &mode : operationConfig["modes"]) {
@@ -29,8 +33,47 @@ void Observatory::start() {
 
             for(const auto &iterationConfig : operationConfig["iterations"]) {
                 for(int i = 0; i < operationConfig["repetitions"]; i++) {
-                    auto *benchmark = BenchmarkFactory::newInstance(benchmarkClassName);
+                    std::unique_ptr<Benchmark> benchmark = BENCHMARK_FACTORY.newInstance(benchmarkClassName);
+
+                    if(benchmark == nullptr) {
+                        return;
+                    }
+
+                    std::unique_ptr<Operation> operation;
+
+                    for(const auto &parameter : config["parameters"]) {
+                        benchmark->setParameter(parameter["key"], parameter["value"]);
+                    }
+
+                    benchmark->setServer(isServer);
+                    benchmark->setConnectionRetries(connectionRetries);
+
                     benchmark->setDetectorConfig(config["detector"]);
+
+                    benchmark->setBindAddress(bindAddress);
+                    benchmark->setRemoteAddress(remoteAddress);
+
+                    benchmark->setResultName(config["resultName"].empty() ? config["className"] : config["resultName"]);
+                    benchmark->setResultPath(resultPath);
+                    benchmark->setIterationNumber(i);
+
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new InitializationPhase(*benchmark)));
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new ConnectionPhase(*benchmark)));
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new PreparationPhase(*benchmark, iterationConfig["size"])));
+
+                    /*if(operation->needsFilledReceiveQueue()) {
+                        benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark)));
+                    }
+
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new WarmupPhase(*benchmark, *operation, static_cast<uint32_t>(iterationConfig["warmUp"]))));
+
+                    if(operation->needsFilledReceiveQueue()) {
+                        benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark)));
+                    }
+
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new OperationPhase(*benchmark, *operation)));*/
+
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new CleanupPhase(*benchmark)));
 
                     executeBenchmark(*benchmark);
                 }
@@ -40,13 +83,13 @@ void Observatory::start() {
 }
 
 void Observatory::executeBenchmark(Benchmark &benchmark) {
-    Result::Status status = benchmark.setup();
-    if(status != Result::Status::OK) {
-        exit(Result::Status::OK);
+    Status status = benchmark.setup();
+    if(status != Status::OK) {
+        exit(status);
     }
 
-    if(benchmark.synchronize()) {
-        exit(Result::Status::OK);
+    if(!benchmark.synchronize()) {
+        exit(Status::SYNC_ERROR);
     }
 
     benchmark.executePhases();

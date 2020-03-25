@@ -19,11 +19,13 @@
 #ifndef OBSERVATORY_STATUS_H
 #define OBSERVATORY_STATUS_H
 
-namespace Observatory::Result {
+namespace Observatory {
 
 enum Status {
     OK, NOT_IMPLEMENTED, SYNC_ERROR, NETWORK_ERROR, FILE_ERROR, UNKNOWN_ERROR
 };
+
+extern const char* getStatusString(Status status);
 
 }
 

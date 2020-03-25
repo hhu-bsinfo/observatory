@@ -20,6 +20,7 @@
 #define OBSERVATORY_INETSOCKETADDRESS_H
 
 #include <string>
+#include <netinet/in.h>
 
 namespace Observatory {
 
@@ -29,34 +30,34 @@ public:
 
     SocketAddress() = default;
 
-    SocketAddress(std::string &address, uint16_t port);
-
-    explicit SocketAddress(std::string &address);
+    SocketAddress(const std::string &hostname, uint16_t port);
 
     explicit SocketAddress(uint16_t port);
 
-    SocketAddress(const SocketAddress &other);
+    explicit SocketAddress(const sockaddr_in &address);
+
+    SocketAddress(const SocketAddress &other) = default;
 
     SocketAddress &operator=(const SocketAddress &other);
 
     ~SocketAddress() = default;
 
-    std::string getAddress() const;
+    const char* getHostname() const;
 
     uint16_t getPort() const;
 
-    void setAddress(std::string &address);
-
-    void setPort(uint16_t port);
+    sockaddr_in getAddress() const;
 
     explicit operator std::string() const;
 
-    friend std::ostream& operator<<(std::ostream &os, const SocketAddress &o);
-
 private:
 
-    std::string address;
+    static const constexpr char *DEFAULT_ADDRESS = "0.0.0.0";
+
+    std::string hostname;
     uint16_t port{};
+
+    sockaddr_in address{};
 
 };
 

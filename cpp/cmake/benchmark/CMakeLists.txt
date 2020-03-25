@@ -21,12 +21,18 @@ include_directories(${OBSERVATORY_SRC_DIR})
 
 set(SOURCE_FILES
         ${OBSERVATORY_SRC_DIR}/observatory/util/SocketAddress.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/util/BenchmarkFactory.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/util/BenchmarkPhaseFactory.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/Status.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/InitializationPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/ConnectionPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/PreparationPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/FillReceiveQueuePhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/WarmupPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/OperationPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/CleanupPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/BuildConfig.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/Benchmark.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/BenchmarkPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/Operation.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/Observatory.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

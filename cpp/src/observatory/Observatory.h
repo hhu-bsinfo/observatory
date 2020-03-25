@@ -49,7 +49,7 @@ private:
 
 private:
 
-    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("OBSERVATORY");
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("Observatory");
 
     const nlohmann::json config;
     const std::string resultPath;

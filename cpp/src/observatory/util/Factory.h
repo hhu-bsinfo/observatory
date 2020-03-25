@@ -14,15 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_BENCHMARKFACTORY_H
-#define OBSERVATORY_BENCHMARKFACTORY_H
+#ifndef OBSERVATORY_FACTORY_H
+#define OBSERVATORY_FACTORY_H
 
-#define BENCHMARK_IMPLEMENT_CLONE(TYPE) Observatory::Benchmark* clone() const override { return new TYPE(*this); }
-#define BENCHMARK_REGISTER(TYPE) BenchmarkFactory::registerPrototype(new TYPE());
+#define IMPLEMENT_CLONE(TYPE) TYPE* clone() const override { return new TYPE(*this); }
+#define BENCHMARK_REGISTER(TYPE) BENCHMARK_FACTORY.registerPrototype(new TYPE());
 
 #include <string>
 #include <map>
 #include <observatory/Benchmark.h>
+#include <observatory/Operation.h>
 
 namespace Observatory {
 
@@ -30,64 +31,81 @@ namespace Observatory {
  * Implementation of the prototype pattern, based on
  * http://www.cs.sjsu.edu/faculty/pearce/modules/lectures/oop/types/reflection/prototype.htm
  */
-class BenchmarkFactory {
+template<class T>
+class Factory {
 
 public:
 
     /**
      * Constructor.
      */
-    BenchmarkFactory() = delete;
+    Factory() = default;
 
     /**
      * Copy constructor.
      */
-    BenchmarkFactory(const BenchmarkFactory &other) = delete;
+    Factory(const Factory &other) = delete;
 
     /**
      * Assignment operator.
      */
-    BenchmarkFactory& operator=(const BenchmarkFactory &other) = delete;
+    Factory& operator=(const Factory &other) = delete;
 
     /**
      * Destructor.
      */
-    virtual ~BenchmarkFactory() = delete;
+    ~Factory() = default;
 
     /**
-     * Create a new instance of a given benchmark type.
+     * Create a new instance of a given prototype.
      * Throws an exception, if the type is unknown.
      *
      * @param type The type
      *
-     * @return A pointer to newly created instance
+     * @return A pointer to the newly created instance
      */
-    static Benchmark *newInstance(std::string &type);
+    std::unique_ptr<T> newInstance(const std::string &type) {
+        if(prototypeTable.count(type)) {
+            return std::unique_ptr<T>(prototypeTable[type]->clone());
+        }
+
+        throw std::runtime_error("No prototype registered for '" + type + "'!");
+    }
 
     /**
-     * Add a benchmark type.
+     * Add a prototype.
      * Instances of this type can then be created by calling 'BenchmarkFactory::newInstance(type)'.
      *
      * @param type The type
      * @param prototype Instance, that will be used as a prototype for further instances
      */
-    static void registerPrototype(Benchmark *prototype);
+    void registerPrototype(T *prototype) {
+        prototypeTable[prototype->getClassName()] = prototype;
+    }
 
     /**
-     * Remove a benchmark type.
+     * Remove a prototype.
      *
      * @param type The type
      */
-    static void deregisterPrototype(std::string &type);
+    void deregisterPrototype(const std::string &type) {
+        if(prototypeTable.count(type)) {
+            delete prototypeTable.at(type);
+            prototypeTable.erase(type);
+        }
+    }
 
 private:
 
     /**
      * Contains prototypes for all available implementations.
      */
-    static std::map<std::string, Benchmark*> PROTOTYPE_TABLE;
+    std::map<std::string, T*> prototypeTable;
 
 };
+
+static Factory<Observatory::Benchmark> BENCHMARK_FACTORY;
+static Factory<Observatory::Operation> OPERATION_FACTORY;
 
 }
 

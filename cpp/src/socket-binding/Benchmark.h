@@ -20,7 +20,7 @@
 #define OBSERVATORY_SOCKETBENCHMARK_H
 
 #include <observatory/Benchmark.h>
-#include <observatory/util/BenchmarkFactory.h>
+#include <observatory/util/Factory.h>
 
 namespace Socket {
 
@@ -36,35 +36,41 @@ public:
 
     ~Benchmark() override = default;
 
-    BENCHMARK_IMPLEMENT_CLONE(Socket::Benchmark);
+    IMPLEMENT_CLONE(Socket::Benchmark);
 
-    std::string getClassName() const override ;
+    const char* getClassName() const override ;
 
-    Observatory::Result::Status initialize() override;
+    Observatory::Status initialize() override;
 
-    Observatory::Result::Status isServer(std::string &bindAddress) override;
+    Observatory::Status isServer() override;
 
-    Observatory::Result::Status connect(std::string &bindAddress, std::string &remoteAddress) override;
+    Observatory::Status serve(Observatory::SocketAddress &bindAddress) override;
 
-    Observatory::Result::Status prepare(uint32_t operationSize) override;
+    Observatory::Status connect(Observatory::SocketAddress &bindAddress, Observatory::SocketAddress &remoteAddress) override;
 
-    Observatory::Result::Status cleanup() override;
+    Observatory::Status prepare(uint32_t operationSize) override;
 
-    Observatory::Result::Status fillReceiveQueue() override;
+    Observatory::Status cleanup() override;
 
-    Observatory::Result::Status sendMultipleMessage(uint32_t messageCount) override;
+    Observatory::Status fillReceiveQueue() override;
 
-    Observatory::Result::Status receiveMultipleMessage(uint32_t messageCount) override;
+    Observatory::Status sendMultipleMessage(uint32_t messageCount) override;
 
-    Observatory::Result::Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) override;
+    Observatory::Status receiveMultipleMessage(uint32_t messageCount) override;
 
-    Observatory::Result::Status sendSingleMessage() override;
+    Observatory::Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) override;
 
-    Observatory::Result::Status performSingleRdmaOperation(RdmaMode mode) override;
+    Observatory::Status sendSingleMessage() override;
 
-    Observatory::Result::Status performPingPongIterationServer() override;
+    Observatory::Status performSingleRdmaOperation(RdmaMode mode) override;
 
-    Observatory::Result::Status performPingPongIterationClient() override;
+    Observatory::Status performPingPongIterationServer() override;
+
+    Observatory::Status performPingPongIterationClient() override;
+
+private:
+
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance(getClassName());
     
 };
 

@@ -14,32 +14,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_INITIALIZATIONPHASE_H
-#define OBSERVATORY_INITIALIZATIONPHASE_H
+#ifndef OBSERVATORY_OPERATIONPHASE_H
+#define OBSERVATORY_OPERATIONPHASE_H
 
-#include <memory>
+#include <log4cpp/Category.hh>
+#include <observatory/Operation.h>
 #include "observatory/BenchmarkPhase.h"
 
 namespace Observatory {
 
-class InitializationPhase : public BenchmarkPhase {
+class OperationPhase : public BenchmarkPhase {
 
 public:
 
-    explicit InitializationPhase(Benchmark &benchmark);
+    OperationPhase(Benchmark &benchmark, Operation &operation);
 
-    InitializationPhase(const InitializationPhase &other) = delete;
+    OperationPhase(const OperationPhase &other) = delete;
 
-    InitializationPhase& operator=(const InitializationPhase &other) = delete;
+    OperationPhase& operator=(const OperationPhase &other) = delete;
 
-    ~InitializationPhase() override = default;
+    ~OperationPhase() override = default;
 
     const char* getName() override;
 
     Status execute() override;
 
+private:
+
+    void calculateOverhead();
+
+    void saveSingleResult(std::string &path, std::string &operationSize, std::map<std::string, std::string> &valueMap);
+
+    void saveResults();
+
+private:
+
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("OperationPhase");
+
+    Operation &operation;
+
 };
 
 }
-
 #endif

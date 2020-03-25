@@ -26,8 +26,12 @@ void SocketAddressConverter::operator()(const std::string &name, const std::stri
         throw std::runtime_error("Invalid connection string specified");
     }
 
-    std::string defaultAddress(DEFAULT_ADDRESS);
+    std::string &hostname = splitAddress[0];
+    uint16_t port = DEFAULT_PORT;
 
-    destination.setAddress(splitAddress[0].empty() ? defaultAddress : splitAddress[0]);
-    destination.setPort(splitAddress.size() == 1 ? DEFAULT_PORT: std::stoi(splitAddress[1]));
+    if(splitAddress.size() > 1) {
+        port = std::stoi(splitAddress[1]);
+    }
+
+    destination = Observatory::SocketAddress(hostname, port);
 }

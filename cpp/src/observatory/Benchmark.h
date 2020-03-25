@@ -44,25 +44,25 @@ public:
 
     Benchmark() = default;
 
-    Benchmark(const Benchmark &other);
+    Benchmark(const Benchmark &other) = default;
 
     Benchmark& operator=(const Benchmark &other) = delete;
 
     virtual ~Benchmark() = default;
 
-    void addBenchmarkPhase(BenchmarkPhase &phase);
+    void addBenchmarkPhase(const std::shared_ptr<BenchmarkPhase>& phase);
 
-    void setParameter(std::string &key, std::string &value);
+    void setParameter(const std::string &key, const std::string &value);
 
-    const std::string& getParameter(std::string &key, std::string &defaultValue) const;
+    const std::string& getParameter(const std::string &key, const std::string &defaultValue) const;
 
-    uint8_t getParameter(std::string &key, uint8_t defaultValue) const;
+    uint8_t getParameter(const std::string &key, uint8_t defaultValue) const;
 
-    uint16_t getParameter(std::string &key, uint16_t defaultValue) const;
+    uint16_t getParameter(const std::string &key, uint16_t defaultValue) const;
 
-    uint32_t getParameter(std::string &key, uint32_t defaultValue) const;
+    uint32_t getParameter(const std::string &key, uint32_t defaultValue) const;
 
-    uint64_t getParameter(std::string &key, uint64_t defaultValue) const;
+    uint64_t getParameter(const std::string &key, uint64_t defaultValue) const;
 
     int getOffChannelSocket() const;
 
@@ -84,55 +84,59 @@ public:
 
     Detector::IbPerfCounter& getPerfCounter();
 
-    void setResultName(std::string &resultName);
+    void setResultName(const std::string &resultName);
 
-    void setConnectionRetires(uint32_t connectionRetries);
+    void setServer(bool isServer);
 
-    void setBindAddress(SocketAddress &bindAddress);
+    void setConnectionRetries(uint32_t connectionRetries);
 
-    void setRemoteAddress(SocketAddress &remoteAddress);
+    void setBindAddress(const SocketAddress &bindAddress);
 
-    void setResultPath(std::string &resultPath);
+    void setRemoteAddress(const SocketAddress &remoteAddress);
+
+    void setResultPath(const std::string &resultPath);
 
     void setIterationNumber(uint32_t iterationNumber);
 
     void setDetectorConfig(const nlohmann::json &detectorConfig);
 
-    Result::Status setup();
+    Status setup();
 
     bool synchronize();
 
     void executePhases();
 
-    virtual std::string getClassName() const = 0;
+    virtual const char* getClassName() const = 0;
 
     virtual Observatory::Benchmark* clone() const = 0;
 
-    virtual Result::Status initialize() = 0;
+    virtual Status initialize() = 0;
 
-    virtual Result::Status isServer(std::string &bindAddress) = 0;
+    virtual Status isServer() = 0;
 
-    virtual Result::Status connect(std::string &bindAddress, std::string &remoteAddress) = 0;
+    virtual Status serve(SocketAddress &bindAddress) = 0;
 
-    virtual Result::Status prepare(uint32_t operationSize) = 0;
+    virtual Status connect(SocketAddress &bindAddress, SocketAddress &remoteAddress) = 0;
 
-    virtual Result::Status cleanup() = 0;
+    virtual Status prepare(uint32_t operationSize) = 0;
 
-    virtual Result::Status fillReceiveQueue() = 0;
+    virtual Status cleanup() = 0;
 
-    virtual Result::Status sendMultipleMessage(uint32_t messageCount) = 0;
+    virtual Status fillReceiveQueue() = 0;
 
-    virtual Result::Status receiveMultipleMessage(uint32_t messageCount) = 0;
+    virtual Status sendMultipleMessage(uint32_t messageCount) = 0;
 
-    virtual Result::Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) = 0;
+    virtual Status receiveMultipleMessage(uint32_t messageCount) = 0;
 
-    virtual Result::Status sendSingleMessage() = 0;
+    virtual Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) = 0;
 
-    virtual Result::Status performSingleRdmaOperation(RdmaMode mode) = 0;
+    virtual Status sendSingleMessage() = 0;
 
-    virtual Result::Status performPingPongIterationServer() = 0;
+    virtual Status performSingleRdmaOperation(RdmaMode mode) = 0;
 
-    virtual Result::Status performPingPongIterationClient() = 0;
+    virtual Status performPingPongIterationServer() = 0;
+
+    virtual Status performPingPongIterationClient() = 0;
 
 private:
 
@@ -144,7 +148,7 @@ private:
 
     static const constexpr char *SYNC_SIGNAL = "SYNC";
 
-    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("BENCHMARK");
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("Benchmark");
 
     std::string resultName;
     uint32_t iterationNumber{};
@@ -159,13 +163,13 @@ private:
 
     int offChannelSocket{};
 
-    Detector::IbFabric *fabric{};
+    std::shared_ptr<Detector::IbFabric> fabric;
     Detector::IbPerfCounter *perfCounter{};
 
     std::string resultPath;
 
     std::map<std::string, std::string> parameters;
-    std::vector<BenchmarkPhase*> phases;
+    std::vector<std::shared_ptr<BenchmarkPhase>> phases;
 
 };
 

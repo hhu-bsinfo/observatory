@@ -34,7 +34,6 @@ private:
 
 private:
 
-    static const constexpr char *DEFAULT_ADDRESS = "0.0.0.0";
     static const constexpr uint16_t DEFAULT_PORT = 2998;
 
 };

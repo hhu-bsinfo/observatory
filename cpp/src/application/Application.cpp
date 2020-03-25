@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 
     Observatory::Observatory::registerPrototypes();
 
-    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("APPLICATION");
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("Application");
 
     args::ArgumentParser parser("", "");
     parser.LongPrefix("--");
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
         std::cout << parser;
         return 0;
     } catch(const args::Completion &e) {
-        LOGGER.error("Unable to parse arguments\n\033[0m %s\n", e.what());
+        LOGGER.error("Unable to parse arguments\n\033[0m %s", e.what());
         return 1;
     } catch(const args::ParseError &e) {
         std::ostringstream stream;
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if(isServer && !remoteAddress) {
+    if(!isServer && !remoteAddress) {
         LOGGER.error("Please specify the server address");
         return 1;
     }
@@ -105,10 +105,10 @@ int main(int argc, char **argv) {
 
     LOGGER.info("Creating observatory instance");
 
-    Observatory::Observatory observatory(benchmarkConfig, resultPath.Get(), isServer, connectionRetries.Get(),
-            bindAddress.Get(), remoteAddress.Get());
+    auto observatory = std::unique_ptr<Observatory::Observatory>(new Observatory::Observatory(benchmarkConfig, resultPath.Get(),
+            isServer, connectionRetries.Get(),bindAddress.Get(), remoteAddress.Get()));
 
-    observatory.start();
+    observatory->start();
 
     return 0;
 }

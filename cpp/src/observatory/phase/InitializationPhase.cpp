@@ -1,15 +1,18 @@
 #include "InitializationPhase.h"
+#include <observatory/Benchmark.h>
+
+#include <utility>
 
 namespace Observatory {
 
 InitializationPhase::InitializationPhase(Benchmark &benchmark) :
         BenchmarkPhase(benchmark) {}
 
-std::string InitializationPhase::getClassName() const {
-    return "Observatory::InitializationPhase";
+const char* InitializationPhase::getName() {
+    return "InitializationPhase";
 }
 
-Result::Status InitializationPhase::execute() {
+Status InitializationPhase::execute() {
     return getBenchmark().setup();
 }
 

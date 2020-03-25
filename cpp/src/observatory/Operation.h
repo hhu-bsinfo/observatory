@@ -16,37 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_BENCHMARKPHASE_H
-#define OBSERVATORY_BENCHMARKPHASE_H
+#ifndef OBSERVATORY_OPERATION_H
+#define OBSERVATORY_OPERATION_H
 
-#include <string>
-#include "result/Status.h"
+#include "Benchmark.h"
 
 namespace Observatory {
 
-class Benchmark;
-
-class BenchmarkPhase {
+class Operation {
 
 public:
 
-    explicit BenchmarkPhase(Benchmark &benchmark);
+    virtual std::string getOutputFilename() const = 0;
 
-    BenchmarkPhase(const BenchmarkPhase &other) = delete;
+    virtual bool needsFilledReceiveQueue() const = 0;
 
-    BenchmarkPhase& operator=(const BenchmarkPhase &other) = delete;
-
-    virtual ~BenchmarkPhase() = default;
-
-    Benchmark& getBenchmark() const;
-
-    virtual const char* getName() = 0;
+    virtual Status warmup(int operationCount) = 0;
 
     virtual Status execute() = 0;
-
-private:
-
-    Benchmark &benchmark;
 
 };
 

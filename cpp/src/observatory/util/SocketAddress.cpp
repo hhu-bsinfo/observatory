@@ -1,21 +1,41 @@
 #include <sstream>
+#include <libnet.h>
+#include <cstring>
 #include "SocketAddress.h"
 
 namespace Observatory {
 
-SocketAddress::SocketAddress(std::string &address, uint16_t port) :
-        address(address),
-        port(port) {}
+SocketAddress::SocketAddress(const std::string &hostname, uint16_t port) :
+        hostname(hostname),
+        port(port) {
+    address.sin_family = AF_INET;
+    address.sin_port = htons(port);
 
-SocketAddress::SocketAddress(std::string &address) :
-        address(address) {}
+    if(inet_pton(AF_INET, hostname.c_str(), &address.sin_addr) <= 0) {
+        throw std::runtime_error("Invalid address '" + hostname + "'");
+    }
+}
 
 SocketAddress::SocketAddress(uint16_t port) :
-        port(port) {}
+        hostname(DEFAULT_ADDRESS),
+        port(port) {
+    address.sin_family = AF_INET;
+    address.sin_family = INADDR_ANY;
+    address.sin_port = htons(port);
+}
 
-SocketAddress::SocketAddress(const SocketAddress &other) {
-    this->address = other.address;
-    this->port = other.port;
+SocketAddress::SocketAddress(const sockaddr_in &address) :
+        port(address.sin_port),
+        address(address) {
+    char buffer[32]{};
+
+    const char *ret = inet_ntop(AF_INET, &address, buffer, sizeof(buffer));
+
+    if(ret == nullptr) {
+        throw std::runtime_error("Unable to get hostname from sockaddr_in struct (" + std::string(std::strerror(errno)) + ")");
+    } else {
+        hostname = ret;
+    }
 }
 
 SocketAddress &SocketAddress::operator=(const SocketAddress &other) {
@@ -23,41 +43,27 @@ SocketAddress &SocketAddress::operator=(const SocketAddress &other) {
         return *this;
     }
 
-    this->address = other.address;
+    this->hostname = other.hostname;
     this->port = other.port;
+    this->address = other.address;
 
     return *this;
 }
 
-std::string SocketAddress::getAddress() const {
-    return address;
+const char* SocketAddress::getHostname() const {
+    return hostname.c_str();
 }
 
 uint16_t SocketAddress::getPort() const {
     return port;
 }
 
-void SocketAddress::setAddress(std::string &address) {
-    this->address = address;
-}
-
-void SocketAddress::setPort(uint16_t port) {
-    this->port = port;
+sockaddr_in SocketAddress::getAddress() const {
+    return address;
 }
 
 SocketAddress::operator std::string() const {
-    std::ostringstream stream;
-
-    stream << "Socket Address {" << std::endl
-            << "    Address: " << address << "," << std::endl
-            << "    Port: " << port << std::endl
-            << "}";
-
-    return stream.str();
-}
-
-std::ostream& operator<<(std::ostream &os, const SocketAddress &o) {
-    return os << (std::string) o;
+    return hostname + ":" + std::to_string(port);
 }
 
 }
