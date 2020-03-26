@@ -16,34 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_LATENCYOPERATION_H
+#define OBSERVATORY_LATENCYOPERATION_H
 
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include <observatory/result/LatencyMeasurement.h>
+#include "Operation.h"
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class LatencyOperation : public Operation {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    LatencyOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    LatencyOperation(const LatencyOperation &other) = delete;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    LatencyOperation& operator=(const LatencyOperation &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~LatencyOperation() override = default;
 
-    const char* getName() override;
+    const char* getClassName() const override;
 
-    Status execute() override;
-
-private:
-
-    Operation &operation;
-    uint32_t operationCount;
+    LatencyMeasurement& getMeasurement() const override;
 
 };
 

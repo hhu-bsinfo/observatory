@@ -16,34 +16,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_LATENCYSTATISTICS_H
+#define OBSERVATORY_LATENCYSTATISTICS_H
 
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include <vector>
+#include <chrono>
+#include <cstdint>
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class LatencyStatistics {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    explicit LatencyStatistics(uint32_t size);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    LatencyStatistics(const LatencyStatistics &other) = default;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    LatencyStatistics& operator=(const LatencyStatistics &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~LatencyStatistics() = default;
 
-    const char* getName() override;
+    void start();
 
-    Status execute() override;
+    void stop();
+
+    void sortAscending();
+
+    double getMinNs() const;
+
+    double getMaxNs() const;
+
+    double getTotalNs() const;
+
+    double getAvgNs() const;
+
+    double getPercentileNs(float percentile) const;
 
 private:
 
-    Operation &operation;
-    uint32_t operationCount;
+    std::vector<uint64_t> times;
+    uint32_t pos;
+
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> tmpTime;
 
 };
 

@@ -16,34 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_RDMALATENCYOPERATION_H
+#define OBSERVATORY_RDMALATENCYOPERATION_H
 
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include "LatencyOperation.h"
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class RdmaLatencyOperation : public LatencyOperation {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    RdmaLatencyOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize, Benchmark::RdmaMode rdmaMode);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    RdmaLatencyOperation(const RdmaLatencyOperation &other) = delete;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    RdmaLatencyOperation& operator=(const RdmaLatencyOperation &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~RdmaLatencyOperation() override = default;
 
-    const char* getName() override;
+    const char* getClassName() const override;
+
+    bool needsFilledReceiveQueue() const override;
+
+    Status warmUp(uint32_t operationCount) override;
 
     Status execute() override;
 
 private:
 
-    Operation &operation;
-    uint32_t operationCount;
+    Benchmark::RdmaMode rdmaMode;
 
 };
 

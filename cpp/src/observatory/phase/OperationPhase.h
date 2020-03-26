@@ -18,8 +18,8 @@
 #define OBSERVATORY_OPERATIONPHASE_H
 
 #include <log4cpp/Category.hh>
-#include <observatory/Operation.h>
-#include "observatory/BenchmarkPhase.h"
+#include <observatory/operation/Operation.h>
+#include "BenchmarkPhase.h"
 
 namespace Observatory {
 

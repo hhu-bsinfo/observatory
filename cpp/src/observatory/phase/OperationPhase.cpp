@@ -14,7 +14,14 @@ const char* OperationPhase::getName() {
 }
 
 Status OperationPhase::execute() {
-    return Status::NOT_IMPLEMENTED;
+    LOGGER.info("Executing phase of type '%s' with %u operations of size %u bytes", operation.getClassName(),
+                operation.getMeasurement().getOperationCount(), operation.getMeasurement().getOperationSize());
+
+    if(!getBenchmark().synchronize()) {
+        return Status::SYNC_ERROR;
+    }
+
+    return operation.execute();
 }
 
 void OperationPhase::calculateOverhead() {

@@ -20,7 +20,7 @@
 #define OBSERVATORY_SOCKETBENCHMARK_H
 
 #include <observatory/Benchmark.h>
-#include <observatory/util/Factory.h>
+#include <observatory/util/BenchmarkFactory.h>
 
 namespace Socket {
 
@@ -30,13 +30,13 @@ public:
 
     Benchmark() = default;
 
-    Benchmark(const Benchmark &other) = default;
+    Benchmark(const Benchmark &other) = delete;
 
     Benchmark& operator=(const Benchmark &other) = delete;
 
     ~Benchmark() override = default;
 
-    IMPLEMENT_CLONE(Socket::Benchmark);
+    BENCHMARK_IMPLEMENT_INSTANTIATE(Socket::Benchmark);
 
     const char* getClassName() const override ;
 
@@ -54,9 +54,9 @@ public:
 
     Observatory::Status fillReceiveQueue() override;
 
-    Observatory::Status sendMultipleMessage(uint32_t messageCount) override;
+    Observatory::Status sendMultipleMessages(uint32_t messageCount) override;
 
-    Observatory::Status receiveMultipleMessage(uint32_t messageCount) override;
+    Observatory::Status receiveMultipleMessages(uint32_t messageCount) override;
 
     Observatory::Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) override;
 

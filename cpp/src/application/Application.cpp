@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 
     LOGGER.info("Creating observatory instance");
 
-    auto observatory = std::unique_ptr<Observatory::Observatory>(new Observatory::Observatory(benchmarkConfig, resultPath.Get(),
+    auto observatory = std::shared_ptr<Observatory::Observatory>(new Observatory::Observatory(benchmarkConfig, resultPath.Get(),
             isServer, connectionRetries.Get(),bindAddress.Get(), remoteAddress.Get()));
 
     observatory->start();

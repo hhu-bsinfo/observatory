@@ -45,7 +45,7 @@ bool Benchmark::isServer() const {
     return server;
 }
 
-int Benchmark::getConnectionRetries() const {
+uint32_t Benchmark::getConnectionRetries() const {
     return connectionRetries;
 }
 
@@ -181,7 +181,7 @@ Status Benchmark::setup() {
 
         bool connected = false;
 
-        for(int i = 0; i < connectionRetries && !connected; i++) {
+        for(uint32_t i = 0; i < connectionRetries && !connected; i++) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             connected = true;
 
@@ -207,7 +207,7 @@ Status Benchmark::setup() {
 }
 
 bool Benchmark::sendSync() {
-    if(::write(offChannelSocket, SYNC_SIGNAL, sizeof(SYNC_SIGNAL)) < 0) {
+    if(::send(offChannelSocket, SYNC_SIGNAL, sizeof(SYNC_SIGNAL), 0) < 0) {
         LOGGER.error("Unable to send synchronization signal (%s)", std::strerror(errno));
         return false;
     }
@@ -218,7 +218,7 @@ bool Benchmark::sendSync() {
 bool Benchmark::receiveSync() {
     char buffer[sizeof(SYNC_SIGNAL)]{};
 
-    if(::read(offChannelSocket, buffer, sizeof(buffer)) < 0) {
+    if(::recv(offChannelSocket, buffer, sizeof(buffer), 0) < 0) {
         LOGGER.error("Unable to receive synchronization signal (%s)", std::strerror(errno));
         return false;
     }

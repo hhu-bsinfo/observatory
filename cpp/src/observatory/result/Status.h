@@ -16,36 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
-
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#ifndef OBSERVATORY_STATUS_H
+#define OBSERVATORY_STATUS_H
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
-
-public:
-
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
-
-    WarmupPhase(const WarmupPhase &other) = delete;
-
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
-
-    ~WarmupPhase() override = default;
-
-    const char* getName() override;
-
-    Status execute() override;
-
-private:
-
-    Operation &operation;
-    uint32_t operationCount;
-
+enum Status {
+    OK, NOT_IMPLEMENTED, SYNC_ERROR, NETWORK_ERROR, FILE_ERROR, UNKNOWN_ERROR
 };
+
+extern const char* getStatusString(Status status);
 
 }
 

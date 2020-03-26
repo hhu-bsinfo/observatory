@@ -23,7 +23,7 @@ Status ConnectionPhase::execute() {
     } else {
         Status status = Status::UNKNOWN_ERROR;
 
-        for (int i = 0; i < getBenchmark().getConnectionRetries(); i++) {
+        for (uint32_t i = 0; i < getBenchmark().getConnectionRetries(); i++) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
             status = benchmark.connect(bindAddress, remoteAddress);

@@ -16,34 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_THROUGHPUTOPERATION_H
+#define OBSERVATORY_THROUGHPUTOPERATION_H
 
 #include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include <observatory/result/ThroughputMeasurement.h>
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class ThroughputOperation : public Operation {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    ThroughputOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    ThroughputOperation(const ThroughputOperation &other) = delete;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    ThroughputOperation& operator=(const ThroughputOperation &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~ThroughputOperation() override = default;
 
-    const char* getName() override;
+    ThroughputMeasurement& getMeasurement() const override;
 
-    Status execute() override;
-
-private:
-
-    Operation &operation;
-    uint32_t operationCount;
+    const char* getClassName() const override;
 
 };
 

@@ -3,6 +3,8 @@
 
 #include <string>
 
+namespace Observatory {
+
 class ValueFormatter {
 
 public:
@@ -11,7 +13,7 @@ public:
 
     ValueFormatter(const ValueFormatter &other) = delete;
 
-    ValueFormatter& operator=(const ValueFormatter &other) = delete;
+    ValueFormatter &operator=(const ValueFormatter &other) = delete;
 
     ~ValueFormatter() = delete;
 
@@ -21,29 +23,15 @@ public:
 
 private:
 
-    static const constexpr char highMetricTable[] = {
-            0,
-            'K',
-            'M',
-            'G',
-            'T',
-            'P',
-            'E'
-    };
+    static const char highMetricTable[];
 
-    static const constexpr char lowMetricTable[] = {
-            0,
-            'm',
-            'u',
-            'n',
-            'p',
-            'f',
-            'a'
-    };
+    static const char lowMetricTable[];
 
     static std::string formatHighValue(double value, const char *unit);
 
     static std::string formatLowValue(double value, const char *unit);
 };
+
+}
 
 #endif

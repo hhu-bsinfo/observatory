@@ -16,34 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_MEASUREMENT_H
+#define OBSERVATORY_MEASUREMENT_H
 
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include <cstdint>
+#include <string>
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class Measurement {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    Measurement(uint32_t operationCount, uint32_t operationSize);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    Measurement(const Measurement &other) = default;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    Measurement &operator=(const Measurement &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~Measurement() = default;
 
-    const char* getName() override;
+    uint32_t getOperationCount() const;
 
-    Status execute() override;
+    uint32_t getOperationSize() const;
+
+    uint64_t getTotalData() const;
+
+    void setTotalData(uint64_t totalData);
+
+    virtual double getTotalTime() const = 0;
+
+    virtual explicit operator std::string() const;
 
 private:
 
-    Operation &operation;
     uint32_t operationCount;
+    uint32_t operationSize;
+
+    uint64_t totalData{};
 
 };
 

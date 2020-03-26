@@ -21,7 +21,7 @@
 
 #include <observatory/result/Measurement.h>
 #include <observatory/result/OverheadMeasurement.h>
-#include "Benchmark.h"
+#include "observatory/Benchmark.h"
 
 namespace Observatory {
 
@@ -31,7 +31,7 @@ public:
 
     Operation(Benchmark *benchmark, Benchmark::Mode mode, std::shared_ptr<Measurement> measurement);
 
-    Operation(const Operation &other) = default;
+    Operation(const Operation &other) = delete;
 
     Operation& operator=(const Operation &other) = delete;
 
@@ -47,19 +47,19 @@ public:
 
     virtual const char* getClassName() const = 0;
 
-    virtual Operation* clone() const = 0;
+    virtual Operation* instantiate(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize) const = 0;
 
     virtual const char* getOutputFilename() const = 0;
 
     virtual bool needsFilledReceiveQueue() const = 0;
 
-    virtual Status warmUp(int operationCount) = 0;
+    virtual Status warmUp(uint32_t operationCount) = 0;
 
     virtual Status execute() = 0;
 
 private:
 
-    Benchmark *benchmark;
+    Benchmark *benchmark{};
     Benchmark::Mode mode;
     std::shared_ptr<Measurement> measurement;
     std::shared_ptr<OverheadMeasurement> overheadMeasurement;

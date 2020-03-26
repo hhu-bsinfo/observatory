@@ -16,34 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_WARMUPPHASE_H
-#define OBSERVATORY_WARMUPPHASE_H
+#ifndef OBSERVATORY_RDMAWRITELATENCYOPERATION_H
+#define OBSERVATORY_RDMAWRITELATENCYOPERATION_H
 
-#include <observatory/operation/Operation.h>
-#include "BenchmarkPhase.h"
+#include <observatory/util/OperationFactory.h>
+#include "RdmaLatencyOperation.h"
 
 namespace Observatory {
 
-class WarmupPhase : public BenchmarkPhase {
+class RdmaWriteLatencyOperation : public RdmaLatencyOperation {
 
 public:
 
-    WarmupPhase(Benchmark &benchmark, Operation &operation, uint32_t operationCount);
+    RdmaWriteLatencyOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-    WarmupPhase(const WarmupPhase &other) = delete;
+    RdmaWriteLatencyOperation(const RdmaWriteLatencyOperation &other) = delete;
 
-    WarmupPhase& operator=(const WarmupPhase &other) = delete;
+    RdmaWriteLatencyOperation& operator=(const RdmaWriteLatencyOperation &other) = delete;
 
-    ~WarmupPhase() override = default;
+    ~RdmaWriteLatencyOperation() override = default;
 
-    const char* getName() override;
+    OPERATION_IMPLEMENT_INSTANTIATE(Observatory::RdmaWriteLatencyOperation)
 
-    Status execute() override;
+    const char* getClassName() const override;
 
-private:
-
-    Operation &operation;
-    uint32_t operationCount;
+    const char* getOutputFilename() const override;
 
 };
 

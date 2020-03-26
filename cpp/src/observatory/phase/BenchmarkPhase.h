@@ -20,7 +20,7 @@
 #define OBSERVATORY_BENCHMARKPHASE_H
 
 #include <string>
-#include "result/Status.h"
+#include <observatory/result/Status.h>
 
 namespace Observatory {
 

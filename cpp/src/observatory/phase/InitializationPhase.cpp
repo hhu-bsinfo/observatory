@@ -13,7 +13,7 @@ const char* InitializationPhase::getName() {
 }
 
 Status InitializationPhase::execute() {
-    return getBenchmark().setup();
+    return getBenchmark().initialize();
 }
 
 }

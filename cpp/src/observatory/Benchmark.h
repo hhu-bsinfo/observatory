@@ -22,8 +22,8 @@
 #include <log4cpp/Category.hh>
 #include <nlohmann/json.hpp>
 #include <detector/IbFabric.h>
-#include "result/Status.h"
-#include "BenchmarkPhase.h"
+#include <observatory/result/Status.h>
+#include "observatory/phase/BenchmarkPhase.h"
 #include "observatory/util/SocketAddress.h"
 
 namespace Observatory {
@@ -44,7 +44,7 @@ public:
 
     Benchmark() = default;
 
-    Benchmark(const Benchmark &other) = default;
+    Benchmark(const Benchmark &other) = delete;
 
     Benchmark& operator=(const Benchmark &other) = delete;
 
@@ -70,7 +70,7 @@ public:
 
     bool isServer() const;
 
-    int getConnectionRetries() const;
+    uint32_t getConnectionRetries() const;
 
     SocketAddress getBindAddress() const;
 
@@ -108,7 +108,7 @@ public:
 
     virtual const char* getClassName() const = 0;
 
-    virtual Observatory::Benchmark* clone() const = 0;
+    virtual Benchmark* instantiate() const = 0;
 
     virtual Status initialize() = 0;
 
@@ -124,9 +124,9 @@ public:
 
     virtual Status fillReceiveQueue() = 0;
 
-    virtual Status sendMultipleMessage(uint32_t messageCount) = 0;
+    virtual Status sendMultipleMessages(uint32_t messageCount) = 0;
 
-    virtual Status receiveMultipleMessage(uint32_t messageCount) = 0;
+    virtual Status receiveMultipleMessages(uint32_t messageCount) = 0;
 
     virtual Status performMultipleRdmaOperations(RdmaMode mode, uint32_t operationCount) = 0;
 
@@ -154,7 +154,7 @@ private:
     uint32_t iterationNumber{};
 
     bool server{};
-    int connectionRetries{};
+    uint32_t connectionRetries{};
 
     SocketAddress bindAddress;
     SocketAddress remoteAddress;

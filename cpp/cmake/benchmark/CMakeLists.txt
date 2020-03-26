@@ -22,12 +22,15 @@ include_directories(${OBSERVATORY_SRC_DIR})
 set(SOURCE_FILES
         ${OBSERVATORY_SRC_DIR}/observatory/util/SocketAddress.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/util/ValueFormatter.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/util/BenchmarkFactory.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/util/OperationFactory.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/Status.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/Measurement.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/OverheadMeasurement.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/ThroughputMeasurement.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/LatencyMeasurement.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/LatencyStatistics.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/phase/BenchmarkPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/InitializationPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/ConnectionPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/PreparationPhase.cpp
@@ -35,12 +38,23 @@ set(SOURCE_FILES
         ${OBSERVATORY_SRC_DIR}/observatory/phase/WarmupPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/OperationPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/CleanupPhase.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/Operation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/ThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/MessagingThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaWriteThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaReadThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/BidirectionalThroughputOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/LatencyOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/MessagingLatencyOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/MessagingPingPongOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaLatencyOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaWriteLatencyOperation.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/operation/RdmaReadLatencyOperation.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/BuildConfig.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/Benchmark.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/BenchmarkPhase.cpp
-        ${OBSERVATORY_SRC_DIR}/observatory/Operation.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/Observatory.cpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json socket-binding detector ibverbs ibmad ibnetdisc)
+target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json socket-binding detector ibverbs ibmad ibnetdisc pthread)

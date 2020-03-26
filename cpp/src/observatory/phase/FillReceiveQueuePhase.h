@@ -18,7 +18,7 @@
 #define OBSERVATORY_FILLRECEIVEQUEUEPHASE_H
 
 #include <memory>
-#include "observatory/BenchmarkPhase.h"
+#include "BenchmarkPhase.h"
 
 namespace Observatory {
 

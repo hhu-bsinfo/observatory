@@ -19,7 +19,7 @@ Status WarmupPhase::execute() {
         return Status::SYNC_ERROR;
     }
 
-    return operation.warmup(operationCount);
+    return operation.warmUp(operationCount);
 }
 
 }
