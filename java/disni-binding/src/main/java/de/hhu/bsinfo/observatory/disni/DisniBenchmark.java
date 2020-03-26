@@ -353,7 +353,7 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status receiveMultipleMessage(int messageCount) {
+    protected Status receiveMultipleMessages(int messageCount) {
         int remainingMessages = messageCount - pendingReceiveCompletions; // Receive queue has already been filled in fillReceiveQueue()
 
         try {

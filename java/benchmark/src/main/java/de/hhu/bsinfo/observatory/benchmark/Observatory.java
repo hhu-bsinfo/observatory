@@ -64,13 +64,11 @@ public class Observatory {
                                     Mode.RECEIVE, iterationConfig.getCount(), iterationConfig.getSize());
 
                             if (sendOperation == null || receiveOperation == null) {
-                                continue;
+                                return;
                             }
 
-                            if (!(sendOperation instanceof ThroughputOperation)
-                                    || !(receiveOperation instanceof ThroughputOperation)) {
-                                LOGGER.error(
-                                        "Invalid configuration: Only throughput operations may be executed bidirectionally");
+                            if (!(sendOperation instanceof ThroughputOperation) || !(receiveOperation instanceof ThroughputOperation)) {
+                                LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
                                 return;
                             }
 
@@ -79,7 +77,7 @@ public class Observatory {
                         }
 
                         if (operation == null) {
-                            continue;
+                            return;
                         }
 
                         Arrays.stream(config.getParameters()).forEach(parameter -> benchmark.setParameter(parameter.getKey(), parameter.getValue()));

@@ -19,11 +19,12 @@
 
 #define IMPLEMENT_CLONE(TYPE) TYPE* clone() const override { return new TYPE(*this); }
 #define BENCHMARK_REGISTER(TYPE) BENCHMARK_FACTORY.registerPrototype(new TYPE());
+#define OPERATION_REGISTER(TYPE) OPERATION_FACTORY.registerPrototype(new TYPE(nullptr, ::Observatory::Benchmark::Mode::SEND, 0, 0));
 
 #include <string>
 #include <map>
 #include <observatory/Benchmark.h>
-#include <observatory/Operation.h>
+#include <observatory/operation/Operation.h>
 
 namespace Observatory {
 

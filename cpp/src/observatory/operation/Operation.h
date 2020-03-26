@@ -19,6 +19,8 @@
 #ifndef OBSERVATORY_OPERATION_H
 #define OBSERVATORY_OPERATION_H
 
+#include <observatory/result/Measurement.h>
+#include <observatory/result/OverheadMeasurement.h>
 #include "Benchmark.h"
 
 namespace Observatory {
@@ -27,13 +29,40 @@ class Operation {
 
 public:
 
-    virtual std::string getOutputFilename() const = 0;
+    Operation(Benchmark *benchmark, Benchmark::Mode mode, std::shared_ptr<Measurement> measurement);
+
+    Operation(const Operation &other) = default;
+
+    Operation& operator=(const Operation &other) = delete;
+
+    virtual ~Operation() = default;
+
+    Benchmark& getBenchmark() const;
+
+    Benchmark::Mode getMode() const;
+
+    OverheadMeasurement& getOverheadMeasurement() const;
+
+    virtual Measurement& getMeasurement() const;
+
+    virtual const char* getClassName() const = 0;
+
+    virtual Operation* clone() const = 0;
+
+    virtual const char* getOutputFilename() const = 0;
 
     virtual bool needsFilledReceiveQueue() const = 0;
 
-    virtual Status warmup(int operationCount) = 0;
+    virtual Status warmUp(int operationCount) = 0;
 
     virtual Status execute() = 0;
+
+private:
+
+    Benchmark *benchmark;
+    Benchmark::Mode mode;
+    std::shared_ptr<Measurement> measurement;
+    std::shared_ptr<OverheadMeasurement> overheadMeasurement;
 
 };
 

@@ -21,9 +21,11 @@ public abstract class RdmaLatencyOperation extends LatencyOperation {
 
     @Override
     Status warmUp(int operationCount) {
+        Status status = Status.OK;
+
         if(getMode() == Mode.SEND) {
             for(int i = 0; i < operationCount; i++) {
-                Status status = getBenchmark().performSingleRdmaOperation(rdmaMode);
+                status = getBenchmark().performSingleRdmaOperation(rdmaMode);
 
                 if(status != Status.OK) {
                     return status;
@@ -35,7 +37,7 @@ public abstract class RdmaLatencyOperation extends LatencyOperation {
             return Status.SYNC_ERROR;
         }
 
-        return Status.OK;
+        return status;
     }
 
     @Override

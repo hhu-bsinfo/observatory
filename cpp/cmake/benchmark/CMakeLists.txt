@@ -21,7 +21,13 @@ include_directories(${OBSERVATORY_SRC_DIR})
 
 set(SOURCE_FILES
         ${OBSERVATORY_SRC_DIR}/observatory/util/SocketAddress.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/util/ValueFormatter.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/result/Status.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/Measurement.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/OverheadMeasurement.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/ThroughputMeasurement.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/LatencyMeasurement.cpp
+        ${OBSERVATORY_SRC_DIR}/observatory/result/LatencyStatistics.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/InitializationPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/ConnectionPhase.cpp
         ${OBSERVATORY_SRC_DIR}/observatory/phase/PreparationPhase.cpp

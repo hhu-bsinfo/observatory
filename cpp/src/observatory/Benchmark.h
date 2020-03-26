@@ -52,17 +52,17 @@ public:
 
     void addBenchmarkPhase(const std::shared_ptr<BenchmarkPhase>& phase);
 
-    void setParameter(const std::string &key, const std::string &value);
+    void setParameter(const char *key, const char *value);
 
-    const std::string& getParameter(const std::string &key, const std::string &defaultValue) const;
+    std::string getParameter(const char *key, const char *defaultValue) const;
 
-    uint8_t getParameter(const std::string &key, uint8_t defaultValue) const;
+    uint8_t getParameter(const char *key, uint8_t defaultValue) const;
 
-    uint16_t getParameter(const std::string &key, uint16_t defaultValue) const;
+    uint16_t getParameter(const char *key, uint16_t defaultValue) const;
 
-    uint32_t getParameter(const std::string &key, uint32_t defaultValue) const;
+    uint32_t getParameter(const char *key, uint32_t defaultValue) const;
 
-    uint64_t getParameter(const std::string &key, uint64_t defaultValue) const;
+    uint64_t getParameter(const char *key, uint64_t defaultValue) const;
 
     int getOffChannelSocket() const;
 
@@ -84,7 +84,7 @@ public:
 
     Detector::IbPerfCounter& getPerfCounter();
 
-    void setResultName(const std::string &resultName);
+    void setResultName(const char *resultName);
 
     void setServer(bool isServer);
 
@@ -94,7 +94,7 @@ public:
 
     void setRemoteAddress(const SocketAddress &remoteAddress);
 
-    void setResultPath(const std::string &resultPath);
+    void setResultPath(const char *resultPath);
 
     void setIterationNumber(uint32_t iterationNumber);
 

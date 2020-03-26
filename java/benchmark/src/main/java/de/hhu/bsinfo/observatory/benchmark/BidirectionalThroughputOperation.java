@@ -54,9 +54,9 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return sendStatus.get();
         } else if(receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
-        } else {
-            return Status.OK;
         }
+
+        return Status.OK;
     }
 
     @Override
@@ -84,13 +84,13 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return sendStatus.get();
         } else if(receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
-        } else {
-            getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
-            getMeasurement().setTotalTime(sendOperation.getMeasurement().getTotalTime());
-            getMeasurement().setOperationThroughput(sendOperation.getMeasurement().getOperationThroughput() + receiveOperation.getMeasurement().getOperationThroughput());
-            getMeasurement().setDataThroughput(sendOperation.getMeasurement().getDataThroughput() + receiveOperation.getMeasurement().getDataThroughput());
-
-            return Status.OK;
         }
+
+        getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
+        getMeasurement().setTotalTime(sendOperation.getMeasurement().getTotalTime());
+        getMeasurement().setOperationThroughput(sendOperation.getMeasurement().getOperationThroughput() + receiveOperation.getMeasurement().getOperationThroughput());
+        getMeasurement().setDataThroughput(sendOperation.getMeasurement().getDataThroughput() + receiveOperation.getMeasurement().getDataThroughput());
+
+        return Status.OK;
     }
 }

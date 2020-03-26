@@ -9,27 +9,27 @@ void Benchmark::addBenchmarkPhase(const std::shared_ptr<BenchmarkPhase>& phase) 
     phases.push_back(phase);
 }
 
-void Benchmark::setParameter(const std::string &key, const std::string &value) {
+void Benchmark::setParameter(const char *key, const char *value) {
     parameters[key] = value;
 }
 
-const std::string& Benchmark::getParameter(const std::string &key, const std::string &defaultValue) const {
+std::string Benchmark::getParameter(const char *key, const char *defaultValue) const {
     return parameters.at(key);
 }
 
-uint8_t Benchmark::getParameter(const std::string &key, uint8_t defaultValue) const {
+uint8_t Benchmark::getParameter(const char *key, uint8_t defaultValue) const {
     return std::stoi(parameters.at(key));
 }
 
-uint16_t Benchmark::getParameter(const std::string &key, uint16_t defaultValue) const {
+uint16_t Benchmark::getParameter(const char *key, uint16_t defaultValue) const {
     return std::stoi(parameters.at(key));
 }
 
-uint32_t Benchmark::getParameter(const std::string &key, uint32_t defaultValue) const {
+uint32_t Benchmark::getParameter(const char *key, uint32_t defaultValue) const {
     return std::stoi(parameters.at(key));
 }
 
-uint64_t Benchmark::getParameter(const std::string &key, uint64_t defaultValue) const {
+uint64_t Benchmark::getParameter(const char *key, uint64_t defaultValue) const {
     return std::stoi(parameters.at(key));
 }
 
@@ -73,7 +73,7 @@ Detector::IbPerfCounter &Benchmark::getPerfCounter() {
     return *perfCounter;
 }
 
-void Benchmark::setResultName(const std::string &resultName) {
+void Benchmark::setResultName(const char *resultName) {
     this->resultName = resultName;
 }
 
@@ -93,7 +93,7 @@ void Benchmark::setRemoteAddress(const SocketAddress &remoteAddress) {
     this->remoteAddress = remoteAddress;
 }
 
-void Benchmark::setResultPath(const std::string &resultPath) {
+void Benchmark::setResultPath(const char *resultPath) {
     this->resultPath = resultPath;
 }
 

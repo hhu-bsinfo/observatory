@@ -1,10 +1,7 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.jdetector.lib.exception.IbFileException;
-import de.hhu.bsinfo.jdetector.lib.exception.IbMadException;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
-import org.slf4j.LoggerFactory;
 
 class MessagingThroughputOperation extends ThroughputOperation {
 
@@ -19,7 +16,7 @@ class MessagingThroughputOperation extends ThroughputOperation {
 
     @Override
     boolean needsFilledReceiveQueue() {
-        return !(getMode() == Mode.SEND);
+        return getMode() != Mode.SEND;
     }
 
     @Override
@@ -27,7 +24,7 @@ class MessagingThroughputOperation extends ThroughputOperation {
         if(getMode() == Mode.SEND) {
             return getBenchmark().sendMultipleMessages(operationCount);
         } else {
-            return getBenchmark().receiveMultipleMessage(operationCount);
+            return getBenchmark().receiveMultipleMessages(operationCount);
         }
     }
 
@@ -41,7 +38,7 @@ class MessagingThroughputOperation extends ThroughputOperation {
             return status;
         } else {
             long startTime = System.nanoTime();
-            Status status = getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
+            Status status = getBenchmark().receiveMultipleMessages(getMeasurement().getOperationCount());
             getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
 
             return status;

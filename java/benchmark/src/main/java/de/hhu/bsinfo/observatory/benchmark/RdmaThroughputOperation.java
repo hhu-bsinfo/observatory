@@ -44,12 +44,14 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
 
     @Override
     public Status execute() {
-        Status status = Status.OK;
-
         if(getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
-            status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
+            Status status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
             long time = System.nanoTime() - startTime;
+
+            if(status != Status.OK) {
+                return status;
+            }
 
             getMeasurement().setMeasuredTime(time);
 
@@ -60,11 +62,10 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
                 new DataOutputStream(getBenchmark().getOffChannelSocket().getOutputStream()).write(timeBuffer.array());
             } catch (IOException e) {
                 LOGGER.error("Sending measured time to remote benchmark failed", e);
+                return Status.NETWORK_ERROR;
             }
 
-            if(status != Status.OK) {
-                return status;
-            }
+            return status;
         } else {
             try {
                 byte[] timeBytes = new byte[Long.BYTES];
@@ -75,9 +76,10 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
                 getMeasurement().setMeasuredTime(timeBuffer.getLong());
             } catch (IOException e) {
                 LOGGER.error("Receiving measured time from remote benchmark failed", e);
+                return Status.NETWORK_ERROR;
             }
-        }
 
-        return status;
+            return Status.OK;
+        }
     }
 }

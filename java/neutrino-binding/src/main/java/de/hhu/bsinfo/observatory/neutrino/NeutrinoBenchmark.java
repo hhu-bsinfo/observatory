@@ -184,7 +184,7 @@ public class NeutrinoBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status receiveMultipleMessage(int messageCount) {
+    protected Status receiveMultipleMessages(int messageCount) {
         int messagesLeft = messageCount - pendingReceiveCompletions;
 
         try {

@@ -112,7 +112,7 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status receiveMultipleMessage(int messageCount) {
+    protected Status receiveMultipleMessages(int messageCount) {
         try {
             for (int i = 0; i < messageCount; i++) {
                 inputStream.readFully(buffer);

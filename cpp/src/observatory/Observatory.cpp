@@ -42,7 +42,7 @@ void Observatory::start() {
                     std::unique_ptr<Operation> operation;
 
                     for(const auto &parameter : config["parameters"]) {
-                        benchmark->setParameter(parameter["key"], parameter["value"]);
+                        benchmark->setParameter(static_cast<std::string>(parameter["key"]).c_str(), static_cast<std::string>(parameter["value"]).c_str());
                     }
 
                     benchmark->setServer(isServer);
@@ -53,8 +53,8 @@ void Observatory::start() {
                     benchmark->setBindAddress(bindAddress);
                     benchmark->setRemoteAddress(remoteAddress);
 
-                    benchmark->setResultName(config["resultName"].empty() ? config["className"] : config["resultName"]);
-                    benchmark->setResultPath(resultPath);
+                    benchmark->setResultName(static_cast<std::string>(config["resultName"]).empty() ? static_cast<std::string>(config["className"]).c_str() : static_cast<std::string>(config["resultName"]).c_str());
+                    benchmark->setResultPath(static_cast<std::string>(resultPath).c_str());
                     benchmark->setIterationNumber(i);
 
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new InitializationPhase(*benchmark)));

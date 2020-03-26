@@ -63,7 +63,11 @@ sockaddr_in SocketAddress::getAddress() const {
 }
 
 SocketAddress::operator std::string() const {
-    return hostname + ":" + std::to_string(port);
+    std::ostringstream stream;
+
+    stream << hostname << ":" << port;
+
+    return stream.str();
 }
 
 }

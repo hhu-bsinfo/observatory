@@ -18,7 +18,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
     @Override
     boolean needsFilledReceiveQueue() {
-        return !(getMode() == Mode.SEND);
+        return getMode() != Mode.SEND;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
             return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessage(operationCount);
+            return getBenchmark().receiveMultipleMessages(operationCount);
         }
     }
 
@@ -57,7 +57,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
             return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessage(getMeasurement().getOperationCount());
+            return getBenchmark().receiveMultipleMessages(getMeasurement().getOperationCount());
         }
     }
 }

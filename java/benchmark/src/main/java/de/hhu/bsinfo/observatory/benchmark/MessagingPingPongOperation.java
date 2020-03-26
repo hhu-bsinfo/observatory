@@ -58,8 +58,6 @@ public class MessagingPingPongOperation extends LatencyOperation {
             }
 
             getMeasurement().finishMeasuring(System.nanoTime() - startTime);
-
-            return Status.OK;
         } else {
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 Status status = getBenchmark().performPingPongIterationClient();
@@ -68,8 +66,8 @@ public class MessagingPingPongOperation extends LatencyOperation {
                     return status;
                 }
             }
-
-            return Status.OK;
         }
+
+        return Status.OK;
     }
 }

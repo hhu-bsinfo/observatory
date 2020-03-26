@@ -310,7 +310,7 @@ public abstract class Benchmark {
 
     protected abstract Status sendMultipleMessages(int messageCount);
 
-    protected abstract Status receiveMultipleMessage(int messageCount);
+    protected abstract Status receiveMultipleMessages(int messageCount);
 
     protected abstract Status performMultipleRdmaOperations(RdmaMode mode, int operationCount);
 
