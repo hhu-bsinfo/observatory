@@ -82,7 +82,7 @@ public class SocketBenchmark extends Benchmark {
         try {
             socket.close();
         } catch (IOException e) {
-            LOGGER.error("Closing socket failed");
+            LOGGER.error("Closing socket failed", e);
             return Status.NETWORK_ERROR;
         }
 

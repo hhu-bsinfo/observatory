@@ -4,12 +4,20 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 class FillReceiveQueuePhase extends BenchmarkPhase {
 
-    FillReceiveQueuePhase(Benchmark benchmark) {
+    private final boolean fillReceiveQueue;
+
+    FillReceiveQueuePhase(Benchmark benchmark, Operation operation) {
         super(benchmark);
+
+        this.fillReceiveQueue = operation.needsFilledReceiveQueue();
     }
 
     @Override
     Status execute() {
-        return getBenchmark().fillReceiveQueue();
+        if(fillReceiveQueue) {
+            return getBenchmark().fillReceiveQueue();
+        }
+
+        return Status.OK;
     }
 }

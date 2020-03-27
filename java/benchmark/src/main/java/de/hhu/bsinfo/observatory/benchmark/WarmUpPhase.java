@@ -16,10 +16,6 @@ class WarmUpPhase extends BenchmarkPhase {
 
     @Override
     Status execute() {
-        if(!getBenchmark().synchronize()) {
-            return Status.SYNC_ERROR;
-        }
-
         return operation.warmUp(iterationCount);
     }
 }

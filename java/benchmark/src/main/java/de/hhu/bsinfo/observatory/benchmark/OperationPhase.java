@@ -29,13 +29,14 @@ class OperationPhase extends BenchmarkPhase {
         this.operation = operation;
     }
 
-    private void calculateOverhead() {
+    private Status calculateOverhead() {
         IbPerfCounter perfCounter = getBenchmark().getPerfCounter();
 
         try {
             perfCounter.refreshCounters();
         } catch (IbFileException | IbMadException e) {
             LOGGER.error("Unable to refresh performance counters", e);
+            return Status.NETWORK_ERROR;
         }
 
         if(operation instanceof BidirectionalThroughputOperation || operation instanceof MessagingPingPongOperation) {
@@ -48,6 +49,8 @@ class OperationPhase extends BenchmarkPhase {
             operation.setOverheadMeasurement(new OverheadMeasurement(operation.getMode() == Mode.SEND ?
                     perfCounter.getXmitDataBytes() : perfCounter.getRcvDataBytes(), operation.getMeasurement()));
         }
+
+        return Status.OK;
     }
 
     private void saveSingleResult(String path, String operationSize, Map<String, String> valueMap) throws IOException {
@@ -131,22 +134,23 @@ class OperationPhase extends BenchmarkPhase {
         LOGGER.info("Executing phase of type '{}' with {} operations of size {} bytes", operation.getClass().getSimpleName(),
                 operation.getMeasurement().getOperationCount(), operation.getMeasurement().getOperationSize());
 
-        if(!getBenchmark().synchronize()) {
-            return Status.SYNC_ERROR;
-        }
-
         if(getBenchmark().measureOverhead()) {
             try {
                 getBenchmark().getPerfCounter().resetCounters();
             } catch (IbFileException | IbMadException e) {
                 LOGGER.error("Unable to reset performance counters", e);
+                return Status.NETWORK_ERROR;
             }
         }
 
         Status status = operation.execute();
 
         if(status == Status.OK && getBenchmark().measureOverhead()) {
-            calculateOverhead();
+            Status overheadStatus = calculateOverhead();
+            if(overheadStatus != Status.OK) {
+                LOGGER.error("Measuring overhead failed with status [{}]", overheadStatus);
+                return overheadStatus;
+            }
         }
 
         if(status == Status.OK && getBenchmark().isServer()) {

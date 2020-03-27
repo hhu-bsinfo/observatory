@@ -98,16 +98,10 @@ public class Observatory {
                         benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
                         benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize()));
 
-                        if (operation.needsFilledReceiveQueue()) {
-                            benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                        }
-
+                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark, operation));
                         benchmark.addBenchmarkPhase(new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));
 
-                        if (operation.needsFilledReceiveQueue()) {
-                            benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark));
-                        }
-
+                        benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark, operation));
                         benchmark.addBenchmarkPhase(new OperationPhase(benchmark, operation));
 
                         benchmark.addBenchmarkPhase(new CleanupPhase(benchmark));
@@ -125,10 +119,6 @@ public class Observatory {
         Status status = benchmark.setup();
         if(status != Status.OK) {
             System.exit(status.ordinal());
-        }
-
-        if(!benchmark.synchronize()) {
-            System.exit(Status.SYNC_ERROR.ordinal());
         }
 
         benchmark.executePhases();

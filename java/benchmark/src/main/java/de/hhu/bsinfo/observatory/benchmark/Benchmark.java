@@ -199,7 +199,6 @@ public abstract class Benchmark {
         } else {
             LOGGER.info("Connecting to server {}", remoteAddress.toString());
 
-
             for(int i = 0; i < connectionRetries && (offChannelSocket == null || !offChannelSocket.isConnected()); i++) {
                 try {
                     Thread.sleep(1000);
@@ -213,7 +212,6 @@ public abstract class Benchmark {
 
             if(offChannelSocket == null || !offChannelSocket.isConnected()) {
                 LOGGER.error("Setting up off channel communication failed (Retry amount exceeded)");
-
                 return Status.NETWORK_ERROR;
             }
         }
@@ -270,7 +268,13 @@ public abstract class Benchmark {
 
             LOGGER.info("Running {}", phaseName);
 
+            if(!synchronize()) {
+                System.exit(Status.SYNC_ERROR.ordinal());
+            }
+
             Status status = phase.execute();
+
+            synchronize();
 
             if(status == Status.NOT_IMPLEMENTED) {
                 LOGGER.warn("{} returned [{}] and is being skipped", phaseName, status);
