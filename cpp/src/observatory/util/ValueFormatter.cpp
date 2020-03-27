@@ -4,24 +4,24 @@
 
 namespace Observatory {
 
-const char ValueFormatter::lowMetricTable[] = {
-        0,
-        'm',
-        'u',
-        'n',
-        'p',
-        'f',
-        'a'
+const char *ValueFormatter::lowMetricTable[] = {
+        "",
+        "m",
+        "u",
+        "n",
+        "p",
+        "f",
+        "a"
 };
 
-const char ValueFormatter::highMetricTable[] = {
-        0,
-        'K',
-        'M',
-        'G',
-        'T',
-        'P',
-        'E'
+const char *ValueFormatter::highMetricTable[] = {
+        "",
+        "K",
+        "M",
+        "G",
+        "T",
+        "P",
+        "E"
 };
 
 std::string ValueFormatter::formatValue(double value, const char *unit) {
@@ -35,7 +35,7 @@ std::string ValueFormatter::formatValue(double value, const char *unit) {
 std::string ValueFormatter::formatValue(const char *name, double value, const char *unit) {
     std::ostringstream stream;
 
-    stream << name << ":" << std::setw(20) << formatValue(value, unit);
+    stream << name << ": " << formatValue(value, unit);
 
     return stream.str();
 }
@@ -54,6 +54,7 @@ std::string ValueFormatter::formatHighValue(double value, const char *unit) {
     stream << std::fixed << std::setprecision(3)
            << formattedValue << " "
            << highMetricTable[counter] << unit
+           << std::fixed << std::setprecision(6)
            << " (" << (value == static_cast<uint64_t>(value) ? static_cast<uint64_t>(value) : value) << ")";
 
     return stream.str();
@@ -73,6 +74,7 @@ std::string ValueFormatter::formatLowValue(double value, const char *unit) {
     stream << std::fixed << std::setprecision(3)
            << formattedValue << " "
            << lowMetricTable[counter] << unit
+            << std::fixed << std::setprecision(6)
            << " (" << (value == static_cast<uint64_t>(value) ? static_cast<uint64_t>(value) : value) << ")";
 
     return stream.str();

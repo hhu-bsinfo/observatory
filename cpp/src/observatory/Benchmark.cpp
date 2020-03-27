@@ -111,7 +111,7 @@ Status Benchmark::setup() {
 
         try {
             fabric = std::make_shared<Detector::IbFabric>(false, detectorConfig["mode"] == "compat");
-        } catch (Detector::IbPerfException &e) {
+        } catch(Detector::IbPerfException &e) {
             LOGGER.error("Unable to initialize Detector!\n\033[0m %s\n", e.what());
             return Status::UNKNOWN_ERROR;
         }
@@ -146,7 +146,6 @@ Status Benchmark::setup() {
         LOGGER.info("Listening on address %s", static_cast<std::string>(bindAddress).c_str());
 
         int serverSocket;
-
         if((serverSocket = ::socket(AF_INET, SOCK_STREAM, 0)) <= 0) {
             LOGGER.error("Creating server socket failed (%s)", std::strerror(errno));
             return Status::NETWORK_ERROR;
@@ -168,7 +167,7 @@ Status Benchmark::setup() {
             return Status::NETWORK_ERROR;
         }
 
-        if(!(offChannelSocket = ::accept(serverSocket, reinterpret_cast<sockaddr *>(&remoteSocketAddress), &addressLength))) {
+        if(!(offChannelSocket = ::accept(serverSocket, reinterpret_cast<sockaddr*>(&remoteSocketAddress), &addressLength))) {
             LOGGER.error("Accepting incoming client request failed (%s)", std::strerror(errno));
             return Status::NETWORK_ERROR;
         }
@@ -180,7 +179,6 @@ Status Benchmark::setup() {
         LOGGER.info("Connecting to server %s", static_cast<std::string>(remoteAddress).c_str());
 
         bool connected = false;
-
         for(uint32_t i = 0; i < connectionRetries && !connected; i++) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             connected = true;
@@ -188,16 +186,25 @@ Status Benchmark::setup() {
             if ((offChannelSocket = ::socket(AF_INET, SOCK_STREAM, 0)) <= 0) {
                 LOGGER.warn("Creating socket failed (%s)", std::strerror(errno));
                 connected = false;
+                continue;
             }
 
-            if (::connect(offChannelSocket, reinterpret_cast<sockaddr *>(&remoteSocketAddress), sizeof(remoteSocketAddress))) {
+            if(::bind(offChannelSocket, reinterpret_cast<sockaddr*>(&bindSocketAddress), sizeof(bindSocketAddress))) {
+                LOGGER.warn("Binding socket to %s failed (%s)", static_cast<std::string>(bindAddress).c_str(), std::strerror(errno));
+                connected = false;
+                continue;
+            }
+
+            if (::connect(offChannelSocket, reinterpret_cast<sockaddr*>(&remoteSocketAddress), sizeof(remoteSocketAddress))) {
                 LOGGER.warn("Connecting to server %s failed (%s)", static_cast<std::string>(remoteAddress).c_str(), std::strerror(errno));
                 connected = false;
+                continue;
             }
         }
 
-        if(offChannelSocket <= 0) {
+        if(!connected) {
             LOGGER.error("Setting up off channel communication failed (Retry amount exceeded)");
+            return Status::NETWORK_ERROR;
         }
     }
 
@@ -207,9 +214,16 @@ Status Benchmark::setup() {
 }
 
 bool Benchmark::sendSync() {
-    if(::send(offChannelSocket, SYNC_SIGNAL, sizeof(SYNC_SIGNAL), 0) < 0) {
-        LOGGER.error("Unable to send synchronization signal (%s)", std::strerror(errno));
-        return false;
+    uint32_t totalSent = 0;
+
+    while(totalSent < sizeof(SYNC_SIGNAL)) {
+        uint32_t sent;
+        if((sent = ::send(offChannelSocket, SYNC_SIGNAL + totalSent, sizeof(SYNC_SIGNAL) - totalSent, 0)) < 0) {
+            LOGGER.error("Unable to send synchronization signal (%s)", std::strerror(errno));
+            return false;
+        }
+
+        totalSent += sent;
     }
 
     return true;
@@ -217,10 +231,16 @@ bool Benchmark::sendSync() {
 
 bool Benchmark::receiveSync() {
     char buffer[sizeof(SYNC_SIGNAL)]{};
+    uint32_t totalReceived = 0;
 
-    if(::recv(offChannelSocket, buffer, sizeof(buffer), 0) < 0) {
-        LOGGER.error("Unable to receive synchronization signal (%s)", std::strerror(errno));
-        return false;
+    while(totalReceived < sizeof(SYNC_SIGNAL)) {
+        uint32_t received;
+        if((received = ::recv(offChannelSocket, buffer + totalReceived, sizeof(SYNC_SIGNAL) - totalReceived, 0)) < 0) {
+            LOGGER.error("Unable to send synchronization signal (%s)", std::strerror(errno));
+            return false;
+        }
+
+        totalReceived += received;
     }
 
     if(std::string(buffer) != SYNC_SIGNAL) {
@@ -250,6 +270,10 @@ void Benchmark::executePhases() {
 
         LOGGER.info("Running %s", phaseName.c_str());
 
+        if(!synchronize()) {
+            exit(Status::SYNC_ERROR);
+        }
+
         Status status = phase->execute();
 
         if(status == Status::NOT_IMPLEMENTED) {
@@ -265,8 +289,12 @@ void Benchmark::executePhases() {
         LOGGER.info("%s finished with status [%s]", phaseName.c_str(), getStatusString(status));
     }
 
+    if(::shutdown(offChannelSocket, SHUT_RDWR)) {
+        LOGGER.warn("Shutting down off channel communication failed (%s)", std::strerror(errno));
+    }
+
     if(::close(offChannelSocket)) {
-        LOGGER.error("Closing off channel communication failed (%s)", std::strerror(errno));
+        LOGGER.warn("Closing off channel communication failed (%s)", std::strerror(errno));
     }
 }
 

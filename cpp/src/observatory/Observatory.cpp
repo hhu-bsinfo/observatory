@@ -26,7 +26,7 @@ Observatory::Observatory(nlohmann::json &config, std::string &resultPath, bool i
         resultPath(resultPath),
         isServer(isServer),
         connectionRetries(connectionRetries),
-        bindAddress(bindAddress),
+        bindAddress(isServer ? bindAddress : SocketAddress(bindAddress.getHostname(), 0)),
         remoteAddress(remoteAddress) {}
 
 void Observatory::registerPrototypes() {
@@ -62,25 +62,24 @@ void Observatory::start() {
                     std::shared_ptr<Operation> operation;
 
                     try {
-                        if (mode == "unidirectional") {
+                        if(mode == "unidirectional") {
                             operation = OperationFactory::newInstance(operationClassName, benchmark.get(),
-                                                                      isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,
-                                                                      iterationConfig["count"], iterationConfig["size"]);
-                        } else if (mode == "bidirectional") {
+                                    isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"], iterationConfig["size"]);
+                        } else if(mode == "bidirectional") {
                             std::shared_ptr<Operation> sendOperation = OperationFactory::newInstance(operationClassName, benchmark.get(),
                                     isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
                             std::shared_ptr<Operation> receiveOperation = OperationFactory::newInstance(operationClassName, benchmark.get(),
                                     isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
 
-                            if (sendOperation == nullptr || receiveOperation == nullptr) {
-                                LOGGER.error("Unable to instantiate benchmark operation of type '%s'", benchmarkClassName.c_str());
+                            if(std::string(sendOperation->getClassName()).find("ThroughputOperation") == std::string::npos || std::string(receiveOperation->getClassName()).find("ThroughputOperation") == std::string::npos) {
+                                LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
                                 return;
                             }
 
                             operation = std::shared_ptr<Operation>(new BidirectionalThroughputOperation(std::dynamic_pointer_cast<ThroughputOperation>(sendOperation), std::dynamic_pointer_cast<ThroughputOperation>(receiveOperation)));
                         }
                     } catch(std::runtime_error &e) {
-                        LOGGER.error("Unable to instantiate operation\n\033[0m %s", benchmarkClassName.c_str(), e.what());
+                        LOGGER.error("Unable to instantiate operation of type '%s'\n\033[0m %s", operationClassName.c_str(), e.what());
                         return;
                     }
 
@@ -104,16 +103,10 @@ void Observatory::start() {
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new ConnectionPhase(*benchmark)));
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new PreparationPhase(*benchmark, iterationConfig["size"])));
 
-                    if(operation->needsFilledReceiveQueue()) {
-                        benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark)));
-                    }
-
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark, *operation)));
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new WarmupPhase(*benchmark, *operation, static_cast<uint32_t>(iterationConfig["warmUp"]))));
 
-                    if(operation->needsFilledReceiveQueue()) {
-                        benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark)));
-                    }
-
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark, *operation)));
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new OperationPhase(*benchmark, *operation)));
 
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new CleanupPhase(*benchmark)));
@@ -129,10 +122,6 @@ void Observatory::executeBenchmark(Benchmark &benchmark) {
     Status status = benchmark.setup();
     if(status != Status::OK) {
         exit(status);
-    }
-
-    if(!benchmark.synchronize()) {
-        exit(Status::SYNC_ERROR);
     }
 
     benchmark.executePhases();

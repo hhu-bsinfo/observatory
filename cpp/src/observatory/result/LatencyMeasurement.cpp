@@ -28,19 +28,19 @@ double LatencyMeasurement::getTotalTime() const {
 }
 
 double LatencyMeasurement::getAverageLatency() const {
-    return latencyStatistics.getAvgNs();
+    return latencyStatistics.getAvgNs() / 1000000000;
 }
 
 double LatencyMeasurement::getMinimumLatency() const {
-    return latencyStatistics.getMinNs();
+    return latencyStatistics.getMinNs() / 1000000000;
 }
 
 double LatencyMeasurement::getMaximumLatency() const {
-    return latencyStatistics.getMaxNs();
+    return latencyStatistics.getMaxNs() / 1000000000;
 }
 
 double LatencyMeasurement::getPercentileLatency(float percentile) const {
-    return latencyStatistics.getPercentileNs(percentile);
+    return latencyStatistics.getPercentileNs(percentile) / 1000000000;
 }
 
 double LatencyMeasurement::getOperationThroughput() const {

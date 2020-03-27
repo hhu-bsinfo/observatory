@@ -18,6 +18,7 @@
 #define OBSERVATORY_FILLRECEIVEQUEUEPHASE_H
 
 #include <memory>
+#include <observatory/operation/Operation.h>
 #include "BenchmarkPhase.h"
 
 namespace Observatory {
@@ -26,7 +27,7 @@ class FillReceiveQueuePhase : public BenchmarkPhase {
 
 public:
 
-    explicit FillReceiveQueuePhase(Benchmark &benchmark);
+    explicit FillReceiveQueuePhase(Benchmark &benchmark, const Operation &operation);
 
     FillReceiveQueuePhase(const FillReceiveQueuePhase &other) = delete;
 
@@ -37,6 +38,10 @@ public:
     const char* getName() override;
 
     Status execute() override;
+
+private:
+
+    bool fillReceiveQueue;
 
 };
 

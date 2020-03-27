@@ -35,7 +35,7 @@ void ThroughputMeasurement::setMeasuredTime(uint64_t timeInNanos) {
     this->totalTime = timeInNanos / 1000000000.0;
 
     operationThroughput = static_cast<double>(getOperationCount()) / totalTime;
-    operationThroughput = static_cast<double>(getTotalData()) / totalTime;
+    dataThroughput = static_cast<double>(getTotalData()) / totalTime;
 }
 
 ThroughputMeasurement::operator std::string() const {

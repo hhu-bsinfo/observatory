@@ -53,7 +53,7 @@ private:
     uint32_t operationCount;
     uint32_t operationSize;
 
-    uint64_t totalData{};
+    uint64_t totalData;
 
 };
 

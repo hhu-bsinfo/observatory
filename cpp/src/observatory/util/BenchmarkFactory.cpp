@@ -2,7 +2,7 @@
 
 namespace Observatory {
 
-std::map<std::string, Benchmark*> BenchmarkFactory::prototypeTable;
+std::map<std::string, std::unique_ptr<Benchmark>> BenchmarkFactory::prototypeTable;
 
 std::shared_ptr<Benchmark> BenchmarkFactory::newInstance(const std::string &type) {
     if(prototypeTable.count(type)) {
@@ -13,12 +13,11 @@ std::shared_ptr<Benchmark> BenchmarkFactory::newInstance(const std::string &type
 }
 
 void BenchmarkFactory::registerPrototype(Benchmark *prototype) {
-    prototypeTable[prototype->getClassName()] = prototype;
+    prototypeTable[prototype->getClassName()] = std::unique_ptr<Benchmark>(prototype);
 }
 
 void BenchmarkFactory::deregisterPrototype(const std::string &type) {
     if(prototypeTable.count(type)) {
-        delete prototypeTable.at(type);
         prototypeTable.erase(type);
     }
 }

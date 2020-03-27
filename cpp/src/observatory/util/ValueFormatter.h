@@ -23,9 +23,9 @@ public:
 
 private:
 
-    static const char highMetricTable[];
+    static const char *highMetricTable[];
 
-    static const char lowMetricTable[];
+    static const char *lowMetricTable[];
 
     static std::string formatHighValue(double value, const char *unit);
 

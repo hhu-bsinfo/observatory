@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 
     try {
         configFile >> benchmarkConfig;
-    } catch (nlohmann::detail::exception &e) {
+    } catch(nlohmann::detail::exception &e) {
         LOGGER.error("Unable to parse configuration file\n\033[0m %s\n", e.what());
         return 1;
     }

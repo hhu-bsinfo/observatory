@@ -42,8 +42,6 @@ public:
 
     Observatory::Status initialize() override;
 
-    Observatory::Status isServer() override;
-
     Observatory::Status serve(Observatory::SocketAddress &bindAddress) override;
 
     Observatory::Status connect(Observatory::SocketAddress &bindAddress, Observatory::SocketAddress &remoteAddress) override;
@@ -71,6 +69,11 @@ public:
 private:
 
     log4cpp::Category &LOGGER = log4cpp::Category::getInstance(getClassName());
+
+    int socket{};
+
+    uint8_t *buffer{};
+    uint32_t bufferSize{};
     
 };
 

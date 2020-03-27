@@ -47,7 +47,7 @@ public:
 
 private:
 
-    static std::map<std::string, Operation*> prototypeTable;
+    static std::map<std::string, std::unique_ptr<Operation>> prototypeTable;
 
 };
 

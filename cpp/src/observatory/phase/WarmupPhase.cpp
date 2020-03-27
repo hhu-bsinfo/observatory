@@ -15,10 +15,6 @@ const char* WarmupPhase::getName() {
 }
 
 Status WarmupPhase::execute() {
-    if(!getBenchmark().synchronize()) {
-        return Status::SYNC_ERROR;
-    }
-
     return operation.warmUp(operationCount);
 }
 

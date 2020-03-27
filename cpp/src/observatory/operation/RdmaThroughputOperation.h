@@ -48,7 +48,7 @@ public:
 
 private:
 
-    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("RdmaThroughputOperation");
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance(getClassName());
 
     Benchmark::RdmaMode rdmaMode;
 

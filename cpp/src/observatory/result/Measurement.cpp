@@ -6,7 +6,8 @@ namespace Observatory {
 
 Measurement::Measurement(uint32_t operationCount, uint32_t operationSize) :
         operationCount(operationCount),
-        operationSize(operationSize) {}
+        operationSize(operationSize),
+        totalData(static_cast<uint64_t>(operationCount) * static_cast<uint64_t>(operationSize)) {}
 
 uint32_t Measurement::getOperationCount() const {
     return operationCount;

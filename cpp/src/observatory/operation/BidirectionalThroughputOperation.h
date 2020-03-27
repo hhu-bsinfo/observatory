@@ -49,7 +49,7 @@ public:
 
 private:
 
-    log4cpp::Category &LOGGER = log4cpp::Category::getInstance("BidirectionalThroughputOperation");
+    log4cpp::Category &LOGGER = log4cpp::Category::getInstance(getClassName());
 
     std::shared_ptr<ThroughputOperation> sendOperation;
     std::shared_ptr<ThroughputOperation> receiveOperation;

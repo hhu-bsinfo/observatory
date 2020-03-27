@@ -112,8 +112,6 @@ public:
 
     virtual Status initialize() = 0;
 
-    virtual Status isServer() = 0;
-
     virtual Status serve(SocketAddress &bindAddress) = 0;
 
     virtual Status connect(SocketAddress &bindAddress, SocketAddress &remoteAddress) = 0;
