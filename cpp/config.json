@@ -1,0 +1,24 @@
+{
+  "className": "Socket::Benchmark",
+  "resultName": "Socket",
+  "parameters": [
+    { "key":  "deviceNumber", "value":  "0" },
+    { "key":  "portNumber", "value":  "1" },
+    { "key": "queueSize", "value": "200" }
+  ],
+  "detector": {
+    "enabled": false,
+    "deviceNumber": 0,
+    "mode": "compat"
+  },
+  "operations": [
+    {
+      "name": "MessagingPingPong",
+      "modes": [ "unidirectional" ],
+      "repetitions": 1,
+      "iterations": [
+        { "size": 1048576, "count": 390, "warmUp": 125 }
+      ]
+    }
+  ]
+}

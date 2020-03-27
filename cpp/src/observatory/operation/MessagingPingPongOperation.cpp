@@ -54,6 +54,7 @@ Status MessagingPingPongOperation::execute() {
         }
 
         uint64_t time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+        getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
         getMeasurement().finishMeasuring(time);
     } else {
         for (uint32_t i = 0; i < getMeasurement().getOperationCount(); i++) {

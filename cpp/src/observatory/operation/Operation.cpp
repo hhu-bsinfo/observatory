@@ -1,5 +1,7 @@
 #include "Operation.h"
 
+#include <utility>
+
 namespace Observatory {
 
 Operation::Operation(Observatory::Benchmark *benchmark, Observatory::Benchmark::Mode mode, std::shared_ptr<Measurement> measurement) :
@@ -21,6 +23,10 @@ OverheadMeasurement& Operation::getOverheadMeasurement() const {
 
 Measurement& Operation::getMeasurement() const {
     return *measurement;
+}
+
+void Operation::setOverheadMeasurement(std::shared_ptr<OverheadMeasurement> overheadMeasurement) {
+    this->overheadMeasurement = std::move(overheadMeasurement);
 }
 
 }

@@ -57,6 +57,7 @@ public class MessagingPingPongOperation extends LatencyOperation {
                 }
             }
 
+            getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
             getMeasurement().finishMeasuring(System.nanoTime() - startTime);
         } else {
             for(int i = 0; i < getMeasurement().getOperationCount(); i++) {

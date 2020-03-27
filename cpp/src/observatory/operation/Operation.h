@@ -43,6 +43,8 @@ public:
 
     OverheadMeasurement& getOverheadMeasurement() const;
 
+    void setOverheadMeasurement(std::shared_ptr<OverheadMeasurement> overheadMeasurement);
+
     virtual Measurement& getMeasurement() const;
 
     virtual const char* getClassName() const = 0;

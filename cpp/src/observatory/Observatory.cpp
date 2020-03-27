@@ -11,6 +11,7 @@
 #include <observatory/operation/RdmaReadLatencyOperation.h>
 #include <observatory/util/BenchmarkFactory.h>
 #include <observatory/util/OperationFactory.h>
+#include <observatory/util/Util.h>
 #include <observatory/phase/InitializationPhase.h>
 #include <observatory/operation/BidirectionalThroughputOperation.h>
 #include <observatory/phase/FillReceiveQueuePhase.h>
@@ -71,7 +72,7 @@ void Observatory::start() {
                             std::shared_ptr<Operation> receiveOperation = OperationFactory::newInstance(operationClassName, benchmark.get(),
                                     isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
 
-                            if(std::string(sendOperation->getClassName()).find("ThroughputOperation") == std::string::npos || std::string(receiveOperation->getClassName()).find("ThroughputOperation") == std::string::npos) {
+                            if(!Util::instanceof<ThroughputOperation>(&*sendOperation) || !Util::instanceof<ThroughputOperation>(&*receiveOperation)) {
                                 LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
                                 return;
                             }

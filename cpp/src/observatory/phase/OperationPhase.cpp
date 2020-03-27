@@ -1,6 +1,12 @@
 #include "OperationPhase.h"
 #include <observatory/Benchmark.h>
 #include <detector/exception/IbPerfException.h>
+#include <observatory/operation/ThroughputOperation.h>
+#include <observatory/util/Util.h>
+#include <observatory/operation/BidirectionalThroughputOperation.h>
+#include <observatory/operation/MessagingPingPongOperation.h>
+#include <observatory/operation/RdmaReadThroughputOperation.h>
+#include <observatory/operation/RdmaReadLatencyOperation.h>
 
 namespace Observatory {
 
@@ -54,7 +60,27 @@ Status OperationPhase::execute() {
 }
 
 Status OperationPhase::calculateOverhead() {
-    return Status::NOT_IMPLEMENTED;
+    Detector::IbPerfCounter &perfCounter = getBenchmark().getPerfCounter();
+
+    try {
+        perfCounter.RefreshCounters();
+    } catch (Detector::IbPerfException &e) {
+        LOGGER.error("Unable to refresh performance counters\n\033[0m %s", e.what());
+        return Status::NETWORK_ERROR;
+    }
+
+    if(Util::instanceof<BidirectionalThroughputOperation>(&operation) || Util::instanceof<MessagingPingPongOperation>(&operation)) {
+        operation.setOverheadMeasurement(std::make_shared<OverheadMeasurement>(
+                perfCounter.GetXmitDataBytes() + perfCounter.GetRcvDataBytes(), operation.getMeasurement()));
+    } else if(Util::instanceof<RdmaReadThroughputOperation>(&operation) || Util::instanceof<RdmaReadLatencyOperation>(&operation)) {
+        operation.setOverheadMeasurement(std::make_shared<OverheadMeasurement>(
+                operation.getMode() == Benchmark::Mode::SEND ? perfCounter.GetRcvDataBytes() : perfCounter.GetXmitDataBytes(),operation.getMeasurement()));
+    } else {
+        operation.setOverheadMeasurement(std::make_shared<OverheadMeasurement>(
+                operation.getMode() == Benchmark::Mode::SEND ? perfCounter.GetXmitDataBytes() : perfCounter.GetRcvDataBytes(), operation.getMeasurement()));
+    }
+
+    return Status::OK;
 }
 
 void OperationPhase::saveSingleResult(std::string &path, std::string &operationSize, std::map<std::string, std::string> &valueMap) {
