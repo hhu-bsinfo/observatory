@@ -39,6 +39,8 @@ public:
 
     double getRawDataThroughput();
 
+    double getOverheadData();
+
     double getOverheadFactor();
 
     double getOverheadDataThroughput();

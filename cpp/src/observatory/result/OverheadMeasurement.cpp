@@ -27,6 +27,10 @@ double OverheadMeasurement::getRawDataThroughput() {
     return rawDataThroughput;
 }
 
+double OverheadMeasurement::getOverheadData() {
+    return overheadData;
+}
+
 double OverheadMeasurement::getOverheadFactor() {
     return overheadFactor;
 }

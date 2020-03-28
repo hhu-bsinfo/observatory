@@ -72,7 +72,8 @@ if (insource)
 endif ()
 
 # Set compiler-flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -I/usr/include/infiniband")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -I/usr/include/infiniband")
 
 # Add nlohmann_json as external project
 find_package(nlohmann_json REQUIRED)
