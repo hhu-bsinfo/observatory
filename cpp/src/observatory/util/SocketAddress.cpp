@@ -1,6 +1,7 @@
 #include <sstream>
 #include <libnet.h>
 #include <cstring>
+#include <iostream>
 #include "SocketAddress.h"
 
 namespace Observatory {
@@ -8,12 +9,20 @@ namespace Observatory {
 SocketAddress::SocketAddress(const std::string &hostname, uint16_t port) :
         hostname(hostname),
         port(port) {
-    address.sin_family = AF_INET;
-    address.sin_port = htons(port);
+    addrinfo hints{};
+    addrinfo *resolvedAddress;
 
-    if(inet_pton(AF_INET, hostname.c_str(), &address.sin_addr) <= 0) {
-        throw std::runtime_error("Invalid address '" + hostname + "'");
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    int ret = getaddrinfo(hostname.c_str(), nullptr, &hints, &resolvedAddress);
+    if(ret) {
+        throw std::runtime_error("Address resolution failed (" + std::string(gai_strerror(ret)) + ")");
     }
+
+    address = *reinterpret_cast<sockaddr_in*>(resolvedAddress->ai_addr);
+    address.sin_port = htons(port);
 }
 
 SocketAddress::SocketAddress(uint16_t port) :
