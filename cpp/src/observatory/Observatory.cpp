@@ -1,4 +1,5 @@
 #include <socket-binding/Benchmark.h>
+#include <verbs-binding/Benchmark.h>
 #include <observatory/phase/ConnectionPhase.h>
 #include <observatory/phase/PreparationPhase.h>
 #include <observatory/phase/CleanupPhase.h>
@@ -32,6 +33,7 @@ Observatory::Observatory(nlohmann::json &config, std::string &resultPath, bool i
 
 void Observatory::registerPrototypes() {
     BENCHMARK_REGISTER(Socket::Benchmark)
+    BENCHMARK_REGISTER(Verbs::Benchmark)
 
     OPERATION_REGISTER(::Observatory::MessagingThroughputOperation)
     OPERATION_REGISTER(::Observatory::RdmaWriteThroughputOperation)

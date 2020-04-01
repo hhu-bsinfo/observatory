@@ -58,6 +58,7 @@ public class LatencyMeasurement extends Measurement {
                 ",\n\t" + ValueFormatter.formatValue("operationSize", getOperationSize(), "Byte") +
                 ",\n\t" + ValueFormatter.formatValue("totalData", getTotalData(), "Byte") +
                 ",\n\t" + ValueFormatter.formatValue("totalTime", getTotalTime(), "s") +
+                ",\n\t" + ValueFormatter.formatValue("operationThroughput", operationThroughput, "Operations/s") +
                 ",\n\t" + ValueFormatter.formatValue("averageLatency", getAverageLatency(), "s") +
                 ",\n\t" + ValueFormatter.formatValue("minimumLatency", getMinimumLatency(), "s") +
                 ",\n\t" + ValueFormatter.formatValue("maximumLatency", getMaximumLatency(), "s") +

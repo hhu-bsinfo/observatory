@@ -26,13 +26,14 @@ class ConnectionContext implements AutoCloseable {
 
     private final QueuePair queuePair;
 
+    private final byte portNumber;
     private final PortAttributes port;
 
-    ConnectionContext(int deviceNumber, int portNumber, int queueSize) throws IOException {
+    ConnectionContext(int deviceNumber, byte portNumber, int queueSize) throws IOException {
         int numDevices = Context.getDeviceCount();
 
         if(numDevices <= deviceNumber) {
-            throw new InvalidParameterException("Invalid device number '" + deviceNumber + "'. Only " + numDevices + " InfiniBand " + (numDevices == 1 ? "device was" : "devices were") + " found in your system");
+            throw new InvalidParameterException("Invalid device number '" + deviceNumber + "'. Only " + numDevices +  " InfiniBand " + (numDevices == 1 ? "device was" : "devices were") + " found in your system");
         }
 
         context = Context.openDevice(deviceNumber);
@@ -49,9 +50,10 @@ class ConnectionContext implements AutoCloseable {
 
         LOGGER.info("Allocated protection domain");
 
+        this.portNumber = portNumber;
         port = context.queryPort(portNumber);
         if(port == null) {
-            throw new IOException("Unable to query port");
+            throw new IOException("Unable to query port number '" + portNumber + "'");
         }
 
         sendCompletionQueue = context.createCompletionQueue(queueSize, null);
@@ -78,7 +80,7 @@ class ConnectionContext implements AutoCloseable {
     }
 
     void connect(Socket socket) throws IOException {
-        ConnectionInformation localInfo = new ConnectionInformation((byte) 1, port.getLocalId(), queuePair.getQueuePairNumber());
+        ConnectionInformation localInfo = new ConnectionInformation(portNumber, port.getLocalId(), queuePair.getQueuePairNumber());
         byte[] remoteBytes = new byte[ConnectionInformation.getSizeInBytes()];
 
         LOGGER.info("Sending local connection information: {}", localInfo);

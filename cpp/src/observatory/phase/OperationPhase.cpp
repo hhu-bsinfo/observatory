@@ -86,9 +86,12 @@ Status OperationPhase::calculateOverhead() {
 
 void OperationPhase::saveSingleResult(std::string &path, uint32_t operationSize, std::map<std::string, std::string> &valueMap) {
     std::ofstream file;
+    std::string folderPath = path.substr(0, path.find_last_of('/')) + "'";
 
     // UGLY!!
-    std::system(("mkdir -p '" + path.substr(0, path.find_last_of('/')) + "'").c_str());
+    if(std::system(("mkdir -p '" + folderPath).c_str())) {
+        throw std::runtime_error("Unable to open file '" + folderPath + "'!");
+    }
 
     file.open(path, std::ios::out | std::ios::app);
 

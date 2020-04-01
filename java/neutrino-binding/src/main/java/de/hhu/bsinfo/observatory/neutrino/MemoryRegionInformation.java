@@ -41,7 +41,7 @@ class MemoryRegionInformation {
 
     @Override
     public String toString() {
-        return "MemoryRegionInfo {" +
+        return "MemoryRegionInformation {" +
                 "\n\taddress=" + address +
                 ",\n\tremoteKey=" + remoteKey +
                 "\n}";

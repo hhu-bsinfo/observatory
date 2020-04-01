@@ -274,8 +274,6 @@ public abstract class Benchmark {
 
             Status status = phase.execute();
 
-            synchronize();
-
             if(status == Status.NOT_IMPLEMENTED) {
                 LOGGER.warn("{} returned [{}] and is being skipped", phaseName, status);
                 continue;

@@ -16,13 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_SOCKET_BENCHMARK_H
-#define OBSERVATORY_SOCKET_BENCHMARK_H
+#ifndef OBSERVATORY_VERBS_BENCHMARK_H
+#define OBSERVATORY_VERBS_BENCHMARK_H
 
 #include <observatory/Benchmark.h>
 #include <observatory/util/BenchmarkFactory.h>
+#include "ConnectionContext.h"
+#include "MemoryRegionInformation.h"
 
-namespace Socket {
+namespace Verbs {
 
 class Benchmark : public Observatory::Benchmark {
 
@@ -32,13 +34,13 @@ public:
 
     Benchmark(const Benchmark &other) = delete;
 
-    Benchmark& operator=(const Benchmark &other) = delete;
+    Benchmark &operator=(const Benchmark &other) = delete;
 
     ~Benchmark() override = default;
 
-    BENCHMARK_IMPLEMENT_INSTANTIATE(Socket::Benchmark);
+    BENCHMARK_IMPLEMENT_INSTANTIATE(Verbs::Benchmark);
 
-    const char* getClassName() const override ;
+    const char *getClassName() const override;
 
     Observatory::Status initialize() override;
 
@@ -68,13 +70,41 @@ public:
 
 private:
 
+    MemoryRegionInformation exchangeMemoryRegionInformation();
+
+private:
+
+    static const constexpr char *PARAM_KEY_DEVICE_NUMBER = "deviceNumber";
+    static const constexpr char *PARAM_KEY_PORT_NUMBER = "portNumber";
+    static const constexpr char *PARAM_KEY_QUEUE_SIZE = "queueSize";
+
+    static const constexpr uint32_t DEFAULT_DEVICE_NUMBER = 0;
+    static const constexpr uint8_t DEFAULT_PORT_NUMBER = 1;
+    static const constexpr uint32_t DEFAULT_QUEUE_SIZE = 100;
+
     log4cpp::Category &LOGGER = log4cpp::Category::getInstance(getClassName());
 
-    int socket{};
+    uint32_t queueSize{};
 
-    uint8_t *buffer{};
-    uint32_t bufferSize{};
-    
+    uint32_t pendingSendCompletions{};
+    uint32_t pendingReceiveCompletions{};
+
+    ConnectionContext *context{};
+
+    uint8_t *sendBuffer{};
+    ibv_mr *sendMemoryRegion{};
+
+    uint8_t *receiveBuffer{};
+    ibv_mr *receiveMemoryRegion{};
+
+    ibv_wc *sendWorkCompletions{};
+    ibv_wc *receiveWorkCompletions{};
+
+    ibv_send_wr *sendWorkRequests{};
+    ibv_recv_wr *receiveWorkRequests{};
+
+    ibv_sge sendScatterGatherElement{};
+    ibv_sge receiveScatterGatherElement{};
 };
 
 }

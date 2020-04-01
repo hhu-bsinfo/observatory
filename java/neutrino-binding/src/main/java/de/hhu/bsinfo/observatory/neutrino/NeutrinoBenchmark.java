@@ -29,7 +29,7 @@ public class NeutrinoBenchmark extends Benchmark {
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
 
     private static final int DEFAULT_DEVICE_NUMBER = 0;
-    private static final int DEFAULT_PORT_NUMBER = 1;
+    private static final byte DEFAULT_PORT_NUMBER = 1;
     private static final int DEFAULT_QUEUE_SIZE = 100;
 
     private int queueSize;
@@ -59,7 +59,7 @@ public class NeutrinoBenchmark extends Benchmark {
     @Override
     protected Status initialize() {
         int deviceNumber = getParameter(PARAM_KEY_DEVICE_NUMBER, DEFAULT_DEVICE_NUMBER);
-        int portNumber = getParameter(PARAM_KEY_PORT_NUMBER, DEFAULT_PORT_NUMBER);
+        byte portNumber = getParameter(PARAM_KEY_PORT_NUMBER, DEFAULT_PORT_NUMBER);
         queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
 
         sendCompletionArray = new CompletionQueue.WorkCompletionArray(queueSize);
@@ -111,15 +111,13 @@ public class NeutrinoBenchmark extends Benchmark {
         receiveWorkRequests = new ReceiveWorkRequest[queueSize];
 
         SendWorkRequest.Builder sendBuilder = new SendWorkRequest.Builder()
-                .withOpCode(OpCode.SEND);
+                .withOpCode(OpCode.SEND)
+                .withScatterGatherElement(sendScatterGatherElement);
         ReceiveWorkRequest.Builder receiveBuilder = new ReceiveWorkRequest.Builder()
                 .withScatterGatherElement(receiveScatterGatherElement);
 
         for(int i = 0; i < queueSize; i++) {
             sendWorkRequests[i] = sendBuilder.build();
-        }
-
-        for(int i = 0; i < queueSize; i++) {
             receiveWorkRequests[i] = receiveBuilder.build();
         }
 
@@ -357,7 +355,6 @@ public class NeutrinoBenchmark extends Benchmark {
         for(int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(OpCode.SEND);
             sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
-            sendWorkRequests[i].setScatterGatherElement(sendScatterGatherElement);
 
             sendList.add(sendWorkRequests[i]);
         }
@@ -389,7 +386,6 @@ public class NeutrinoBenchmark extends Benchmark {
         for(int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(mode == RdmaMode.WRITE ? OpCode.RDMA_WRITE : OpCode.RDMA_READ);
             sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
-            sendWorkRequests[i].setScatterGatherElement(sendScatterGatherElement);
 
             sendWorkRequests[i].rdma.setRemoteAddress(remoteInfo.getAddress());
             sendWorkRequests[i].rdma.setRemoteKey(remoteInfo.getRemoteKey());
