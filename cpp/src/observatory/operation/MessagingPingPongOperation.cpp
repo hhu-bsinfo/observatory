@@ -14,7 +14,7 @@ const char* MessagingPingPongOperation::getOutputFilename() const {
 }
 
 bool MessagingPingPongOperation::needsFilledReceiveQueue() const {
-    return getMode() != Benchmark::Mode::SEND;
+    return true;
 }
 
 Status MessagingPingPongOperation::warmUp(uint32_t operationCount) {
@@ -28,7 +28,7 @@ Status MessagingPingPongOperation::warmUp(uint32_t operationCount) {
         }
     } else {
         for(uint32_t i = 0; i < operationCount; i++) {
-            Status status = getBenchmark().performPingPongIterationServer();
+            Status status = getBenchmark().performPingPongIterationClient();
 
             if(status != Status::OK) {
                 return status;
@@ -58,7 +58,7 @@ Status MessagingPingPongOperation::execute() {
         getMeasurement().finishMeasuring(time);
     } else {
         for (uint32_t i = 0; i < getMeasurement().getOperationCount(); i++) {
-            Status status = getBenchmark().performPingPongIterationServer();
+            Status status = getBenchmark().performPingPongIterationClient();
 
             if (status != Status::OK) {
                 return status;

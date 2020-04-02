@@ -68,13 +68,13 @@ ConnectionContext::ConnectionContext(uint32_t deviceNumber, uint8_t portNumber, 
 
     LOGGER.info("Created queue pair");
 
-    ibv_qp_attr queuePairAttributes{};
-    queuePairAttributes.qp_state = IBV_QPS_INIT;
-    queuePairAttributes.pkey_index = 0;
-    queuePairAttributes.port_num = 1;
-    queuePairAttributes.qp_access_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
+    ibv_qp_attr initAttributes{};
+    initAttributes.qp_state = IBV_QPS_INIT;
+    initAttributes.pkey_index = 0;
+    initAttributes.port_num = 1;
+    initAttributes.qp_access_flags = IBV_ACCESS_LOCAL_WRITE | IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_WRITE;
 
-    ret = ibv_modify_qp(queuePair, &queuePairAttributes, IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS);
+    ret = ibv_modify_qp(queuePair, &initAttributes, IBV_QP_STATE | IBV_QP_PKEY_INDEX | IBV_QP_PORT | IBV_QP_ACCESS_FLAGS);
     if(ret) {
         throw std::runtime_error("Unable to move queue pair into INIT state (" + std::string(std::strerror(ret)) + ")");
     }
@@ -113,6 +113,46 @@ void ConnectionContext::connect(int socket) {
 
     auto remoteInfo = ConnectionInformation::fromBytes(remoteBytes.get());
     LOGGER.info("Received remote connection information: %s", static_cast<std::string>(remoteInfo).c_str());
+
+    ibv_qp_attr rtrAttributes{};
+    rtrAttributes.qp_state = IBV_QPS_RTR;
+    rtrAttributes.path_mtu = IBV_MTU_4096;
+    rtrAttributes.rq_psn = 0;
+    rtrAttributes.dest_qp_num = remoteInfo.getQueuePairNumber();
+    rtrAttributes.max_dest_rd_atomic = 1;
+    rtrAttributes.min_rnr_timer = 12;
+    rtrAttributes.port_num = 1;
+    rtrAttributes.ah_attr.is_global = 0;
+    rtrAttributes.ah_attr.dlid = remoteInfo.getLocalId();
+    rtrAttributes.ah_attr.sl = 1;
+    rtrAttributes.ah_attr.src_path_bits = 0;
+    rtrAttributes.ah_attr.port_num = remoteInfo.getPortNumber();
+
+    int ret = ibv_modify_qp(queuePair, &rtrAttributes, IBV_QP_STATE | IBV_QP_AV | IBV_QP_PATH_MTU | IBV_QP_DEST_QPN |
+            IBV_QP_RQ_PSN | IBV_QP_MAX_DEST_RD_ATOMIC | IBV_QP_MIN_RNR_TIMER);
+
+    if(ret) {
+        throw std::runtime_error("Unable to move queue pair into RTR state (" + std::string(std::strerror(ret)) + ")");
+    }
+
+    LOGGER.info("Moved queue pair into RTR state");
+
+    ibv_qp_attr rtsAttributes{};
+    rtsAttributes.qp_state = IBV_QPS_RTS;
+    rtsAttributes.sq_psn = 0;
+    rtsAttributes.timeout = 14;
+    rtsAttributes.retry_cnt = 7;
+    rtsAttributes.rnr_retry = 7;
+    rtsAttributes.max_rd_atomic = 1;
+
+    ret = ibv_modify_qp(queuePair, &rtsAttributes, IBV_QP_STATE | IBV_QP_TIMEOUT | IBV_QP_RETRY_CNT | IBV_QP_RNR_RETRY |
+            IBV_QP_SQ_PSN | IBV_QP_MAX_QP_RD_ATOMIC);
+
+    if(ret) {
+        throw std::runtime_error("Unable to move queue pair into RTS state (" + std::string(std::strerror(ret)) + ")");
+    }
+
+    LOGGER.info("Moved queue pair into RTS state");
 }
 
 ibv_pd* ConnectionContext::getProtectionDomain() {

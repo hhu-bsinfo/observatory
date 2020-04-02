@@ -30,7 +30,7 @@ class Benchmark : public Observatory::Benchmark {
 
 public:
 
-    Benchmark() = default;
+    Benchmark();
 
     Benchmark(const Benchmark &other) = delete;
 
@@ -72,6 +72,14 @@ private:
 
     MemoryRegionInformation exchangeMemoryRegionInformation();
 
+    void postSend(uint32_t amount);
+
+    void postReceive(uint32_t amount);
+
+    void postRdma(uint32_t amount, RdmaMode mode);
+
+    uint32_t pollCompletions(Mode mode);
+
 private:
 
     static const constexpr char *PARAM_KEY_DEVICE_NUMBER = "deviceNumber";
@@ -90,6 +98,7 @@ private:
     uint32_t pendingReceiveCompletions{};
 
     ConnectionContext *context{};
+    MemoryRegionInformation remoteMemoryRegionInfo;
 
     uint8_t *sendBuffer{};
     ibv_mr *sendMemoryRegion{};

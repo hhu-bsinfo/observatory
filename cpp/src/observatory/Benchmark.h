@@ -144,7 +144,7 @@ private:
 
 private:
 
-    static const constexpr char *SYNC_SIGNAL = "SYNC";
+    static const char SYNC_SIGNAL[];
 
     log4cpp::Category &LOGGER = log4cpp::Category::getInstance("Benchmark");
 

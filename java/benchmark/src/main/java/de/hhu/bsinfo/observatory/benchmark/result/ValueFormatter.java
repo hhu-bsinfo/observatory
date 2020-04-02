@@ -53,7 +53,7 @@ public class ValueFormatter {
             return String.format("%.3f %c%s (%d)", formattedValue, lowMetricTable[counter], unit, (long) value);
         }
 
-        return String.format("%.3f %c%s (%s)", formattedValue, lowMetricTable[counter], unit, Double.toString(value));
+        return String.format("%.3f %c%s (%f)", formattedValue, lowMetricTable[counter], unit, value);
     }
 
     public static String formatValue(final double value, final String unit) {

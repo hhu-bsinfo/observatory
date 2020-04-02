@@ -70,16 +70,16 @@ void Observatory::start() {
                                     isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"], iterationConfig["size"]);
                         } else if(mode == "bidirectional") {
                             std::shared_ptr<Operation> sendOperation = OperationFactory::newInstance(operationClassName, benchmark.get(),
-                                    isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
+                                    Benchmark::Mode::SEND,iterationConfig["count"],iterationConfig["size"]);
                             std::shared_ptr<Operation> receiveOperation = OperationFactory::newInstance(operationClassName, benchmark.get(),
-                                    isServer ? Benchmark::Mode::SEND : Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
+                                    Benchmark::Mode::RECEIVE,iterationConfig["count"],iterationConfig["size"]);
 
                             if(!Util::instanceof<ThroughputOperation>(&*sendOperation) || !Util::instanceof<ThroughputOperation>(&*receiveOperation)) {
                                 LOGGER.error("Invalid configuration: Only throughput operations may be executed bidirectionally");
                                 return;
                             }
 
-                            operation = std::shared_ptr<Operation>(new BidirectionalThroughputOperation(std::dynamic_pointer_cast<ThroughputOperation>(sendOperation), std::dynamic_pointer_cast<ThroughputOperation>(receiveOperation)));
+                            operation = std::shared_ptr<Operation>(new BidirectionalThroughputOperation(std::static_pointer_cast<ThroughputOperation>(sendOperation), std::static_pointer_cast<ThroughputOperation>(receiveOperation)));
                         }
                     } catch(std::runtime_error &e) {
                         LOGGER.error("Unable to instantiate operation of type '%s'\n\033[0m %s", operationClassName.c_str(), e.what());

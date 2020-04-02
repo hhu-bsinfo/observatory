@@ -7,9 +7,14 @@ namespace Observatory {
 BidirectionalThroughputOperation::BidirectionalThroughputOperation(std::shared_ptr<ThroughputOperation> sendOperation, std::shared_ptr<ThroughputOperation> receiveOperation) :
         ThroughputOperation(&sendOperation->getBenchmark(), sendOperation->getMode(), sendOperation->getMeasurement().getOperationCount(), sendOperation->getMeasurement().getOperationSize()),
         sendOperation(std::move(sendOperation)),
-        receiveOperation(std::move(receiveOperation)) {}
+        receiveOperation(std::move(receiveOperation)) {
+    std::string tmp = std::string("Bidirectional ") + this->sendOperation->getOutputFilename();
 
+    outputFilename = std::shared_ptr<char[]>(new char[tmp.length() + 1]);
+    tmp.copy(outputFilename.get(), tmp.length());
 
+    outputFilename[tmp.length()] = 0;
+}
 
 BidirectionalThroughputOperation* BidirectionalThroughputOperation::instantiate(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize) const {
     LOGGER.error("BidirectionalThroughputOperation cannot be instantiated by calling 'instantiate()' (Use 'new' instead)");
@@ -21,7 +26,7 @@ const char *BidirectionalThroughputOperation::getClassName() const {
 }
 
 const char *BidirectionalThroughputOperation::getOutputFilename() const {
-    return (std::string("Bidirectional ") + sendOperation->getOutputFilename()).c_str();
+    return outputFilename.get();
 }
 
 bool BidirectionalThroughputOperation::needsFilledReceiveQueue() const {
@@ -64,6 +69,7 @@ Status BidirectionalThroughputOperation::execute() {
     } else if(receiveStatus != Status::OK) {
         return receiveStatus;
     }
+
     getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
     getMeasurement().setTotalTime(sendOperation->getMeasurement().getTotalTime());
     getMeasurement().setOperationThroughput(sendOperation->getMeasurement().getOperationThroughput() + receiveOperation->getMeasurement().getOperationThroughput());

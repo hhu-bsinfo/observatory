@@ -54,6 +54,8 @@ private:
     std::shared_ptr<ThroughputOperation> sendOperation;
     std::shared_ptr<ThroughputOperation> receiveOperation;
 
+    std::shared_ptr<char[]> outputFilename;
+
 };
 
 }

@@ -31,7 +31,13 @@ double LatencyStatistics::getMaxNs() const {
 }
 
 double LatencyStatistics::getTotalNs() const {
-    return std::accumulate(times.begin(), times.end(), 0, [](uint64_t a, uint64_t b){ return a + b; });
+    double tmp = 0;
+
+    for (uint32_t i = 0; i < pos; i++) {
+        tmp += times[i];
+    }
+
+    return tmp;
 }
 
 double LatencyStatistics::getAvgNs() const {

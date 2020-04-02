@@ -5,6 +5,8 @@
 
 namespace Observatory {
 
+const constexpr char Benchmark::SYNC_SIGNAL[] = "SYNC";
+
 void Benchmark::addBenchmarkPhase(const std::shared_ptr<BenchmarkPhase>& phase) {
     phases.push_back(phase);
 }

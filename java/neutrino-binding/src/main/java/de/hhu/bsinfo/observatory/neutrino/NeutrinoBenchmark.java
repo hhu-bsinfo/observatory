@@ -111,7 +111,6 @@ public class NeutrinoBenchmark extends Benchmark {
         receiveWorkRequests = new ReceiveWorkRequest[queueSize];
 
         SendWorkRequest.Builder sendBuilder = new SendWorkRequest.Builder()
-                .withOpCode(OpCode.SEND)
                 .withScatterGatherElement(sendScatterGatherElement);
         ReceiveWorkRequest.Builder receiveBuilder = new ReceiveWorkRequest.Builder()
                 .withScatterGatherElement(receiveScatterGatherElement);
