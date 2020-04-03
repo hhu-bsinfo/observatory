@@ -55,7 +55,7 @@ std::string ValueFormatter::formatHighValue(double value, const char *unit) {
     stream << std::fixed << std::setprecision(3)
            << formattedValue << " "
            << highMetricTable[counter] << unit
-           << std::fixed << std::setprecision(6)
+           << std::scientific << std::setprecision(12)
            << " (" << (value == static_cast<uint64_t>(value) ? static_cast<uint64_t>(value) : value) << ")";
 
     return stream.str();
@@ -75,7 +75,7 @@ std::string ValueFormatter::formatLowValue(double value, const char *unit) {
     stream << std::fixed << std::setprecision(3)
            << formattedValue << " "
            << lowMetricTable[counter] << unit
-           << std::fixed << std::setprecision(6)
+           << std::scientific << std::setprecision(12)
            << " (" << (value == static_cast<uint64_t>(value) ? static_cast<uint64_t>(value) : value) << ")";
 
     return stream.str();

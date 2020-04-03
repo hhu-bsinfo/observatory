@@ -41,7 +41,7 @@ Status MessagingPingPongOperation::warmUp(uint32_t operationCount) {
 
 Status MessagingPingPongOperation::execute() {
     if (getMode() == Benchmark::Mode::SEND) {
-        auto startTime = std::chrono::high_resolution_clock::now();
+        auto startTime = std::chrono::steady_clock::now();
 
         for (uint32_t i = 0; i < getMeasurement().getOperationCount(); i++) {
             getMeasurement().startSingleMeasurement();
@@ -53,7 +53,7 @@ Status MessagingPingPongOperation::execute() {
             }
         }
 
-        uint64_t time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+        uint64_t time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - startTime).count();
         getMeasurement().setTotalData(getMeasurement().getTotalData() * 2);
         getMeasurement().finishMeasuring(time);
     } else {

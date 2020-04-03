@@ -11,11 +11,11 @@ LatencyStatistics::LatencyStatistics(uint32_t size) :
         pos(0) {}
 
 void LatencyStatistics::start() {
-    tmpTime = std::chrono::high_resolution_clock::now();
+    tmpTime = std::chrono::steady_clock::now();
 }
 
 void LatencyStatistics::stop() {
-    times[pos++] = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - tmpTime).count();
+    times[pos++] = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - tmpTime).count();
 }
 
 void LatencyStatistics::sortAscending() {

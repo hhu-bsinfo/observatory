@@ -43,7 +43,7 @@ private:
 
     Status calculateOverhead();
 
-    void saveSingleResult(std::string &path, uint32_t operationSize, std::map<std::string, std::string> &valueMap);
+    void saveSingleResult(std::string &path, uint32_t operationSize, std::map<std::string, double> &valueMap);
 
     void saveResults();
 

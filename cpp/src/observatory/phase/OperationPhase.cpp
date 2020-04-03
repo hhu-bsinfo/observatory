@@ -8,6 +8,7 @@
 #include <observatory/operation/RdmaReadThroughputOperation.h>
 #include <observatory/operation/RdmaReadLatencyOperation.h>
 #include <fstream>
+#include <iomanip>
 
 namespace Observatory {
 
@@ -84,7 +85,7 @@ Status OperationPhase::calculateOverhead() {
     return Status::OK;
 }
 
-void OperationPhase::saveSingleResult(std::string &path, uint32_t operationSize, std::map<std::string, std::string> &valueMap) {
+void OperationPhase::saveSingleResult(std::string &path, uint32_t operationSize, std::map<std::string, double> &valueMap) {
     std::ofstream file;
     std::string folderPath = path.substr(0, path.find_last_of('/')) + "'";
 
@@ -111,6 +112,7 @@ void OperationPhase::saveSingleResult(std::string &path, uint32_t operationSize,
     }
 
     file << getBenchmark().getResultName() << "," << getBenchmark().getIterationNumber() << "," << operationSize;
+    file << std::scientific << std::setprecision(12);
 
     for(const auto &element : valueMap) {
         file << "," << element.second;
@@ -124,37 +126,37 @@ void OperationPhase::saveResults() {
     if(Util::instanceof<ThroughputOperation>(&operation)) {
         auto &measurement = dynamic_cast<ThroughputMeasurement&>(operation.getMeasurement());
         std::string path = getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv";
-        std::map<std::string, std::string> valueMap = {
-                {"OperationThroughput", std::to_string(measurement.getOperationThroughput())},
-                {"DataThroughput", std::to_string(measurement.getDataThroughput())}
+        std::map<std::string, double> valueMap = {
+                {"OperationThroughput", measurement.getOperationThroughput()},
+                {"DataThroughput", measurement.getDataThroughput()}
         };
 
         if(getBenchmark().measureOverhead()) {
-            valueMap["DataOverhead"] = std::to_string(operation.getOverheadMeasurement().getOverheadData());
-            valueMap["DataOverheadFactor"] = std::to_string(operation.getOverheadMeasurement().getOverheadFactor());
-            valueMap["DataThroughputOverhead"] = std::to_string(operation.getOverheadMeasurement().getOverheadDataThroughput());
+            valueMap["DataOverhead"] = operation.getOverheadMeasurement().getOverheadData();
+            valueMap["DataOverheadFactor"] = operation.getOverheadMeasurement().getOverheadFactor();
+            valueMap["DataThroughputOverhead"] = operation.getOverheadMeasurement().getOverheadDataThroughput();
         }
 
         saveSingleResult(path, measurement.getOperationSize(), valueMap);
     } else if(Util::instanceof<LatencyOperation>(&operation)) {
         auto &measurement = dynamic_cast<LatencyMeasurement&>(operation.getMeasurement());
         std::string path = getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv";
-        std::map<std::string, std::string> valueMap = {
-                {"OperationThroughput", std::to_string(measurement.getOperationThroughput())},
-                {"AverageLatency", std::to_string(measurement.getAverageLatency())},
-                {"MinimumLatency", std::to_string(measurement.getMinimumLatency())},
-                {"MaximumLatency", std::to_string(measurement.getMaximumLatency())},
-                {"50thLatency", std::to_string(measurement.getPercentileLatency(0.5f))},
-                {"95thLatency", std::to_string(measurement.getPercentileLatency(0.95f))},
-                {"99thLatency", std::to_string(measurement.getPercentileLatency(0.99f))},
-                {"999thLatency", std::to_string(measurement.getPercentileLatency(0.999f))},
-                {"9999thLatency", std::to_string(measurement.getPercentileLatency(0.9999f))}
+        std::map<std::string, double> valueMap = {
+                {"OperationThroughput", measurement.getOperationThroughput()},
+                {"AverageLatency", measurement.getAverageLatency()},
+                {"MinimumLatency", measurement.getMinimumLatency()},
+                {"MaximumLatency", measurement.getMaximumLatency()},
+                {"50thLatency", measurement.getPercentileLatency(0.5f)},
+                {"95thLatency", measurement.getPercentileLatency(0.95f)},
+                {"99thLatency", measurement.getPercentileLatency(0.99f)},
+                {"999thLatency", measurement.getPercentileLatency(0.999f)},
+                {"9999thLatency", measurement.getPercentileLatency(0.9999f)}
         };
 
         if(getBenchmark().measureOverhead()) {
-            valueMap["DataOverhead"] = std::to_string(operation.getOverheadMeasurement().getOverheadData());
-            valueMap["DataOverheadFactor"] = std::to_string(operation.getOverheadMeasurement().getOverheadFactor());
-            valueMap["DataThroughputOverhead"] = std::to_string(operation.getOverheadMeasurement().getOverheadDataThroughput());
+            valueMap["DataOverhead"] = operation.getOverheadMeasurement().getOverheadData();
+            valueMap["DataOverheadFactor"] = operation.getOverheadMeasurement().getOverheadFactor();
+            valueMap["DataThroughputOverhead"] = operation.getOverheadMeasurement().getOverheadDataThroughput();
         }
 
         saveSingleResult(path, measurement.getOperationSize(), valueMap);

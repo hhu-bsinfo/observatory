@@ -33,9 +33,9 @@ Status RdmaThroughputOperation::warmUp(uint32_t operationCount) {
 
 Status RdmaThroughputOperation::execute() {
     if(getMode() == Benchmark::Mode::SEND) {
-        auto startTime = std::chrono::high_resolution_clock::now();
+        auto startTime = std::chrono::steady_clock::now();
         Status status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
-        uint64_t time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+        uint64_t time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - startTime).count();
 
         if(status != Status::OK) {
             return status;

@@ -58,7 +58,7 @@ private:
     std::vector<uint64_t> times;
     uint32_t pos;
 
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> tmpTime;
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds> tmpTime;
 
 };
 
