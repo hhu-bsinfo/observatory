@@ -1,7 +1,7 @@
 # Observatory
 
 <p align="center">
-  <img src="logo.svg" height=175>
+  <img src="logo.svg" height=250>
 </p>
 
 <p align="center">
