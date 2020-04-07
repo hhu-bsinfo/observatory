@@ -14,22 +14,6 @@ public class JsonResourceLoader {
 
     private JsonResourceLoader() {}
 
-    public static <T> T loadJsonObjectFromResource(String resourceName, Class<T> clazz) throws IOException {
-        InputStream inputStream = Observatory.class.getClassLoader().getResourceAsStream(resourceName);
-
-        if(inputStream == null) {
-            throw new IOException("Unable to open input stream for resource '" + resourceName + "'!");
-        }
-
-        T ret = gson.fromJson(new BufferedReader(new InputStreamReader(inputStream)), clazz);
-
-        if(ret == null) {
-            throw new IOException("Unable to construct object of type '" + clazz.getSimpleName() + "' from resource '" + resourceName + "'!");
-        }
-
-        return ret;
-    }
-
     public static <T> T loadJsonObjectFromFile(String fileName, Class<T> clazz) throws IOException {
         InputStream inputStream = new FileInputStream(fileName);
 

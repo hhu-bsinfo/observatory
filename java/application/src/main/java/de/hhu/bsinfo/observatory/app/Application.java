@@ -24,8 +24,8 @@ public class Application implements Runnable {
 
     @CommandLine.Option(
         names = {"-c", "--config"},
-        description = "Path to the config JSON file. If empty, observatory will try to load 'config.json' from it's resource folder.")
-    private String configPath;
+        description = "Path to the config JSON file. If empty, observatory will try to load './config.json'")
+    private String configPath = "./config.json";
 
     @CommandLine.Option(
             names = {"-o", "--output"},
@@ -68,11 +68,7 @@ public class Application implements Runnable {
         BenchmarkConfig config;
 
         try {
-            if (configPath == null) {
-                config = JsonResourceLoader.loadJsonObjectFromResource("config.json", BenchmarkConfig.class);
-            } else {
-                config = JsonResourceLoader.loadJsonObjectFromFile(configPath, BenchmarkConfig.class);
-            }
+            config = JsonResourceLoader.loadJsonObjectFromFile(configPath, BenchmarkConfig.class);
         } catch (IOException e) {
             LOGGER.error("Unable to parse configuration file", e);
             return;
@@ -93,9 +89,8 @@ public class Application implements Runnable {
         CommandLine cli = new CommandLine(new Application());
         cli.registerConverter(InetSocketAddress.class, new InetSocketAddressConverter(2998));
         cli.setCaseInsensitiveEnumValuesAllowed(true);
-        cli.parseWithHandlers(
-                new CommandLine.RunAll().useOut(System.out),
-                CommandLine.defaultExceptionHandler().useErr(System.err),
-                args);
+        int exitCode = cli.execute(args);
+
+        System.exit(exitCode);
     }
 }
