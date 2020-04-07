@@ -14,8 +14,8 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
-applicationDistribution.from('../config/') {
-    into 'config/'
+applicationDistribution.from('../../example/') {
+    into 'example/'
 }
 
 repositories {
