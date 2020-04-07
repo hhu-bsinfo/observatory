@@ -1,0 +1,26 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'de.hhu.bsinfo'
+version = getProperty('projectVersion')
+
+compileJava {
+    sourceCompatibility = '8'
+    targetCompatibility = '8'
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(':benchmark')
+
+    implementation 'org.slf4j:slf4j-api:1.7.27'
+    implementation 'org.openucx:jucx:1.8.0'
+}
