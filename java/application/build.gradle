@@ -40,7 +40,7 @@ dependencies {
     implementation project(':jverbs-binding')
     implementation project(':jucx-binding')
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.12.1'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'info.picocli:picocli:3.9.6'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'info.picocli:picocli:4.2.0'
 }
