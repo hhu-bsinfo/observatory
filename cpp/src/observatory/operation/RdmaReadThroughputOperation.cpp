@@ -3,7 +3,7 @@
 namespace Observatory {
 
 RdmaReadThroughputOperation::RdmaReadThroughputOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize) :
-        RdmaThroughputOperation(benchmark, mode, operationCount, operationSize, Benchmark::RdmaMode::WRITE) {}
+        RdmaThroughputOperation(benchmark, mode, operationCount, operationSize, Benchmark::RdmaMode::READ) {}
 
 const char* RdmaReadThroughputOperation::getClassName() const {
     return "RdmaReadThroughputOperation";
