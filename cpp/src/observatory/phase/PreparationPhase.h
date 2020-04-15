@@ -26,7 +26,7 @@ class PreparationPhase : public BenchmarkPhase {
 
 public:
 
-    PreparationPhase(Benchmark &benchmark, uint32_t operationSize);
+    PreparationPhase(Benchmark &benchmark, uint32_t operationSize, uint32_t operationCount);
 
     PreparationPhase(const PreparationPhase &other) = delete;
 
@@ -41,6 +41,7 @@ public:
 private:
 
     uint32_t operationSize;
+    uint32_t operationCount;
 
 };
 

@@ -69,7 +69,7 @@ public class SocketBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status prepare(int operationSize) {
+    protected Status prepare(int operationSize, int operationCount) {
         buffer = new byte[operationSize];
 
         return Status.OK;

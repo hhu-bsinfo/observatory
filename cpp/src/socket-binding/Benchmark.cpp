@@ -78,7 +78,7 @@ Observatory::Status Benchmark::connect(Observatory::SocketAddress &bindAddress, 
     return Observatory::Status::OK;
 }
 
-Observatory::Status Benchmark::prepare(uint32_t operationSize) {
+Observatory::Status Benchmark::prepare(uint32_t operationSize, uint32_t operationCount) {
     bufferSize = operationSize;
     buffer = new uint8_t[bufferSize];
 

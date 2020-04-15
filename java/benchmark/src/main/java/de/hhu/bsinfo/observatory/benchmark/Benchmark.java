@@ -304,7 +304,7 @@ public abstract class Benchmark {
 
     protected abstract Status connect(final InetSocketAddress bindAddress, final InetSocketAddress serverAddress);
 
-    protected abstract Status prepare(final int operationSize);
+    protected abstract Status prepare(final int operationSize, int operationCount);
 
     protected abstract Status cleanup();
 

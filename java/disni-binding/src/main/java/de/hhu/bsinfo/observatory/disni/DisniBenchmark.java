@@ -235,7 +235,7 @@ public class DisniBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status prepare(int operationSize) {
+    protected Status prepare(int operationSize, int operationCount) {
         try {
             sendMemoryRegion = verbs.registerMemoryRegion(ByteBuffer.allocateDirect(operationSize));
             receiveMemoryRegion = verbs.registerMemoryRegion(ByteBuffer.allocateDirect(operationSize));

@@ -100,7 +100,7 @@ public class NeutrinoBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status prepare(int operationSize) {
+    protected Status prepare(int operationSize, int operationCount) {
         sendBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
         receiveBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
 
@@ -111,7 +111,8 @@ public class NeutrinoBenchmark extends Benchmark {
         receiveWorkRequests = new ReceiveWorkRequest[queueSize];
 
         SendWorkRequest.Builder sendBuilder = new SendWorkRequest.Builder()
-                .withScatterGatherElement(sendScatterGatherElement);
+                .withScatterGatherElement(sendScatterGatherElement)
+                .withOpCode(OpCode.SEND);
         ReceiveWorkRequest.Builder receiveBuilder = new ReceiveWorkRequest.Builder()
                 .withScatterGatherElement(receiveScatterGatherElement);
 

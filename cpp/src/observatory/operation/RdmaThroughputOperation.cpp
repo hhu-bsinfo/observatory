@@ -57,6 +57,8 @@ Status RdmaThroughputOperation::execute() {
             return Status::NETWORK_ERROR;
         }
 
+        getMeasurement().setMeasuredTime(time);
+
         return Status::OK;
     }
 }

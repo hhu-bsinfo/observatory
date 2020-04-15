@@ -96,7 +96,7 @@ public class Observatory {
 
                         benchmark.addBenchmarkPhase(new InitializationPhase(benchmark));
                         benchmark.addBenchmarkPhase(new ConnectionPhase(benchmark));
-                        benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize()));
+                        benchmark.addBenchmarkPhase(new PreparationPhase(benchmark, iterationConfig.getSize(), iterationConfig.getCount()));
 
                         benchmark.addBenchmarkPhase(new FillReceiveQueuePhase(benchmark, operation));
                         benchmark.addBenchmarkPhase(new WarmUpPhase(benchmark, operation, iterationConfig.getWarmUpIterations()));

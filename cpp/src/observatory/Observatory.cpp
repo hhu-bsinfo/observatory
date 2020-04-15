@@ -104,7 +104,8 @@ void Observatory::start() {
 
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new InitializationPhase(*benchmark)));
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new ConnectionPhase(*benchmark)));
-                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new PreparationPhase(*benchmark, iterationConfig["size"])));
+                    benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new PreparationPhase(*benchmark, iterationConfig["size"],
+                                                                                                      0)));
 
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new FillReceiveQueuePhase(*benchmark, *operation)));
                     benchmark->addBenchmarkPhase(std::shared_ptr<BenchmarkPhase>(new WarmupPhase(*benchmark, *operation, static_cast<uint32_t>(iterationConfig["warmUp"]))));

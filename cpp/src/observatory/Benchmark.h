@@ -116,7 +116,7 @@ public:
 
     virtual Status connect(SocketAddress &bindAddress, SocketAddress &remoteAddress) = 0;
 
-    virtual Status prepare(uint32_t operationSize) = 0;
+    virtual Status prepare(uint32_t operationSize, uint32_t operationCount) = 0;
 
     virtual Status cleanup() = 0;
 

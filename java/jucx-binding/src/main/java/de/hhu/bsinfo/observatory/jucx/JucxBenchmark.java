@@ -128,8 +128,9 @@ public class JucxBenchmark extends Benchmark {
     }
 
     @Override
-    protected Status prepare(int operationSize) {
+    protected Status prepare(int operationSize, int operationCount) {
         LOGGER.info("Preparing memory regions and exchanging metadata");
+
         sendMemory = context.registerMemory(ByteBuffer.allocateDirect(operationSize));
         recvMemory = context.registerMemory(ByteBuffer.allocateDirect(operationSize));
 

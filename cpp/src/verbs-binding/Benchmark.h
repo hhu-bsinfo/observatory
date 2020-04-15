@@ -48,7 +48,7 @@ public:
 
     Observatory::Status connect(Observatory::SocketAddress &bindAddress, Observatory::SocketAddress &remoteAddress) override;
 
-    Observatory::Status prepare(uint32_t operationSize) override;
+    Observatory::Status prepare(uint32_t operationSize, uint32_t operationCount) override;
 
     Observatory::Status cleanup() override;
 
