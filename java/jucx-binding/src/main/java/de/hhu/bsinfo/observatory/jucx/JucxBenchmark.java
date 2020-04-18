@@ -6,8 +6,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Stack;
+
 import org.openucx.jucx.ucp.UcpConnectionRequest;
 import org.openucx.jucx.ucp.UcpContext;
 import org.openucx.jucx.ucp.UcpEndpoint;
@@ -25,21 +25,26 @@ import org.slf4j.LoggerFactory;
 
 public class JucxBenchmark extends Benchmark {
     private static final Logger LOGGER = LoggerFactory.getLogger(JucxBenchmark.class);
+    private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
+    private static final int DEFAULT_QUEUE_SIZE = 1000;
 
-    UcpContext context;
-    UcpWorker worker;
-    UcpListener listener;
-    UcpEndpoint clientToServer, serverToClient;
-    UcpMemory sendMemory, recvMemory;
-    UcpConnectionRequest connectionRequest;
-    UcpRemoteKey remoteKey;
+    private int queueSize;
 
-    long remoteAddress;
-    Stack<Closeable> resources = new Stack<>();
+    private UcpContext context;
+    private UcpWorker worker;
+    private UcpListener listener;
+    private UcpEndpoint clientToServer, serverToClient;
+    private UcpMemory sendMemory, recvMemory;
+    private UcpConnectionRequest connectionRequest;
+    private UcpRemoteKey remoteKey;
+
+    private long remoteAddress;
+    private final Stack<Closeable> resources = new Stack<>();
 
     @Override
     protected Status initialize() {
         LOGGER.info("Initializing...");
+        queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
         UcpParams params = new UcpParams().requestRmaFeature()
                 .requestStreamFeature().requestTagFeature().requestWakeupFeature();
         context = new UcpContext(params);
@@ -150,25 +155,28 @@ public class JucxBenchmark extends Benchmark {
 
     @Override
     protected Status fillReceiveQueue() {
-        LOGGER.info("Posting recv request");
-        worker.recvTaggedNonBlocking(recvMemory.getAddress(), recvMemory.getLength(), 0, 0, null);
         return Status.OK;
     }
 
     @Override
     protected Status sendMultipleMessages(int messageCount) {
-        LOGGER.info("Sending {} messages", messageCount);
-        UcpRequest[] requests = new UcpRequest[messageCount];
+        int batch = Math.min(queueSize, messageCount);
+        LOGGER.info("Sending {} messages in {} batches", messageCount, batch);
+        int completed = 0;
+        UcpRequest[] requests = new UcpRequest[batch];
         UcpEndpoint endpoint = (clientToServer != null) ? clientToServer : serverToClient;
 
-        for (int i = 0; i < messageCount; i++) {
-            requests[i] = endpoint.sendTaggedNonBlocking(sendMemory.getAddress(),
-                    sendMemory.getLength(), 0, null);
-        }
-
-        for (int i = 0; i < messageCount; i++) {
-            if (!requests[i].isCompleted()) {
-                worker.progressRequest(requests[i]);
+        while (completed < messageCount) {
+            int pendingCompletion = Math.min(batch, messageCount - completed);
+            for (int i = 0; i < pendingCompletion; i++) {
+                requests[i] = endpoint.sendTaggedNonBlocking(sendMemory.getAddress(),
+                  sendMemory.getLength(), 0, null);
+            }
+            for (int i = 0; i < pendingCompletion; i++) {
+                if (!requests[i].isCompleted()) {
+                    worker.progressRequest(requests[i]);
+                }
+                completed++;
             }
         }
 
@@ -177,17 +185,22 @@ public class JucxBenchmark extends Benchmark {
 
     @Override
     protected Status receiveMultipleMessages(int messageCount) {
-        LOGGER.info("Receiving {} messages", messageCount);
-        UcpRequest[] requests = new UcpRequest[messageCount];
+        int batch = Math.min(queueSize, messageCount);
+        LOGGER.info("Receiving {} messages in {} batches", messageCount, batch);
+        int completed = 0;
+        UcpRequest[] requests = new UcpRequest[batch];
 
-        for (int i = 0; i < messageCount; i++) {
-            requests[i] = worker.recvTaggedNonBlocking(recvMemory.getAddress(),
-                    recvMemory.getLength(), 0, 0, null);
-        }
-
-        for (int i = 0; i < messageCount; i++) {
-            if (!requests[i].isCompleted()) {
-                worker.progressRequest(requests[i]);
+        while (completed < messageCount) {
+            int pendingCompletion = Math.min(batch, messageCount - completed);
+            for (int i = 0; i < pendingCompletion; i++) {
+                requests[i] =  worker.recvTaggedNonBlocking(recvMemory.getAddress(),
+                  recvMemory.getLength(), 0, 0, null);
+            }
+            for (int i = 0; i < pendingCompletion; i++) {
+                if (!requests[i].isCompleted()) {
+                    worker.progressRequest(requests[i]);
+                }
+                completed++;
             }
         }
 
@@ -196,20 +209,25 @@ public class JucxBenchmark extends Benchmark {
 
     @Override
     protected Status performMultipleRdmaOperations(RdmaMode mode, int operationCount) {
-        LOGGER.info("Performing {} RDMA {} operations", operationCount, mode);
+        int batch = Math.min(queueSize, operationCount);
+        LOGGER.info("Performing {} RDMA {} operations in {} batches", operationCount, mode, batch);
+        int completed = 0;
         UcpEndpoint endpoint = (clientToServer != null) ? clientToServer : serverToClient;
 
-        for (int i = 0; i < operationCount; i++) {
-            if (mode == RdmaMode.READ) {
-                endpoint.getNonBlockingImplicit(remoteAddress, remoteKey,
-                        recvMemory.getAddress(), recvMemory.getLength());
-            } else {
-               endpoint.putNonBlockingImplicit(sendMemory.getAddress(), sendMemory.getLength(),
-                        remoteAddress, remoteKey);
+        while (completed < operationCount) {
+            int pendingCompletion = Math.min(batch, operationCount - completed);
+            for (int i = 0; i < pendingCompletion; i++) {
+                if (mode == RdmaMode.READ) {
+                    endpoint.getNonBlockingImplicit(remoteAddress, remoteKey,
+                      recvMemory.getAddress(), recvMemory.getLength());
+                } else {
+                    endpoint.putNonBlockingImplicit(sendMemory.getAddress(), sendMemory.getLength(),
+                      remoteAddress, remoteKey);
+                }
             }
+            worker.progressRequest(endpoint.flushNonBlocking(null));
+            completed += pendingCompletion;
         }
-
-        worker.progressRequest(endpoint.flushNonBlocking(null));
 
         return Status.OK;
     }
