@@ -1,7 +1,9 @@
 {
   "className": "de.hhu.bsinfo.observatory.jucx.JucxBenchmark",
   "resultName": "JUCX",
-  "parameters": [],
+  "parameters": [
+    { "key": "queueSize", "value": "1000" }
+  ],
   "detector": {
     "enabled": true,
     "deviceNumber": 0,
