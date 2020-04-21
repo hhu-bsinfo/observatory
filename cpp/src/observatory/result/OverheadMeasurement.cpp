@@ -35,6 +35,10 @@ double OverheadMeasurement::getOverheadFactor() {
     return overheadFactor;
 }
 
+double OverheadMeasurement::getOverheadPercentage() {
+    return overheadPercentage;
+}
+
 double OverheadMeasurement::getOverheadDataThroughput() {
     return overheadDataThroughput;
 }
@@ -46,6 +50,7 @@ OverheadMeasurement::operator std::string() const {
            << "\n\t" << ValueFormatter::formatValue("rawTotalData", rawTotalData, "Byte")
            << ",\n\t" << ValueFormatter::formatValue("overheadData", overheadData, "Byte")
            << ",\n\t" << ValueFormatter::formatValue("overheadFactor", overheadFactor)
+           << ",\n\t" << ValueFormatter::formatValue("overheadPercentage", overheadPercentage)
            << ",\n\t" << ValueFormatter::formatValue("rawDataThroughput", rawDataThroughput, "Byte/s")
            << ",\n\t" << ValueFormatter::formatValue("overheadDataThroughput", overheadDataThroughput, "Byte/s")
            << "\n}";

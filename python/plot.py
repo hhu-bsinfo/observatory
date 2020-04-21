@@ -14,7 +14,7 @@ FONT: final = {'family': 'DejaVu Sans', 'weight': 'normal', 'size': 28}
 
 FIGURE_SIZE: final = (16, 9)
 LEGEND_POSITION: final = (0.5, 1.2)
-LEGEND_COLUMNS: final = 3
+LEGEND_COLUMNS: final = 4
 LATENCY_YMIN: final = 0.91
 
 matplotlib.rc('font', **FONT)
@@ -158,14 +158,11 @@ if 'Latency' in file or 'PingPong' in file:
     plot(data_frame, '{}/9999thLatency.{}'.format(args.output_dir, args.output_format), '9999thLatency',
          'Latency in μs', 'solid', True, True, 'OperationThroughput', 'Throughput in MOperations/s', 'dashed')
 if 'DataOverhead' in data_frame.columns:
-    plot(file[:-4] + ' Data Overhead', data_frame,
-         '{}/Data Overhead.{}'.format(args.output_dir, args.output_format), 'DataOverhead',
-         'Data Overhead in Byte')
-    plot(file[:-4] + ' Data Overhead Factor', data_frame,
-         '{}/Data Overhead Factor.{}'.format(args.output_dir, args.output_format), 'DataOverheadFactor',
-         'Data Overhead Factor', 'solid', True)
-    plot(file[:-4] + ' Overhead', data_frame,
-         '{}/Throughput Overhead.{}'.format(args.output_dir, args.output_format), 'DataThroughputOverhead',
-         'Data Overhead Throughput in Byte/s')
-    '''plot(data_frame, '{}/Data Overhead Percentage.{}'.format(args.output_dir, args.output_format),
-         'DataOverheadPercentage', 'Data Overhead Percentage', 'solid', True, False)'''
+    data_frame['DataOverheadThroughput'] = data_frame['DataOverheadThroughput'].apply(lambda x: x / 1000000)
+
+    plot(data_frame, '{}/Data Overhead Factor.{}'.format(args.output_dir, args.output_format),
+         'DataOverheadFactor', 'Data Overhead Factor', 'solid', True, False)
+    plot(data_frame, '{}/Data Overhead Percentage.{}'.format(args.output_dir, args.output_format),
+         'DataOverheadPercentage', 'Data Overhead Percentage', 'solid', True, False)
+    plot(data_frame, '{}/Data Overhead Throughput.{}'.format(args.output_dir, args.output_format),
+         'DataOverheadThroughput', 'Data Overhead Throughput in MB/s', 'solid', False, False)

@@ -123,44 +123,35 @@ void OperationPhase::saveSingleResult(std::string &path, uint32_t operationSize,
 }
 
 void OperationPhase::saveResults() {
+    std::string path = getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv";
+    std::map<std::string, double> valueMap;
+
     if(Util::instanceof<ThroughputOperation>(&operation)) {
         auto &measurement = dynamic_cast<ThroughputMeasurement&>(operation.getMeasurement());
-        std::string path = getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv";
-        std::map<std::string, double> valueMap = {
-                {"OperationThroughput", measurement.getOperationThroughput()},
-                {"DataThroughput", measurement.getDataThroughput()}
-        };
-
-        if(getBenchmark().measureOverhead()) {
-            valueMap["DataOverhead"] = operation.getOverheadMeasurement().getOverheadData();
-            valueMap["DataOverheadFactor"] = operation.getOverheadMeasurement().getOverheadFactor();
-            valueMap["DataThroughputOverhead"] = operation.getOverheadMeasurement().getOverheadDataThroughput();
-        }
-
-        saveSingleResult(path, measurement.getOperationSize(), valueMap);
+        
+        valueMap["OperationThroughput"] = measurement.getOperationThroughput();
+        valueMap["DataThroughput"] = measurement.getDataThroughput();
     } else if(Util::instanceof<LatencyOperation>(&operation)) {
         auto &measurement = dynamic_cast<LatencyMeasurement&>(operation.getMeasurement());
-        std::string path = getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv";
-        std::map<std::string, double> valueMap = {
-                {"OperationThroughput", measurement.getOperationThroughput()},
-                {"AverageLatency", measurement.getAverageLatency()},
-                {"MinimumLatency", measurement.getMinimumLatency()},
-                {"MaximumLatency", measurement.getMaximumLatency()},
-                {"50thLatency", measurement.getPercentileLatency(0.5f)},
-                {"95thLatency", measurement.getPercentileLatency(0.95f)},
-                {"99thLatency", measurement.getPercentileLatency(0.99f)},
-                {"999thLatency", measurement.getPercentileLatency(0.999f)},
-                {"9999thLatency", measurement.getPercentileLatency(0.9999f)}
-        };
-
-        if(getBenchmark().measureOverhead()) {
-            valueMap["DataOverhead"] = operation.getOverheadMeasurement().getOverheadData();
-            valueMap["DataOverheadFactor"] = operation.getOverheadMeasurement().getOverheadFactor();
-            valueMap["DataThroughputOverhead"] = operation.getOverheadMeasurement().getOverheadDataThroughput();
-        }
-
-        saveSingleResult(path, measurement.getOperationSize(), valueMap);
+        
+        valueMap["OperationThroughput"] = measurement.getOperationThroughput();
+        valueMap["AverageLatency"] = measurement.getAverageLatency();
+        valueMap["MinimumLatency"] = measurement.getMinimumLatency();
+        valueMap["MaximumLatency"] = measurement.getMaximumLatency();
+        valueMap["50thLatency"] = measurement.getPercentileLatency(0.5f);
+        valueMap["95thLatency"] = measurement.getPercentileLatency(0.95f);
+        valueMap["99thLatency"] = measurement.getPercentileLatency(0.99f);
+        valueMap["999thLatency"] = measurement.getPercentileLatency(0.999f);
+        valueMap["9999thLatency"] = measurement.getPercentileLatency(0.9999f);
     }
+
+    if(getBenchmark().measureOverhead()) {
+        valueMap["DataOverheadFactor"] = operation.getOverheadMeasurement().getOverheadFactor();
+        valueMap["DataOverheadPercentage"] = operation.getOverheadMeasurement().getOverheadPercentage();
+        valueMap["DataOverheadThroughput"] = operation.getOverheadMeasurement().getOverheadDataThroughput();
+    }
+
+    saveSingleResult(path, operation.getMeasurement().getOperationSize(), valueMap);
 }
 
 }

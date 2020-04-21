@@ -5,6 +5,7 @@ public class OverheadMeasurement {
     private long rawTotalData;
     private double overheadData;
     private double overheadFactor;
+    private double overheadPercentage;
 
     private double rawDataThroughput;
     private double overheadDataThroughput;
@@ -19,7 +20,8 @@ public class OverheadMeasurement {
             overheadData = 0;
         }
 
-        overheadFactor = (double) rawTotalData / (double) measurement.getTotalData();
+        overheadFactor = (double) rawTotalData / measurement.getTotalData();
+        overheadPercentage = (overheadData / measurement.getTotalData()) * 100;
 
         rawDataThroughput = (double) rawTotalData / measurement.getTotalTime();
         overheadDataThroughput = overheadData / measurement.getTotalTime();
@@ -41,6 +43,10 @@ public class OverheadMeasurement {
         return overheadFactor;
     }
 
+    public double getOverheadPercentage() {
+        return overheadPercentage;
+    }
+
     public double getOverheadDataThroughput() {
         return overheadDataThroughput;
     }
@@ -51,6 +57,7 @@ public class OverheadMeasurement {
                 "\n\t" + ValueFormatter.formatValue("rawTotalData", rawTotalData, "Byte") +
                 ",\n\t" + ValueFormatter.formatValue("overheadData", overheadData, "Byte") +
                 ",\n\t" + ValueFormatter.formatValue("overheadFactor", overheadFactor) +
+                ",\n\t" + ValueFormatter.formatValue("overheadPercentage", overheadPercentage, "%") +
                 ",\n\t" + ValueFormatter.formatValue("rawDataThroughput", rawDataThroughput, "Byte/s") +
                 ",\n\t" + ValueFormatter.formatValue("overheadDataThroughput", overheadDataThroughput, "Byte/s") +
                 "\n}";

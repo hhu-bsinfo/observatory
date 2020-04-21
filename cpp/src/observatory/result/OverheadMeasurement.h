@@ -43,6 +43,8 @@ public:
 
     double getOverheadFactor();
 
+    double getOverheadPercentage();
+
     double getOverheadDataThroughput();
 
     explicit operator std::string() const;
@@ -52,6 +54,7 @@ private:
     uint64_t rawTotalData;
     double overheadData;
     double overheadFactor;
+    double overheadPercentage;
 
     double rawDataThroughput{};
     double overheadDataThroughput{};

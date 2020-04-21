@@ -14,6 +14,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +55,7 @@ class OperationPhase extends BenchmarkPhase {
         return Status.OK;
     }
 
-    private void saveSingleResult(String path, String operationSize, Map<String, String> valueMap) throws IOException {
+    private void saveSingleResult(String path, String operationSize, Map<String, Double> valueMap) throws IOException {
         File file = new File(path);
 
         if(!file.getParentFile().exists()) {
@@ -78,8 +80,8 @@ class OperationPhase extends BenchmarkPhase {
                 .append(String.valueOf(getBenchmark().getIterationNumber())).append(",")
                 .append(operationSize);
 
-        for(String value : valueMap.values()) {
-            writer.append(",").append(value);
+        for(double value : valueMap.values()) {
+            writer.append(",").append(String.format("%.12e", value));
         }
 
         writer.newLine();
@@ -89,44 +91,35 @@ class OperationPhase extends BenchmarkPhase {
     }
 
     private void saveResults() throws IOException {
+        Map<String, Double> valueMap = new TreeMap<>();
+
         if(operation instanceof ThroughputOperation) {
             ThroughputMeasurement measurement = ((ThroughputOperation) operation).getMeasurement();
 
-            saveSingleResult(getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv",
-                    String.valueOf(measurement.getOperationSize()),
-                    new LinkedHashMap<String, String>(){{
-                        put("OperationThroughput", String.valueOf(measurement.getOperationThroughput()));
-                        put("DataThroughput", String.valueOf(measurement.getDataThroughput()));
-
-                        if(getBenchmark().measureOverhead()) {
-                            put("DataOverhead", String.valueOf(operation.getOverheadMeasurement().getOverheadData()));
-                            put("DataOverheadFactor", String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
-                            put("DataThroughputOverhead", String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));
-                        }
-                    }});
+            valueMap.put("OperationThroughput", measurement.getOperationThroughput());
+            valueMap.put("DataThroughput", measurement.getDataThroughput());
         } else if(operation instanceof LatencyOperation) {
             LatencyMeasurement measurement = ((LatencyOperation) operation).getMeasurement();
 
-            saveSingleResult(getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv",
-                    String.valueOf(measurement.getOperationSize()),
-                    new LinkedHashMap<String, String>(){{
-                        put("OperationThroughput", String.valueOf(measurement.getOperationThroughput()));
-                        put("AverageLatency", String.valueOf(measurement.getAverageLatency()));
-                        put("MinimumLatency", String.valueOf(measurement.getMinimumLatency()));
-                        put("MaximumLatency", String.valueOf(measurement.getMaximumLatency()));
-                        put("50thLatency", String.valueOf(measurement.getPercentileLatency(0.5f)));
-                        put("95thLatency", String.valueOf(measurement.getPercentileLatency(0.95f)));
-                        put("99thLatency", String.valueOf(measurement.getPercentileLatency(0.99f)));
-                        put("999thLatency", String.valueOf(measurement.getPercentileLatency(0.999f)));
-                        put("9999thLatency", String.valueOf(measurement.getPercentileLatency(0.9999f)));
-
-                        if(getBenchmark().measureOverhead()) {
-                            put("DataOverhead", String.valueOf(operation.getOverheadMeasurement().getOverheadData()));
-                            put("DataOverheadFactor", String.valueOf(operation.getOverheadMeasurement().getOverheadFactor()));
-                            put("DataThroughputOverhead", String.valueOf(operation.getOverheadMeasurement().getOverheadDataThroughput()));
-                        }
-                    }});
+            valueMap.put("OperationThroughput", measurement.getOperationThroughput());
+            valueMap.put("AverageLatency", measurement.getAverageLatency());
+            valueMap.put("MinimumLatency", measurement.getMinimumLatency());
+            valueMap.put("MaximumLatency", measurement.getMaximumLatency());
+            valueMap.put("50thLatency", measurement.getPercentileLatency(0.5f));
+            valueMap.put("95thLatency", measurement.getPercentileLatency(0.95f));
+            valueMap.put("99thLatency", measurement.getPercentileLatency(0.99f));
+            valueMap.put("999thLatency", measurement.getPercentileLatency(0.999f));
+            valueMap.put("9999thLatency", measurement.getPercentileLatency(0.9999f));
         }
+
+        if(getBenchmark().measureOverhead()) {
+            valueMap.put("DataOverheadFactor", operation.getOverheadMeasurement().getOverheadFactor());
+            valueMap.put("DataOverheadPercentage", operation.getOverheadMeasurement().getOverheadPercentage());
+            valueMap.put("DataOverheadThroughput", operation.getOverheadMeasurement().getOverheadDataThroughput());
+        }
+
+        saveSingleResult(getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv",
+                String.valueOf(operation.getMeasurement().getOperationSize()), valueMap);
     }
 
     @Override
