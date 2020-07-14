@@ -150,7 +150,7 @@ public class JucxBenchmark extends Benchmark {
             try {
                 resources.pop().close();
             } catch (IOException e) {
-                return Status.FILE_ERROR;
+                return Status.IO_ERROR;
             }
         }
         return Status.OK;

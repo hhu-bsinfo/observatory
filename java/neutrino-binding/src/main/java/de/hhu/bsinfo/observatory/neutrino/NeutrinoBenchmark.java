@@ -1,7 +1,7 @@
 package de.hhu.bsinfo.observatory.neutrino;
 
 import de.hhu.bsinfo.neutrino.buffer.RegisteredBuffer;
-import de.hhu.bsinfo.neutrino.data.NativeLinkedList;
+import de.hhu.bsinfo.neutrino.struct.field.NativeLinkedList;
 import de.hhu.bsinfo.neutrino.verbs.AccessFlag;
 import de.hhu.bsinfo.neutrino.verbs.CompletionQueue;
 import de.hhu.bsinfo.neutrino.verbs.CompletionQueue.WorkCompletionArray;
@@ -101,8 +101,13 @@ public class NeutrinoBenchmark extends Benchmark {
 
     @Override
     protected Status prepare(int operationSize, int operationCount) {
-        sendBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
-        receiveBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
+        try {
+            sendBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
+            receiveBuffer = context.getProtectionDomain().allocateMemory(operationSize, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE);
+        } catch (IOException e) {
+            LOGGER.error("Allocating memory regions failed", e);
+            return Status.IO_ERROR;
+        }
 
         sendScatterGatherElement = new ScatterGatherElement(sendBuffer.getHandle(), (int) sendBuffer.getNativeSize(), sendBuffer.getLocalKey());
         receiveScatterGatherElement = new ScatterGatherElement(receiveBuffer.getHandle(), (int) receiveBuffer.getNativeSize(), receiveBuffer.getLocalKey());
@@ -133,9 +138,13 @@ public class NeutrinoBenchmark extends Benchmark {
 
     @Override
     protected Status cleanup() {
-        sendBuffer.close();
-        receiveBuffer.close();
-        context.close();
+        try {
+            sendBuffer.close();
+            receiveBuffer.close();
+            context.close();
+        } catch (IOException e) {
+            LOGGER.error("");
+        }
 
         return Status.OK;
     }
@@ -144,8 +153,13 @@ public class NeutrinoBenchmark extends Benchmark {
     protected Status fillReceiveQueue() {
         int batch = queueSize - pendingReceiveCompletions;
 
-        postReceive(batch);
-        pendingReceiveCompletions += batch;
+        try {
+            postReceive(batch);
+            pendingReceiveCompletions += batch;
+        } catch (IOException e) {
+            LOGGER.error("Posting receive work requests failed", e);
+            return Status.NETWORK_ERROR;
+        }
 
         return Status.OK;
     }
@@ -345,7 +359,7 @@ public class NeutrinoBenchmark extends Benchmark {
         return remoteInfo;
     }
 
-    private void postSend(int amount) {
+    private void postSend(int amount) throws IOException {
         if(amount == 0) {
             return;
         }
@@ -362,7 +376,7 @@ public class NeutrinoBenchmark extends Benchmark {
         context.getQueuePair().postSend(sendList);
     }
 
-    private void postReceive(int amount) {
+    private void postReceive(int amount) throws IOException {
         if(amount == 0) {
             return;
         }
@@ -376,7 +390,7 @@ public class NeutrinoBenchmark extends Benchmark {
         context.getQueuePair().postReceive(receiveList);
     }
 
-    private void postRdma(int amount, RdmaMode mode) {
+    private void postRdma(int amount, RdmaMode mode) throws IOException {
         if(amount == 0) {
             return;
         }

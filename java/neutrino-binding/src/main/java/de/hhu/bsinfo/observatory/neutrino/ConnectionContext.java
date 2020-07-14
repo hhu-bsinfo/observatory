@@ -37,44 +37,27 @@ class ConnectionContext implements AutoCloseable {
         }
 
         context = Context.openDevice(deviceNumber);
-        if(context == null) {
-            throw new IOException("Unable to open context");
-        }
 
         LOGGER.info("Opened context for device {}", context.getDeviceName());
 
         protectionDomain = context.allocateProtectionDomain();
-        if(protectionDomain == null) {
-            throw new IOException("Unable to allocate protection domain");
-        }
 
         LOGGER.info("Allocated protection domain");
 
         this.portNumber = portNumber;
         port = context.queryPort(portNumber);
-        if(port == null) {
-            throw new IOException("Unable to query port number '" + portNumber + "'");
-        }
 
         sendCompletionQueue = context.createCompletionQueue(queueSize, null);
         receiveCompletionQueue = context.createCompletionQueue(queueSize, null);
-        if(sendCompletionQueue == null || receiveCompletionQueue == null) {
-            throw new IOException("Unable to create completion queues");
-        }
 
         LOGGER.info("Created completion queues");
 
         queuePair = protectionDomain.createQueuePair(new QueuePair.InitialAttributes.Builder(
                 QueuePair.Type.RC, sendCompletionQueue, receiveCompletionQueue, queueSize, queueSize, 1, 1).build());
-        if(queuePair == null) {
-            throw new IOException("Unable to create queue pair");
-        }
 
         LOGGER.info("Created queue pair");
 
-        if(!queuePair.modify(QueuePair.Attributes.Builder.buildInitAttributesRC((short) 0, (byte) 1, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE))) {
-            throw new IOException(("Unable to move queue pair into INIT state"));
-        }
+        queuePair.modify(QueuePair.Attributes.Builder.buildInitAttributesRC((short) 0, (byte) 1, AccessFlag.LOCAL_WRITE, AccessFlag.REMOTE_READ, AccessFlag.REMOTE_WRITE));
 
         LOGGER.info("Moved queue pair into INIT state");
     }
@@ -94,16 +77,11 @@ class ConnectionContext implements AutoCloseable {
 
         LOGGER.info("Received connection information: {}", remoteInfo);
 
-        if(!queuePair.modify(QueuePair.Attributes.Builder.buildReadyToReceiveAttributesRC(
-                remoteInfo.getQueuePairNumber(), remoteInfo.getLocalId(), remoteInfo.getPortNumber()))) {
-            throw new IOException("Unable to move queue pair into RTR state");
-        }
+        queuePair.modify(QueuePair.Attributes.Builder.buildReadyToReceiveAttributesRC(remoteInfo.getQueuePairNumber(), remoteInfo.getLocalId(), remoteInfo.getPortNumber()));
 
         LOGGER.info("Moved queue pair into RTR state");
 
-        if(!queuePair.modify(QueuePair.Attributes.Builder.buildReadyToSendAttributesRC())) {
-            throw new IOException("Unable to move queue pair into RTS state");
-        }
+        queuePair.modify(QueuePair.Attributes.Builder.buildReadyToSendAttributesRC());
 
         LOGGER.info("Moved queue pair into RTS state");
     }
@@ -125,7 +103,7 @@ class ConnectionContext implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         queuePair.close();
         sendCompletionQueue.close();
         protectionDomain.close();
