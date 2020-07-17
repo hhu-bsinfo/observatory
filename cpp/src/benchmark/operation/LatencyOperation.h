@@ -16,26 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_SOCKETADDRESSCONVERTER_H
-#define OBSERVATORY_SOCKETADDRESSCONVERTER_H
+#ifndef OBSERVATORY_LATENCYOPERATION_H
+#define OBSERVATORY_LATENCYOPERATION_H
 
-#include <string>
-#include <benchmark/util/SocketAddress.h>
+#include <benchmark/result/LatencyMeasurement.h>
+#include "Operation.h"
 
-class SocketAddressConverter {
+namespace Observatory {
+
+class LatencyOperation : public Operation {
 
 public:
 
-    void operator()(const std::string &names, const std::string &value, Observatory::SocketAddress &destination);
+    LatencyOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-private:
+    LatencyOperation(const LatencyOperation &other) = delete;
 
-    static std::vector<std::string> splitAddressString(std::string address);
+    LatencyOperation& operator=(const LatencyOperation &other) = delete;
 
-private:
+    ~LatencyOperation() override = default;
 
-    static const constexpr uint16_t DEFAULT_PORT = 2998;
+    const char* getClassName() const override;
+
+    LatencyMeasurement& getMeasurement() const override;
 
 };
+
+}
 
 #endif

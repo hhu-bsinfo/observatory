@@ -16,26 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_SOCKETADDRESSCONVERTER_H
-#define OBSERVATORY_SOCKETADDRESSCONVERTER_H
+#ifndef OBSERVATORY_BENCHMARKPHASE_H
+#define OBSERVATORY_BENCHMARKPHASE_H
 
 #include <string>
-#include <benchmark/util/SocketAddress.h>
+#include <benchmark/result/Status.h>
 
-class SocketAddressConverter {
+namespace Observatory {
+
+class Benchmark;
+
+class BenchmarkPhase {
 
 public:
 
-    void operator()(const std::string &names, const std::string &value, Observatory::SocketAddress &destination);
+    explicit BenchmarkPhase(Benchmark &benchmark);
+
+    BenchmarkPhase(const BenchmarkPhase &other) = delete;
+
+    BenchmarkPhase& operator=(const BenchmarkPhase &other) = delete;
+
+    virtual ~BenchmarkPhase() = default;
+
+    Benchmark& getBenchmark() const;
+
+    virtual const char* getName() = 0;
+
+    virtual Status execute() = 0;
 
 private:
 
-    static std::vector<std::string> splitAddressString(std::string address);
-
-private:
-
-    static const constexpr uint16_t DEFAULT_PORT = 2998;
+    Benchmark &benchmark;
 
 };
+
+}
 
 #endif

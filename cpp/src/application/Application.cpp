@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <observatory/BuildConfig.h>
+#include <benchmark/BuildConfig.h>
 #include <log4cpp/OstreamAppender.hh>
 #include <log4cpp/Category.hh>
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include <observatory/Observatory.h>
+#include <benchmark/Observatory.h>
 #include <application/util/SocketAddressConverter.h>
 #include "application/util/args.hxx"
 #include "application/util/LoggingLayout.h"

@@ -3,7 +3,36 @@ dist: bionic
 
 matrix:
   include:
-    - language: java
+    - name: Java socket-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:socket-binding:assemble
+      script: ./gradlew bindings:socket-binding:distTar
+      
+    - name: Java neutrino-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:neutrino-binding:assemble
+      script: ./gradlew bindings:neutrino-binding:distTar
+      
+    - name: Java jucx-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:jucx-binding:assemble
+      script: ./gradlew bindings:jucx-binding:distTar
+      
+    - name: Java disni-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:disni-binding:assemble
+      script: ./gradlew bindings:disni-binding:distTar
+    
+    - name: Java jverbs-binding
+      language: java
       before_install:
         - wget -O ibm-installer.bin https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/${IBM_SDK_VERSION}/linux/x86_64/ibm-java-sdk-$(sed -e 's/\./-/2' <<<${IBM_SDK_VERSION})-x86_64-archive.bin
         - chmod +x ibm-installer.bin
@@ -11,10 +40,11 @@ matrix:
         - PS1=">" ./ibm-installer.bin -i silent -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR=/tmp/ibm-jdk/
       install:
         - cd java
-        - ./gradlew -Dibm.path=/tmp/ibm-jdk assemble
-      script: ./gradlew -Dibm.path=/tmp/ibm-jdk distTar
+        - ./gradlew -Dorg.gradle.java.home=/tmp/ibm-jdk/ bindings:jverbs-binding:assemble
+      script: ./gradlew -Dorg.gradle.java.home=/tmp/ibm-jdk/ bindings:jverbs-binding:distTar
         
-    - language: cpp
+    - name: C++ socket-binding
+      language: cpp
       addons:
         apt:
           packages:
@@ -35,5 +65,29 @@ matrix:
         - cd cpp
         - mkdir -p build/
         - cd build/
-        - CMAKE_PREFIX_PATH=/tmp/cmake cmake ..
+        - CMAKE_PREFIX_PATH=/tmp/cmake cmake -D OBSERVATORY_BINDING:STRING=socket-binding ..
+      script: make
+    - name: C++ verbs-binding
+      language: cpp
+      addons:
+        apt:
+          packages:
+            - liblog4cpp5-dev
+            - libnet1-dev
+            - libibverbs-dev
+            - libibumad-dev
+            - libibmad-dev
+            - libibnetdisc-dev
+            - libopensm-dev
+      before_install:
+        - eval "MAIN_DIR=$(pwd)"
+        - git clone https://github.com/nlohmann/json.git /tmp/cmake/nlohmann_json
+        - cd /tmp/cmake/nlohmann_json
+        - cmake .
+        - cd ${MAIN_DIR}
+      install:
+        - cd cpp
+        - mkdir -p build/
+        - cd build/
+        - CMAKE_PREFIX_PATH=/tmp/cmake cmake -D OBSERVATORY_BINDING:STRING=verbs-binding ..
       script: make

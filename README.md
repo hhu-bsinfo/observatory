@@ -1,7 +1,7 @@
 # Observatory
 
 <p align="center">
-  <a href="https://www.cs.hhu.de/en/research-groups/operating-systems-prof-dr-michael-schoettner/research/observatory.html"><img src="logo.svg" width=300></a>
+  <a href="https://www.cs.hhu.de/en/research-groups/operating-systems-prof-dr-michael-schoettner/research/observatory.html"><img src="res/logo.svg" width=300></a>
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
 Observatory is an extensible Java framework for benchmarking InfiniBand verbs implementations. It is being developed as a research project by the [Operating Systems group](https://www.cs.hhu.de/en/research-groups/operating-systems.html) at the *Heinrich Heine University Düsseldorf*.
 
 <p align="center">
-  <a href="https://www.uni-duesseldorf.de/home/en/home.html"><img src="hhu.svg" width=300></a>
+  <a href="https://www.uni-duesseldorf.de/home/en/home.html"><img src="res/hhu.svg" width=300></a>
 </p>
 
 It is intended to benchmark fundamental point-to-point connections by measuring uni- and bidirectional throughput, one-sided latency and full round-trip time. It also uses the [jDetector](https://github.com/hhu-bsinfo/jdetector) library to determine the data overhead, imposed by any software defined protocol.
@@ -26,7 +26,7 @@ Observatory provides a single lean interface, that combines messaging, as well a
 ## Architecture
 
 <p align="center">
-  <img src="architecture.svg" width=500>
+  <img src="res/architecture.svg" width=500>
 </p>
 
 The benchmark itself is made up of six phases that are executed consecutively:

@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
+}
+
+subprojects {
+    apply plugin: 'application'
+    apply plugin: 'de.fuerstenau.buildconfig'
+
+    group = 'de.hhu.bsinfo'
+    version = getProperty('projectVersion')
+
+    repositories {
+        mavenCentral()
+
+        maven {
+            url 'https://dl.bintray.com/hhu-bsinfo/dxram'
+        }
+
+        maven {
+            url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
+        }
+    }
+
+    dependencies {
+        implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+        implementation project(':application')
+        implementation project(':benchmark')
+
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    }
+
+    mainClassName = 'de.hhu.bsinfo.observatory.app.Application'
+    applicationName = 'observatory'
+
+    applicationDistribution.from('../../../example/config/config.json') {
+        into '/'
+    }
+}

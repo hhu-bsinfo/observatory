@@ -1,0 +1,15 @@
+def benchmarkClass = 'de.hhu.bsinfo.observatory.socket.SocketBenchmark'
+
+compileJava {
+    sourceCompatibility = '8'
+    targetCompatibility = '8'
+    options.encoding = 'UTF-8'
+}
+
+buildConfig {
+    clsName = 'BuildConfig'
+    packageName = 'de.hhu.bsinfo.observatory.generated'
+
+    charset = 'UTF-8'
+    buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
+}

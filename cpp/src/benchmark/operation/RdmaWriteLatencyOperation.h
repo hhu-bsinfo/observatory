@@ -16,26 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_SOCKETADDRESSCONVERTER_H
-#define OBSERVATORY_SOCKETADDRESSCONVERTER_H
+#ifndef OBSERVATORY_RDMAWRITELATENCYOPERATION_H
+#define OBSERVATORY_RDMAWRITELATENCYOPERATION_H
 
-#include <string>
-#include <benchmark/util/SocketAddress.h>
+#include <benchmark/util/OperationFactory.h>
+#include "RdmaLatencyOperation.h"
 
-class SocketAddressConverter {
+namespace Observatory {
+
+class RdmaWriteLatencyOperation : public RdmaLatencyOperation {
 
 public:
 
-    void operator()(const std::string &names, const std::string &value, Observatory::SocketAddress &destination);
+    RdmaWriteLatencyOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-private:
+    RdmaWriteLatencyOperation(const RdmaWriteLatencyOperation &other) = delete;
 
-    static std::vector<std::string> splitAddressString(std::string address);
+    RdmaWriteLatencyOperation& operator=(const RdmaWriteLatencyOperation &other) = delete;
 
-private:
+    ~RdmaWriteLatencyOperation() override = default;
 
-    static const constexpr uint16_t DEFAULT_PORT = 2998;
+    OPERATION_IMPLEMENT_INSTANTIATE(Observatory::RdmaWriteLatencyOperation)
+
+    const char* getClassName() const override;
+
+    const char* getOutputFilename() const override;
 
 };
+
+}
 
 #endif

@@ -16,26 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef OBSERVATORY_SOCKETADDRESSCONVERTER_H
-#define OBSERVATORY_SOCKETADDRESSCONVERTER_H
+#ifndef OBSERVATORY_THROUGHPUTOPERATION_H
+#define OBSERVATORY_THROUGHPUTOPERATION_H
 
-#include <string>
-#include <benchmark/util/SocketAddress.h>
+#include <benchmark/operation/Operation.h>
+#include <benchmark/result/ThroughputMeasurement.h>
 
-class SocketAddressConverter {
+namespace Observatory {
+
+class ThroughputOperation : public Operation {
 
 public:
 
-    void operator()(const std::string &names, const std::string &value, Observatory::SocketAddress &destination);
+    ThroughputOperation(Benchmark *benchmark, Benchmark::Mode mode, uint32_t operationCount, uint32_t operationSize);
 
-private:
+    ThroughputOperation(const ThroughputOperation &other) = delete;
 
-    static std::vector<std::string> splitAddressString(std::string address);
+    ThroughputOperation& operator=(const ThroughputOperation &other) = delete;
 
-private:
+    ~ThroughputOperation() override = default;
 
-    static const constexpr uint16_t DEFAULT_PORT = 2998;
+    ThroughputMeasurement& getMeasurement() const override;
+
+    const char* getClassName() const override;
 
 };
+
+}
 
 #endif

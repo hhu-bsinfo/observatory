@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
+project(observatory)
 
 include(ExternalProject)
 
@@ -46,37 +47,13 @@ endif ()
 # Set build date
 string(TIMESTAMP OBSERVATORY_BUILD_DATE "%Y-%m-%d %H:%M:%S")
 
-# Print build information
-message("Observatory ${OBSERVATORY_VERSION} - git ${OBSERVATORY_GIT_REV}(${OBSERVATORY_GIT_BRANCH}), \
-build date: ${OBSERVATORY_BUILD_DATE}")
-
-# Set preprocessor defines
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOBSERVATORY_VERSION='${OBSERVATORY_VERSION}'\
-    -DOBSERVATORY_GIT_REV='${OBSERVATORY_GIT_REV}' -DOBSERVATORY_GIT_BRANCH='${OBSERVATORY_GIT_BRANCH}' \
-    -DOBSERVATORY_BUILD_DATE='${OBSERVATORY_BUILD_DATE}'")
-
 # Set source directory variables
 set(OBSERVATORY_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}/..")
 set(OBSERVATORY_SRC_DIR "${OBSERVATORY_ROOT_DIR}/src")
 
-# Set output directory variables
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ar)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-# Force out of source build
-message(STATUS "Force out of source build check...")
-string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
-if (insource)
-    message(FATAL_ERROR "Please do not build in your source dir. Use a dedicated build folder!")
-endif ()
-
 # Set compiler-flags
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -I/usr/include/infiniband")
-
-# For development: Uncomment this line to compile with sanitizers to debug memory errors and leaks
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer -fsanitize=address")
 
 # Add nlohmann_json as external project
 find_package(nlohmann_json REQUIRED)
@@ -97,8 +74,40 @@ add_dependencies(detector detector_git)
 
 include_directories(${source_dir}/src)
 
+# Set binding variable
+set(OBSERVATORY_BINDING "dummy-binding" CACHE STRING "The binding to build.")
+
+# Set output directory variables
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${OBSERVATORY_BINDING}/ar)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${OBSERVATORY_BINDING}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${OBSERVATORY_BINDING}/bin)
+
+configure_file(${OBSERVATORY_ROOT_DIR}/../example/config/config.json ${CMAKE_BINARY_DIR}/${OBSERVATORY_BINDING}/config.json COPYONLY)
+
+# Add binding subdirectory
+add_subdirectory(bindings/${OBSERVATORY_BINDING})
+
+# Set preprocessor defines
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOBSERVATORY_VERSION='${OBSERVATORY_VERSION}'\
+    -DOBSERVATORY_GIT_REV='${OBSERVATORY_GIT_REV}' -DOBSERVATORY_GIT_BRANCH='${OBSERVATORY_GIT_BRANCH}' \
+    -DOBSERVATORY_BUILD_DATE='${OBSERVATORY_BUILD_DATE}' \
+    -DOBSERVATORY_BENCHMARK_HEADER_FILE='${OBSERVATORY_BENCHMARK_HEADER_FILE}'\
+    -DOBSERVATORY_BENCHMARK_CLASS_NAME='${OBSERVATORY_BENCHMARK_CLASS_NAME}'")
+
+# Print build information
+message("Observatory ${OBSERVATORY_VERSION} (${OBSERVATORY_BINDING}) \
+    - git ${OBSERVATORY_GIT_REV}(${OBSERVATORY_GIT_BRANCH}), build date: ${OBSERVATORY_BUILD_DATE}")
+
+# Force out of source build
+message(STATUS "Force out of source build check...")
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
+if (insource)
+    message(FATAL_ERROR "Please do not build in your source dir. Use a dedicated build folder!")
+endif ()
+
+# For development: Uncomment this line to compile with sanitizers to debug memory errors and leaks
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer -fsanitize=address")
+
 # Add subdirectories
-add_subdirectory(observatory)
+add_subdirectory(application)
 add_subdirectory(benchmark)
-add_subdirectory(socket-binding)
-add_subdirectory(verbs-binding)

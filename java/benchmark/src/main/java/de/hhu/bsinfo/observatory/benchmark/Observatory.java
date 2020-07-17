@@ -44,7 +44,7 @@ public class Observatory {
 
                 for (IterationConfig iterationConfig : operationConfig.getIterations()) {
                     for (int i = 0; i < operationConfig.getRepetitions(); i++) {
-                        Benchmark benchmark = instantiateBenchmark(config.getClassName());
+                        Benchmark benchmark = instantiateBenchmark();
 
                         if (benchmark == null) {
                             return;
@@ -124,7 +124,17 @@ public class Observatory {
         benchmark.executePhases();
     }
 
-    private static Benchmark instantiateBenchmark(String className) {
+    private static Benchmark instantiateBenchmark() {
+        String className = "";
+
+        try {
+            className = (String) BuildConfig.class.getField("BENCHMARK_CLASS_NAME").get("");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("Unable to read benchmark class name", e);
+
+            return null;
+        }
+
         try {
             Class<?> clazz = Observatory.class.getClassLoader().loadClass(className);
             return (Benchmark) clazz.getConstructor().newInstance();
@@ -157,9 +167,16 @@ public class Observatory {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String banner = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        String benchmarkClassName = "";
+
+        try {
+            benchmarkClassName = (String) BuildConfig.class.getField("BENCHMARK_CLASS_NAME").get("");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("Unable to read benchmark class name", e);
+        }
 
         System.out.print("\n");
-        System.out.printf(banner, BuildConfig.VERSION, BuildConfig.BUILD_DATE, BuildConfig.GIT_BRANCH, BuildConfig.GIT_COMMIT);
+        System.out.printf(banner, BuildConfig.VERSION, BuildConfig.BUILD_DATE, BuildConfig.GIT_BRANCH, BuildConfig.GIT_COMMIT, benchmarkClassName);
         System.out.print("\n\n");
     }
 }
