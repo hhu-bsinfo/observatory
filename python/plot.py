@@ -8,7 +8,10 @@ COLORS: final = {'ibverbs': '#ff0000', 'jVerbs': '#00ff00', 'DiSNI': '#ff7f00',
                  'neutrino': '#0000ff', 'IPoIB': '#ff00ff', 'libvma': '#00ffff',
                  'JSOR': '#4d4d4d'}
 
-MARKERS: final = ['+', 'x', 'o', 's', 'D', 'p', 'v', '^']
+MARKERS: final = {'ibverbs': '+', 'jVerbs': 'x', 'DiSNI': 'o',
+                  'neutrino': 's', 'IPoIB': 'D', 'libvma': 'p',
+                  'JSOR': 'v'}
+
 METRIC_TABLE: final = ['', 'K', 'M', 'G', 'T', 'P', 'E']
 FONT: final = {'family': 'DejaVu Sans', 'weight': 'normal', 'size': 28}
 
@@ -39,20 +42,22 @@ def plot(data_frame, output_file, left_axis_column, left_axis_title, left_axis_l
          right_logy=False, right_yerr=True):
 
     left_values = data_frame.groupby(['Benchmark', 'Size'])[left_axis_column]
-    left_medians = left_values.median().unstack().transpose()
+    left_means = left_values.mean().unstack().transpose()
     left_deviations = left_values.std().unstack().transpose()
 
-    left_medians.axes[0].name = 'Size in Byte'
+    left_means.axes[0].name = 'Size in Byte'
     left_deviations.axes[0].name = 'Size in Byte'
 
     colors = []
-    for name in left_medians:
+    markers = []
+    for name in left_means:
         colors.append(COLORS[name])
+        markers.append(MARKERS[name])
 
-    x_ticks = left_medians.axes[0][::2]
+    x_ticks = left_means.axes[0][::2]
     x_labels = list(map(format_byte_value, x_ticks))
 
-    ax = left_medians.plot(kind='line', linestyle=left_axis_linestyle, elinewidth=2, capthick=2,
+    ax = left_means.plot(kind='line', linestyle=left_axis_linestyle, elinewidth=2, capthick=2,
                            capsize=5, legend=False, mark_right=False, grid=True, logx=True, logy=left_logy,
                            xticks=x_ticks, xlim=(x_ticks[0], x_ticks[len(x_ticks) - 1]),
                            figsize=FIGURE_SIZE, color=colors, yerr=(left_deviations if left_yerr else False))
@@ -69,20 +74,20 @@ def plot(data_frame, output_file, left_axis_column, left_axis_title, left_axis_l
 
     for i, line in enumerate(ax.get_lines()):
         if i % 3 == 0:
-            line.set_marker(MARKERS[int(i / 3)])
+            line.set_marker(markers[int(i / 3)])
             line.set_markeredgewidth(2)
             line.set_fillstyle('none')
             line.set_markersize(20)
 
     if right_axis_column is not None:
         right_values = data_frame.groupby(['Benchmark', 'Size'])[right_axis_column]
-        right_medians = right_values.median().unstack().transpose()
+        right_means = right_values.mean().unstack().transpose()
         right_deviations = right_values.std().unstack().transpose()
 
-        right_medians.axes[0].name = 'Size in Byte'
+        right_means.axes[0].name = 'Size in Byte'
         right_deviations.axes[0].name = 'Size in Byte'
 
-        ax = right_medians.plot(ax=ax, linestyle=right_axis_linestyle, elinewidth=2, capthick=2,
+        ax = right_means.plot(ax=ax, linestyle=right_axis_linestyle, elinewidth=2, capthick=2,
                                 capsize=5, legend=False, grid=True, logx=True, logy=right_logy, secondary_y=True,
                                 xticks=x_ticks, xlim=(x_ticks[0], x_ticks[len(x_ticks) - 1]), color=colors,
                                 yerr=(right_deviations if right_yerr else False))
@@ -96,7 +101,7 @@ def plot(data_frame, output_file, left_axis_column, left_axis_title, left_axis_l
 
         for i, line in enumerate(ax.get_lines()):
             if i % 3 == 0:
-                line.set_marker(MARKERS[int(i / 3)])
+                line.set_marker(markers[int(i / 3)])
                 line.set_markeredgewidth(2)
                 line.set_fillstyle('none')
                 line.set_markersize(20)
