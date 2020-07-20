@@ -3,6 +3,13 @@ dist: bionic
 
 matrix:
   include:
+    - name: Java dummy-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:dummy-binding:assemble
+      script: ./gradlew bindings:dummy-binding:distTar
+      
     - name: Java socket-binding
       language: java
       install:
@@ -43,6 +50,31 @@ matrix:
         - ./gradlew -Dorg.gradle.java.home=/tmp/ibm-jdk/ bindings:jverbs-binding:assemble
       script: ./gradlew -Dorg.gradle.java.home=/tmp/ibm-jdk/ bindings:jverbs-binding:distTar
         
+    - name: C++ dummy-binding
+      language: cpp
+      addons:
+        apt:
+          packages:
+            - liblog4cpp5-dev
+            - libnet1-dev
+            - libibverbs-dev
+            - libibumad-dev
+            - libibmad-dev
+            - libibnetdisc-dev
+            - libopensm-dev
+      before_install:
+        - eval "MAIN_DIR=$(pwd)"
+        - git clone https://github.com/nlohmann/json.git /tmp/cmake/nlohmann_json
+        - cd /tmp/cmake/nlohmann_json
+        - cmake .
+        - cd ${MAIN_DIR}
+      install:
+        - cd cpp
+        - mkdir -p build/
+        - cd build/
+        - CMAKE_PREFIX_PATH=/tmp/cmake cmake -D OBSERVATORY_BINDING:STRING=dummy-binding ..
+      script: make
+      
     - name: C++ socket-binding
       language: cpp
       addons:
@@ -67,6 +99,7 @@ matrix:
         - cd build/
         - CMAKE_PREFIX_PATH=/tmp/cmake cmake -D OBSERVATORY_BINDING:STRING=socket-binding ..
       script: make
+      
     - name: C++ verbs-binding
       language: cpp
       addons:

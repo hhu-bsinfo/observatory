@@ -4,6 +4,7 @@ include 'application'
 include 'benchmark'
 include 'bindings'
 
+include 'bindings:dummy-binding'
 include 'bindings:socket-binding'
 include 'bindings:disni-binding'
 include 'bindings:neutrino-binding'
