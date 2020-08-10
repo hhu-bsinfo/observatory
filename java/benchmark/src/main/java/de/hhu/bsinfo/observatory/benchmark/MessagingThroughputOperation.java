@@ -1,12 +1,12 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 class MessagingThroughputOperation extends ThroughputOperation {
 
-    MessagingThroughputOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
-        super(benchmark, mode, operationCount, operationSize);
+    MessagingThroughputOperation(Connection connection, Mode mode, int operationCount, int operationSize) {
+        super(connection, mode, operationCount, operationSize);
     }
 
     @Override
@@ -21,24 +21,24 @@ class MessagingThroughputOperation extends ThroughputOperation {
 
     @Override
     Status warmUp(int operationCount) {
-        if(getMode() == Mode.SEND) {
-            return getBenchmark().sendMultipleMessages(operationCount);
+        if (getMode() == Mode.SEND) {
+            return getConnection().sendMultipleMessages(operationCount);
         } else {
-            return getBenchmark().receiveMultipleMessages(operationCount);
+            return getConnection().receiveMultipleMessages(operationCount);
         }
     }
 
     @Override
     public Status execute() {
-        if(getMode() == Mode.SEND) {
+        if (getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
-            Status status = getBenchmark().sendMultipleMessages(getMeasurement().getOperationCount());
+            Status status = getConnection().sendMultipleMessages(getMeasurement().getOperationCount());
             getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
 
             return status;
         } else {
             long startTime = System.nanoTime();
-            Status status = getBenchmark().receiveMultipleMessages(getMeasurement().getOperationCount());
+            Status status = getConnection().receiveMultipleMessages(getMeasurement().getOperationCount());
             getMeasurement().setMeasuredTime(System.nanoTime() - startTime);
 
             return status;

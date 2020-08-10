@@ -38,9 +38,14 @@ public class Application implements Runnable {
     private boolean isServer = false;
 
     @CommandLine.Option(
-            names = {"-t", "--retries"},
+            names = {"-cr", "--retries"},
             description = "The amount of connection attempts.")
     private int connectionRetries = 10;
+
+    @CommandLine.Option(
+            names = {"-t", "--threads"},
+            description = "The amount of threads to use.")
+    private int threadCount = 1;
 
     @CommandLine.Option(
         names = {"-a", "--address"},
@@ -53,12 +58,12 @@ public class Application implements Runnable {
     private InetSocketAddress remoteAddress;
 
     public void run() {
-        if(!isServer && remoteAddress == null) {
+        if (!isServer && remoteAddress == null) {
             LOGGER.error("Please specify the server address");
             return;
         }
 
-        if(connectionRetries <= 0) {
+        if (connectionRetries <= 0) {
             LOGGER.error("The amount of connection retries must be at greater than zero");
             return;
         }
@@ -74,13 +79,13 @@ public class Application implements Runnable {
             return;
         }
 
-        if(!isServer) {
+        if (!isServer) {
             bindAddress = new InetSocketAddress(bindAddress.getAddress(), 0);
         }
 
         LOGGER.info("Creating observatory instance");
 
-        new Observatory(config, resultPath, isServer, connectionRetries, bindAddress, remoteAddress).start();
+        new Observatory(config, resultPath, isServer, connectionRetries, threadCount, remoteAddress, bindAddress).start();
     }
 
     public static void main(String... args) {

@@ -8,7 +8,7 @@ import com.ibm.disni.verbs.RdmaCmEvent.EventType;
 import com.ibm.disni.verbs.RdmaCmId;
 import com.ibm.disni.verbs.RdmaConnParam;
 import com.ibm.disni.verbs.RdmaEventChannel;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,9 +19,9 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DisniBenchmark extends Benchmark {
+public class DisniConnection extends Connection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DisniBenchmark.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DisniConnection.class);
 
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
     private static final String PARAM_KEY_SVM_OPTIMIZATION = "svmOptimization";
@@ -79,7 +79,7 @@ public class DisniBenchmark extends Benchmark {
         queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
         svmOptimization = Boolean.parseBoolean(getParameter(PARAM_KEY_SVM_OPTIMIZATION, String.valueOf(true)));
 
-        if(!svmOptimization) {
+        if (!svmOptimization) {
             LOGGER.warn("Optimized use of stateful verbs methods is disabled");
         }
 
@@ -137,7 +137,7 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal()) {
+            if (event.getEvent() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal()) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal());
                 return Status.NETWORK_ERROR;
             }
@@ -154,7 +154,7 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
+            if (event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST.ordinal());
                 return Status.NETWORK_ERROR;
             }
@@ -188,7 +188,7 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED.ordinal()) {
+            if (event.getEvent() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED.ordinal()) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ADDR_RESOLVED.ordinal());
                 return Status.NETWORK_ERROR;
             }
@@ -201,7 +201,7 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED.ordinal()) {
+            if (event.getEvent() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED.ordinal()) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ROUTE_RESOLVED.ordinal());
                 return Status.NETWORK_ERROR;
             }
@@ -216,7 +216,7 @@ public class DisniBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
+            if (event.getEvent() != EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal()) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEvent(), EventType.RDMA_CM_EVENT_ESTABLISHED.ordinal());
                 return Status.NETWORK_ERROR;
             }

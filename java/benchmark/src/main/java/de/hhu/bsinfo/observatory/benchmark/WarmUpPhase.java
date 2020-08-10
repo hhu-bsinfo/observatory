@@ -7,8 +7,8 @@ class WarmUpPhase extends BenchmarkPhase {
     private final Operation operation;
     private final int iterationCount;
 
-    WarmUpPhase(Benchmark benchmark, Operation operation, int iterationCount) {
-        super(benchmark);
+    WarmUpPhase(Connection connection, Operation operation, int iterationCount) {
+        super(connection);
 
         this.operation = operation;
         this.iterationCount = iterationCount;

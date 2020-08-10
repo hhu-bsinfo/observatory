@@ -1,26 +1,26 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.Measurement;
 import de.hhu.bsinfo.observatory.benchmark.result.OverheadMeasurement;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 abstract class Operation {
 
-    private final Benchmark benchmark;
+    private final Connection connection;
     private final Mode mode;
     private final Measurement measurement;
 
     private OverheadMeasurement overheadMeasurement;
 
-    Operation(Benchmark benchmark, Mode mode, Measurement measurement) {
-        this.benchmark = benchmark;
+    Operation(Connection connection, Mode mode, Measurement measurement) {
+        this.connection = connection;
         this.mode = mode;
         this.measurement = measurement;
     }
 
-    protected Benchmark getBenchmark() {
-        return benchmark;
+    protected Connection getConnection() {
+        return connection;
     }
 
     protected Measurement getMeasurement() {

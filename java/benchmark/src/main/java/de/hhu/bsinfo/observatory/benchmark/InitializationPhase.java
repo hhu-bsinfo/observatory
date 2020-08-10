@@ -4,13 +4,13 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 class InitializationPhase extends BenchmarkPhase {
 
-    InitializationPhase(Benchmark benchmark) {
-        super(benchmark);
+    InitializationPhase(Connection connection) {
+        super(connection);
     }
 
     @Override
     protected Status execute() {
-        return getBenchmark().initialize();
+        return getConnection().initialize();
     }
 
 }

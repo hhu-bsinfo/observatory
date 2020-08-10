@@ -1,6 +1,6 @@
 package de.hhu.bsinfo.observatory.socket;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,9 +11,9 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SocketBenchmark extends Benchmark {
+public class SocketConnection extends Connection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SocketBenchmark.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketConnection.class);
 
     private Socket socket;
 

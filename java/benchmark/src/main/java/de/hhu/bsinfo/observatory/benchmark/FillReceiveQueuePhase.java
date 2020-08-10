@@ -6,16 +6,16 @@ class FillReceiveQueuePhase extends BenchmarkPhase {
 
     private final boolean fillReceiveQueue;
 
-    FillReceiveQueuePhase(Benchmark benchmark, Operation operation) {
-        super(benchmark);
+    FillReceiveQueuePhase(Connection connection, Operation operation) {
+        super(connection);
 
         this.fillReceiveQueue = operation.needsFilledReceiveQueue();
     }
 
     @Override
     Status execute() {
-        if(fillReceiveQueue) {
-            return getBenchmark().fillReceiveQueue();
+        if (fillReceiveQueue) {
+            return getConnection().fillReceiveQueue();
         }
 
         return Status.OK;

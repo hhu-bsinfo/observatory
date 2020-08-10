@@ -4,14 +4,14 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 abstract class BenchmarkPhase {
 
-    private final Benchmark benchmark;
+    private final Connection connection;
 
-    BenchmarkPhase(Benchmark benchmark) {
-        this.benchmark = benchmark;
+    BenchmarkPhase(Connection connection) {
+        this.connection = connection;
     }
 
-    Benchmark getBenchmark() {
-        return benchmark;
+    Connection getConnection() {
+        return connection;
     }
 
     abstract Status execute();

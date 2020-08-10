@@ -29,6 +29,7 @@ subprojects {
         implementation project(':benchmark')
 
         implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+        implementation 'de.hhu.bsinfo:jdetector:0.1.0'
     }
 
     mainClassName = 'de.hhu.bsinfo.observatory.app.Application'

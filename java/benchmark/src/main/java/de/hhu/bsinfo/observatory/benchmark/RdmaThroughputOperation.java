@@ -1,7 +1,7 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.RdmaMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,8 +16,8 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
 
     private final RdmaMode rdmaMode;
 
-    RdmaThroughputOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize, RdmaMode rdmaMode) {
-        super(benchmark, mode, operationCount, operationSize);
+    RdmaThroughputOperation(Connection connection, Mode mode, int operationCount, int operationSize, RdmaMode rdmaMode) {
+        super(connection, mode, operationCount, operationSize);
 
         this.rdmaMode = rdmaMode;
     }
@@ -31,11 +31,11 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
     Status warmUp(int operationCount) {
         Status status = Status.OK;
 
-        if(getMode() == Mode.SEND) {
-            status = getBenchmark().performMultipleRdmaOperations(rdmaMode, operationCount);
+        if (getMode() == Mode.SEND) {
+            status = getConnection().performMultipleRdmaOperations(rdmaMode, operationCount);
         }
 
-        if(!getBenchmark().synchronize()) {
+        if (!getConnection().synchronize()) {
             return Status.SYNC_ERROR;
         }
 
@@ -44,12 +44,12 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
 
     @Override
     public Status execute() {
-        if(getMode() == Mode.SEND) {
+        if (getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
-            Status status = getBenchmark().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
+            Status status = getConnection().performMultipleRdmaOperations(rdmaMode, getMeasurement().getOperationCount());
             long time = System.nanoTime() - startTime;
 
-            if(status != Status.OK) {
+            if (status != Status.OK) {
                 return status;
             }
 
@@ -59,7 +59,7 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
             timeBuffer.putLong(time);
 
             try {
-                new DataOutputStream(getBenchmark().getOffChannelSocket().getOutputStream()).write(timeBuffer.array());
+                new DataOutputStream(getConnection().getOffChannelSocket().getOutputStream()).write(timeBuffer.array());
             } catch (IOException e) {
                 LOGGER.error("Sending measured time to remote benchmark failed", e);
                 return Status.NETWORK_ERROR;
@@ -69,7 +69,7 @@ public abstract class RdmaThroughputOperation extends ThroughputOperation {
         } else {
             try {
                 byte[] timeBytes = new byte[Long.BYTES];
-                new DataInputStream(getBenchmark().getOffChannelSocket().getInputStream()).readFully(timeBytes);
+                new DataInputStream(getConnection().getOffChannelSocket().getInputStream()).readFully(timeBytes);
 
                 ByteBuffer timeBuffer = ByteBuffer.wrap(timeBytes);
 

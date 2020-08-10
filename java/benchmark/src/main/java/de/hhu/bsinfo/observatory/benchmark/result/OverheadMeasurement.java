@@ -16,7 +16,7 @@ public class OverheadMeasurement {
         overheadData = rawTotalData - measurement.getTotalData();
 
         // This happens, when the benchmark is executed on an ethernet connection
-        if(overheadData < 0) {
+        if (overheadData < 0) {
             overheadData = 0;
         }
 

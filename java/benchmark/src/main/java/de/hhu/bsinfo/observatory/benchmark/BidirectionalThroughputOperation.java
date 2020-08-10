@@ -13,7 +13,7 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
     private final ThroughputOperation receiveOperation;
 
     BidirectionalThroughputOperation(ThroughputOperation sendOperation, ThroughputOperation receiveOperation) {
-        super(sendOperation.getBenchmark(), sendOperation.getMode(), sendOperation.getMeasurement().getOperationCount(), sendOperation.getMeasurement().getOperationSize());
+        super(sendOperation.getConnection(), sendOperation.getMode(), sendOperation.getMeasurement().getOperationCount(), sendOperation.getMeasurement().getOperationSize());
 
         this.sendOperation = sendOperation;
         this.receiveOperation = receiveOperation;
@@ -50,9 +50,9 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return Status.UNKNOWN_ERROR;
         }
 
-        if(sendStatus.get() != Status.OK) {
+        if (sendStatus.get() != Status.OK) {
             return sendStatus.get();
-        } else if(receiveStatus.get() != Status.OK) {
+        } else if (receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
         }
 
@@ -80,9 +80,9 @@ class BidirectionalThroughputOperation extends ThroughputOperation {
             return Status.UNKNOWN_ERROR;
         }
 
-        if(sendStatus.get() != Status.OK) {
+        if (sendStatus.get() != Status.OK) {
             return sendStatus.get();
-        } else if(receiveStatus.get() != Status.OK) {
+        } else if (receiveStatus.get() != Status.OK) {
             return receiveStatus.get();
         }
 

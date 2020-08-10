@@ -8,7 +8,7 @@ import com.ibm.net.rdma.jverbs.cm.EventChannel;
 import com.ibm.net.rdma.jverbs.cm.PortSpace;
 import com.ibm.net.rdma.jverbs.verbs.MemoryRegion;
 import com.ibm.net.rdma.jverbs.verbs.ScatterGatherElement;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,9 +19,9 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JVerbsBenchmark extends Benchmark {
+public class JVerbsConnection extends Connection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JVerbsBenchmark.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JVerbsConnection.class);
 
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
     private static final String PARAM_KEY_SVM_OPTIMIZATION = "svmOptimization";
@@ -79,7 +79,7 @@ public class JVerbsBenchmark extends Benchmark {
         queueSize = getParameter(PARAM_KEY_QUEUE_SIZE, DEFAULT_QUEUE_SIZE);
         svmOptimization = Boolean.parseBoolean(getParameter(PARAM_KEY_SVM_OPTIMIZATION, String.valueOf(true)));
 
-        if(!svmOptimization) {
+        if (!svmOptimization) {
             LOGGER.warn("Optimized use of stateful verbs methods is disabled");
         }
 
@@ -118,7 +118,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEventType() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST) {
+            if (event.getEventType() != EventType.RDMA_CM_EVENT_CONNECT_REQUEST) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST);
                 return Status.NETWORK_ERROR;
             }
@@ -135,7 +135,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
+            if (event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_CONNECT_REQUEST);
                 return Status.NETWORK_ERROR;
             }
@@ -173,7 +173,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEventType() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED) {
+            if (event.getEventType() != EventType.RDMA_CM_EVENT_ADDR_RESOLVED) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ADDR_RESOLVED);
                 return Status.NETWORK_ERROR;
             }
@@ -186,7 +186,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEventType() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED) {
+            if (event.getEventType() != EventType.RDMA_CM_EVENT_ROUTE_RESOLVED) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ROUTE_RESOLVED);
                 return Status.NETWORK_ERROR;
             }
@@ -201,7 +201,7 @@ public class JVerbsBenchmark extends Benchmark {
 
             event = getEvent();
 
-            if(event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
+            if (event.getEventType() != EventType.RDMA_CM_EVENT_ESTABLISHED) {
                 LOGGER.error("Event has wrong type (Got [{}], Expected [{}])", event.getEventType(), EventType.RDMA_CM_EVENT_ESTABLISHED);
                 return Status.NETWORK_ERROR;
             }

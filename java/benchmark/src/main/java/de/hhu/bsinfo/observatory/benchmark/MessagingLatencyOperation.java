@@ -1,14 +1,14 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 public class MessagingLatencyOperation extends LatencyOperation {
 
     private final String OUTPUT_FILENAME = "Messaging Latency";
 
-    MessagingLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
-        super(benchmark, mode, operationCount, operationSize);
+    MessagingLatencyOperation(Connection connection, Mode mode, int operationCount, int operationSize) {
+        super(connection, mode, operationCount, operationSize);
     }
 
     @Override
@@ -23,32 +23,32 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
     @Override
     Status warmUp(int operationCount) {
-        if(getMode() == Mode.SEND) {
-            for(int i = 0; i < operationCount; i++) {
-                Status status = getBenchmark().sendSingleMessage();
+        if (getMode() == Mode.SEND) {
+            for (int i = 0; i < operationCount; i++) {
+                Status status = getConnection().sendSingleMessage();
 
-                if(status != Status.OK) {
+                if (status != Status.OK) {
                     return status;
                 }
             }
 
             return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessages(operationCount);
+            return getConnection().receiveMultipleMessages(operationCount);
         }
     }
 
     @Override
     Status execute() {
-        if(getMode() == Mode.SEND) {
+        if (getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
 
-            for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
+            for (int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
-                Status status = getBenchmark().sendSingleMessage();
+                Status status = getConnection().sendSingleMessage();
                 getMeasurement().stopSingleMeasurement();
 
-                if(status != Status.OK) {
+                if (status != Status.OK) {
                     return status;
                 }
             }
@@ -57,7 +57,7 @@ public class MessagingLatencyOperation extends LatencyOperation {
 
             return Status.OK;
         } else {
-            return getBenchmark().receiveMultipleMessages(getMeasurement().getOperationCount());
+            return getConnection().receiveMultipleMessages(getMeasurement().getOperationCount());
         }
     }
 }

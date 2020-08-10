@@ -15,5 +15,5 @@ buildConfig {
     packageName = 'de.hhu.bsinfo.observatory.generated'
 
     charset = 'UTF-8'
-    buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
+    buildConfigField 'String', 'CONNECTION_CLASS_NAME', benchmarkClass
 }

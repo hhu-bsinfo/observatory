@@ -1,11 +1,18 @@
 package de.hhu.bsinfo.observatory.dummy;
 
+import de.hhu.bsinfo.jdetector.lib.IbPerfCounter;
 import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 import java.net.InetSocketAddress;
 
-public class DummyBenchmark extends Benchmark {
+public class DummyConnection extends Connection {
+
+    public DummyConnection(Benchmark benchmark, boolean isServer, int connectionRetries, InetSocketAddress bindAddress, InetSocketAddress remoteAddress, IbPerfCounter perfCounter) {
+        super(benchmark, isServer, connectionRetries, bindAddress, remoteAddress, perfCounter);
+    }
+
     @Override
     protected Status initialize() {
         return Status.NOT_IMPLEMENTED;

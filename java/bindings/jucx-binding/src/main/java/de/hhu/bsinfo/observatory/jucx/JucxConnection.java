@@ -1,6 +1,6 @@
 package de.hhu.bsinfo.observatory.jucx;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.Closeable;
 import java.io.IOException;
@@ -24,8 +24,8 @@ import org.openucx.jucx.ucp.UcpWorkerParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JucxBenchmark extends Benchmark {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JucxBenchmark.class);
+public class JucxConnection extends Connection {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JucxConnection.class);
     private static final String PARAM_KEY_QUEUE_SIZE = "queueSize";
     private static final int DEFAULT_QUEUE_SIZE = 1000;
 

@@ -4,12 +4,12 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 class CleanupPhase extends BenchmarkPhase {
 
-    CleanupPhase(Benchmark benchmark) {
-        super(benchmark);
+    CleanupPhase(Connection connection) {
+        super(connection);
     }
 
     @Override
     protected Status execute() {
-        return getBenchmark().cleanup();
+        return getConnection().cleanup();
     }
 }

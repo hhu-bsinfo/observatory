@@ -2,13 +2,11 @@ package de.hhu.bsinfo.observatory.disni;
 
 import com.ibm.disni.verbs.*;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.RdmaMode;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Wraps some of the Disni-functions and -classes.
@@ -165,11 +163,11 @@ class VerbsWrapper {
         sendWorkComps = new IbvWC[queueSize];
         receiveWorkComps = new IbvWC[queueSize];
 
-        for(int i = 0; i < this.sendWorkComps.length; i++) {
+        for (int i = 0; i < this.sendWorkComps.length; i++) {
             sendWorkComps[i] = new IbvWC();
         }
 
-        for(int i = 0; i < this.receiveWorkComps.length; i++) {
+        for (int i = 0; i < this.receiveWorkComps.length; i++) {
             receiveWorkComps[i] = new IbvWC();
         }
 
@@ -179,11 +177,11 @@ class VerbsWrapper {
         sendWrs = new IbvSendWR[queueSize];
         recvWrs = new IbvRecvWR[queueSize];
 
-        for(int i = 0; i < this.sendWrs.length; i++) {
+        for (int i = 0; i < this.sendWrs.length; i++) {
             sendWrs[i] = new IbvSendWR();
         }
 
-        for(int i = 0; i < this.sendWrs.length; i++) {
+        for (int i = 0; i < this.sendWrs.length; i++) {
             recvWrs[i] = new IbvRecvWR();
         }
 
@@ -202,21 +200,21 @@ class VerbsWrapper {
      * @return The stateful verbs call
      */
     private SVCPostSend getPostSendMethod(LinkedList<IbvSendWR> sendWrs) throws IOException {
-        if(!svmOptimizations) {
+        if (!svmOptimizations) {
             return queuePair.postSend(sendWrs, null);
         }
 
-        if(lastSend != sendWrs.size()) {
+        if (lastSend != sendWrs.size()) {
             lastSend = sendWrs.size();
 
-            if(postSendMethod != null) {
+            if (postSendMethod != null) {
                 postSendMethod.free();
             }
 
             postSendMethod = queuePair.postSend(sendWrs, null);
         }
 
-        if(!postSendMethod.isValid()) {
+        if (!postSendMethod.isValid()) {
             throw new IOException("PostSendMethod invalid!");
         }
 
@@ -231,21 +229,21 @@ class VerbsWrapper {
      * @return The stateful verbs call
      */
     private SVCPostRecv getPostReceiveMethod(LinkedList<IbvRecvWR> recvWrs) throws IOException {
-        if(!svmOptimizations) {
+        if (!svmOptimizations) {
             return queuePair.postRecv(recvWrs, null);
         }
 
-        if(lastReceive != recvWrs.size()) {
+        if (lastReceive != recvWrs.size()) {
             lastReceive = recvWrs.size();
 
-            if(postReceiveMethod != null) {
+            if (postReceiveMethod != null) {
                 postReceiveMethod.free();
             }
 
             postReceiveMethod = queuePair.postRecv(recvWrs, null);
         }
 
-        if(!postReceiveMethod.isValid()) {
+        if (!postReceiveMethod.isValid()) {
             throw new IOException("PostReceiveMethod invalid!");
         }
 
@@ -290,7 +288,7 @@ class VerbsWrapper {
     int pollCompletionQueue(Mode mode) throws IOException {
         SVCPollCq  pollMethod = mode == Mode.SEND ? sendCqMethod : recvCqMethod;
 
-        if(!pollMethod.isValid()) {
+        if (!pollMethod.isValid()) {
             throw new IOException("PollCqMethod invalid!");
         }
 
@@ -300,8 +298,8 @@ class VerbsWrapper {
 
         IbvWC[] workComps = getWorkCompletions(mode);
 
-        for(int i = 0; i < polled; i++) {
-            if(workComps[i].getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
+        for (int i = 0; i < polled; i++) {
+            if (workComps[i].getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
                 throw new IOException("Work completion failed with status [" + workComps[i].getStatus() + "]");
             }
         }
@@ -310,13 +308,13 @@ class VerbsWrapper {
     }
 
     void sendMessages(int amount, LinkedList<IbvSge> scatterGatherElements) throws IOException {
-        if(amount <= 0) {
+        if (amount <= 0) {
             return;
         }
 
         sendWrList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             sendWrs[i].setWr_id(1);
             sendWrs[i].setSg_list(scatterGatherElements);
             sendWrs[i].setOpcode(IbvSendWR.IBV_WR_SEND);
@@ -329,13 +327,13 @@ class VerbsWrapper {
     }
 
     void receiveMessages(int amount, LinkedList<IbvSge> scatterGatherElements) throws IOException {
-        if(amount <= 0) {
+        if (amount <= 0) {
             return;
         }
 
         recvWrList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             recvWrs[i].setWr_id(1);
             recvWrs[i].setSg_list(scatterGatherElements);
 
@@ -346,13 +344,13 @@ class VerbsWrapper {
     }
 
     void executeRdmaOperations(int amount, LinkedList<IbvSge> scatterGatherElements, RdmaMode mode, MemoryRegionInformation remoteInfo) throws IOException {
-        if(amount <= 0) {
+        if (amount <= 0) {
             return;
         }
 
         sendWrList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             sendWrs[i].setWr_id(1);
             sendWrs[i].setSg_list(scatterGatherElements);
             sendWrs[i].setOpcode(mode == RdmaMode.WRITE ? IbvSendWR.IBV_WR_RDMA_WRITE : IbvSendWR.IBV_WR_RDMA_READ);
@@ -371,8 +369,8 @@ class VerbsWrapper {
      * Destroy all JVerbs resources.
      */
     void destroy() throws Exception {
-        if(postSendMethod != null) postSendMethod.free();
-        if(postReceiveMethod != null) postReceiveMethod.free();
+        if (postSendMethod != null) postSendMethod.free();
+        if (postReceiveMethod != null) postReceiveMethod.free();
         sendCqMethod.free();
         recvCqMethod.free();
 

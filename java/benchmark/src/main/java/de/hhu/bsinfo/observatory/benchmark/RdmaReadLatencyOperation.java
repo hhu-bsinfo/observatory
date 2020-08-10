@@ -1,12 +1,12 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.RdmaMode;
 
 public class RdmaReadLatencyOperation extends RdmaLatencyOperation {
 
-    RdmaReadLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize) {
-        super(benchmark, mode, operationCount, operationSize, RdmaMode.READ);
+    RdmaReadLatencyOperation(Connection connection, Mode mode, int operationCount, int operationSize) {
+        super(connection, mode, operationCount, operationSize, RdmaMode.READ);
     }
 
     @Override

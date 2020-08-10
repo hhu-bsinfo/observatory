@@ -32,7 +32,7 @@ class ConnectionContext implements AutoCloseable {
     ConnectionContext(int deviceNumber, byte portNumber, int queueSize) throws IOException {
         int numDevices = Context.getDeviceCount();
 
-        if(numDevices <= deviceNumber) {
+        if (numDevices <= deviceNumber) {
             throw new InvalidParameterException("Invalid device number '" + deviceNumber + "'. Only " + numDevices +  " InfiniBand " + (numDevices == 1 ? "device was" : "devices were") + " found in your system");
         }
 

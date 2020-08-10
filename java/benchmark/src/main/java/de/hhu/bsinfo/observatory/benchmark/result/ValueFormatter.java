@@ -33,7 +33,7 @@ public class ValueFormatter {
             counter++;
         }
 
-        if(value == (long) value) {
+        if (value == (long) value) {
             return String.format("%.3f %c%s (%d)", formattedValue, highMetricTable[counter], unit, (long) value);
         }
 
@@ -49,7 +49,7 @@ public class ValueFormatter {
             counter++;
         }
 
-        if(value == (long) value) {
+        if (value == (long) value) {
             return String.format("%.3f %c%s (%d)", formattedValue, lowMetricTable[counter], unit, (long) value);
         }
 
@@ -57,7 +57,7 @@ public class ValueFormatter {
     }
 
     public static String formatValue(final double value, final String unit) {
-        if(value >= 1) {
+        if (value >= 1) {
             return formatHighValue(value, unit);
         } else {
             return formatLowValue(value, unit);

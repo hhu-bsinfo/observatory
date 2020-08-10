@@ -1,6 +1,6 @@
 # Observatory Java implementation
 
-This is the Java implementation of Observatory. The benchmark itself is written in Java 8, but implementations can use newer versions of Java. It uses Gradle as build system.
+This is the Java implementation of Observatory. The connection itself is written in Java 8, but implementations can use newer versions of Java. It uses Gradle as build system.
 
 ## Build instructions
 

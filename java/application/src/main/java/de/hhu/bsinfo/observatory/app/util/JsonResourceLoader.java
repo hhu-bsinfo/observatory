@@ -19,7 +19,7 @@ public class JsonResourceLoader {
 
         T ret = gson.fromJson(new BufferedReader(new InputStreamReader(inputStream)), clazz);
 
-        if(ret == null) {
+        if (ret == null) {
             throw new IOException("Unable to construct object of type '" + clazz.getSimpleName() + "' from resource '" + fileName + "'!");
         }
 

@@ -1,15 +1,15 @@
 package de.hhu.bsinfo.observatory.benchmark;
 
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.RdmaMode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.RdmaMode;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 public abstract class RdmaLatencyOperation extends LatencyOperation {
 
     private final RdmaMode rdmaMode;
 
-    RdmaLatencyOperation(Benchmark benchmark, Mode mode, int operationCount, int operationSize, RdmaMode rdmaMode) {
-        super(benchmark, mode, operationCount, operationSize);
+    RdmaLatencyOperation(Connection connection, Mode mode, int operationCount, int operationSize, RdmaMode rdmaMode) {
+        super(connection, mode, operationCount, operationSize);
 
         this.rdmaMode = rdmaMode;
     }
@@ -23,17 +23,17 @@ public abstract class RdmaLatencyOperation extends LatencyOperation {
     Status warmUp(int operationCount) {
         Status status = Status.OK;
 
-        if(getMode() == Mode.SEND) {
-            for(int i = 0; i < operationCount; i++) {
-                status = getBenchmark().performSingleRdmaOperation(rdmaMode);
+        if (getMode() == Mode.SEND) {
+            for (int i = 0; i < operationCount; i++) {
+                status = getConnection().performSingleRdmaOperation(rdmaMode);
 
-                if(status != Status.OK) {
+                if (status != Status.OK) {
                     return status;
                 }
             }
         }
 
-        if(!getBenchmark().synchronize()) {
+        if (!getConnection().synchronize()) {
             return Status.SYNC_ERROR;
         }
 
@@ -44,15 +44,15 @@ public abstract class RdmaLatencyOperation extends LatencyOperation {
     public Status execute() {
         Status status = Status.OK;
 
-        if(getMode() == Mode.SEND) {
+        if (getMode() == Mode.SEND) {
             long startTime = System.nanoTime();
 
-            for(int i = 0; i < getMeasurement().getOperationCount(); i++) {
+            for (int i = 0; i < getMeasurement().getOperationCount(); i++) {
                 getMeasurement().startSingleMeasurement();
-                status = getBenchmark().performSingleRdmaOperation(rdmaMode);
+                status = getConnection().performSingleRdmaOperation(rdmaMode);
                 getMeasurement().stopSingleMeasurement();
 
-                if(status != Status.OK) {
+                if (status != Status.OK) {
                     return status;
                 }
             }
@@ -60,7 +60,7 @@ public abstract class RdmaLatencyOperation extends LatencyOperation {
             getMeasurement().finishMeasuring(System.nanoTime() - startTime);
         }
 
-        if(!getBenchmark().synchronize()) {
+        if (!getConnection().synchronize()) {
             return Status.SYNC_ERROR;
         }
 

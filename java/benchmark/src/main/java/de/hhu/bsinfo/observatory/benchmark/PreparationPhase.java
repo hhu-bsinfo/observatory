@@ -7,8 +7,8 @@ class PreparationPhase extends BenchmarkPhase {
     private final int operationSize;
     private final int operationCount;
 
-    PreparationPhase(Benchmark benchmark, int operationSize, int operationCount) {
-        super(benchmark);
+    PreparationPhase(Connection connection, int operationSize, int operationCount) {
+        super(connection);
 
         this.operationSize = operationSize;
         this.operationCount = operationCount;
@@ -16,6 +16,6 @@ class PreparationPhase extends BenchmarkPhase {
 
     @Override
     public Status execute() {
-        return getBenchmark().prepare(operationSize, operationCount);
+        return getConnection().prepare(operationSize, operationCount);
     }
 }

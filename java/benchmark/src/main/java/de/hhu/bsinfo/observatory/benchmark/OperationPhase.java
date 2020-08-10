@@ -3,7 +3,7 @@ package de.hhu.bsinfo.observatory.benchmark;
 import de.hhu.bsinfo.jdetector.lib.IbPerfCounter;
 import de.hhu.bsinfo.jdetector.lib.exception.IbFileException;
 import de.hhu.bsinfo.jdetector.lib.exception.IbMadException;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark.Mode;
+import de.hhu.bsinfo.observatory.benchmark.Connection.Mode;
 import de.hhu.bsinfo.observatory.benchmark.result.LatencyMeasurement;
 import de.hhu.bsinfo.observatory.benchmark.result.OverheadMeasurement;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
@@ -12,7 +12,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -25,14 +24,14 @@ class OperationPhase extends BenchmarkPhase {
 
     private final Operation operation;
 
-    OperationPhase(Benchmark benchmark, Operation operation) {
-        super(benchmark);
+    OperationPhase(Connection connection, Operation operation) {
+        super(connection);
 
         this.operation = operation;
     }
 
     private Status calculateOverhead() {
-        IbPerfCounter perfCounter = getBenchmark().getPerfCounter();
+        IbPerfCounter perfCounter = getConnection().getPerfCounter();
 
         try {
             perfCounter.refreshCounters();
@@ -41,10 +40,10 @@ class OperationPhase extends BenchmarkPhase {
             return Status.NETWORK_ERROR;
         }
 
-        if(operation instanceof BidirectionalThroughputOperation || operation instanceof MessagingPingPongOperation) {
+        if (operation instanceof BidirectionalThroughputOperation || operation instanceof MessagingPingPongOperation) {
             operation.setOverheadMeasurement(new OverheadMeasurement(perfCounter.getXmitDataBytes() +
                     perfCounter.getRcvDataBytes(), operation.getMeasurement()));
-        } else if(operation instanceof RdmaReadThroughputOperation || operation instanceof RdmaReadLatencyOperation) {
+        } else if (operation instanceof RdmaReadThroughputOperation || operation instanceof RdmaReadLatencyOperation) {
             operation.setOverheadMeasurement(new OverheadMeasurement(operation.getMode() == Mode.SEND ?
                     perfCounter.getRcvDataBytes() : perfCounter.getXmitDataBytes(), operation.getMeasurement()));
         } else {
@@ -56,49 +55,49 @@ class OperationPhase extends BenchmarkPhase {
     }
 
     private void saveSingleResult(String path, String operationSize, Map<String, Double> valueMap) throws IOException {
-        File file = new File(path);
+        /*File file = new File(path);
 
-        if(!file.getParentFile().exists()) {
-            if(!file.getParentFile().mkdirs()) {
+        if (!file.getParentFile().exists()) {
+            if (!file.getParentFile().mkdirs()) {
                 throw new IOException("Unable to create folder '" + file.getParentFile().getPath() + "'");
             }
         }
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
 
-        if(file.length() == 0) {
+        if (file.length() == 0) {
             writer.append("Benchmark,Iteration,Size");
 
-            for(String key : valueMap.keySet()) {
+            for (String key : valueMap.keySet()) {
                 writer.append(",").append(key);
             }
 
             writer.newLine();
         }
 
-        writer.append(getBenchmark().getResultName()).append(",")
-                .append(String.valueOf(getBenchmark().getIterationNumber())).append(",")
+        writer.append(getConnection().getResultName()).append(",")
+                .append(String.valueOf(getConnection().getIterationNumber())).append(",")
                 .append(operationSize);
 
-        for(double value : valueMap.values()) {
+        for (double value : valueMap.values()) {
             writer.append(",").append(String.format("%.12e", value));
         }
 
         writer.newLine();
 
         writer.flush();
-        writer.close();
+        writer.close();*/
     }
 
     private void saveResults() throws IOException {
-        Map<String, Double> valueMap = new TreeMap<>();
+        /*Map<String, Double> valueMap = new TreeMap<>();
 
-        if(operation instanceof ThroughputOperation) {
+        if (operation instanceof ThroughputOperation) {
             ThroughputMeasurement measurement = ((ThroughputOperation) operation).getMeasurement();
 
             valueMap.put("OperationThroughput", measurement.getOperationThroughput());
             valueMap.put("DataThroughput", measurement.getDataThroughput());
-        } else if(operation instanceof LatencyOperation) {
+        } else if (operation instanceof LatencyOperation) {
             LatencyMeasurement measurement = ((LatencyOperation) operation).getMeasurement();
 
             valueMap.put("OperationThroughput", measurement.getOperationThroughput());
@@ -112,14 +111,14 @@ class OperationPhase extends BenchmarkPhase {
             valueMap.put("9999thLatency", measurement.getPercentileLatency(0.9999f));
         }
 
-        if(getBenchmark().measureOverhead()) {
+        if (getConnection().measureOverhead()) {
             valueMap.put("DataOverheadFactor", operation.getOverheadMeasurement().getOverheadFactor());
             valueMap.put("DataOverheadPercentage", operation.getOverheadMeasurement().getOverheadPercentage());
             valueMap.put("DataOverheadThroughput", operation.getOverheadMeasurement().getOverheadDataThroughput());
         }
 
-        saveSingleResult(getBenchmark().getResultPath() + "/" + operation.getOutputFilename() + ".csv",
-                String.valueOf(operation.getMeasurement().getOperationSize()), valueMap);
+        saveSingleResult(getConnection().getResultPath() + "/" + operation.getOutputFilename() + ".csv",
+                String.valueOf(operation.getMeasurement().getOperationSize()), valueMap);*/
     }
 
     @Override
@@ -127,9 +126,9 @@ class OperationPhase extends BenchmarkPhase {
         LOGGER.info("Executing phase of type '{}' with {} operations of size {} bytes", operation.getClass().getSimpleName(),
                 operation.getMeasurement().getOperationCount(), operation.getMeasurement().getOperationSize());
 
-        if(getBenchmark().measureOverhead()) {
+        if (getConnection().measureOverhead()) {
             try {
-                getBenchmark().getPerfCounter().resetCounters();
+                getConnection().getPerfCounter().resetCounters();
             } catch (IbFileException | IbMadException e) {
                 LOGGER.error("Unable to reset performance counters", e);
                 return Status.NETWORK_ERROR;
@@ -138,16 +137,16 @@ class OperationPhase extends BenchmarkPhase {
 
         Status status = operation.execute();
 
-        if(status == Status.OK && getBenchmark().measureOverhead()) {
+        if (status == Status.OK && getConnection().measureOverhead()) {
             Status overheadStatus = calculateOverhead();
-            if(overheadStatus != Status.OK) {
+            if (overheadStatus != Status.OK) {
                 LOGGER.error("Measuring overhead failed with status [{}]", overheadStatus);
                 return overheadStatus;
             }
         }
 
-        if(status == Status.OK && getBenchmark().isServer()) {
-            if(getBenchmark().measureOverhead()) {
+        if (status == Status.OK && getConnection().isServer()) {
+            if (getConnection().measureOverhead()) {
                 LOGGER.info("Operation finished with results:\n{},\n{}", operation.getMeasurement(), operation.getOverheadMeasurement());
             } else {
                 LOGGER.info("Operation finished with results:\n{}", operation.getMeasurement());

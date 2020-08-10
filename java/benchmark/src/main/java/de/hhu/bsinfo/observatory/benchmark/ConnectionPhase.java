@@ -4,27 +4,27 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
 class ConnectionPhase extends BenchmarkPhase {
 
-    ConnectionPhase(Benchmark benchmark) {
-        super(benchmark);
+    ConnectionPhase(Connection connection) {
+        super(connection);
     }
 
     @Override
     Status execute() {
-        Benchmark benchmark = getBenchmark();
+        Connection connection = getConnection();
 
-        if(benchmark.isServer()) {
-            return benchmark.serve(benchmark.getBindAddress());
+        if (connection.isServer()) {
+            return connection.serve(connection.getBindAddress());
         } else {
             Status status = Status.UNKNOWN_ERROR;
 
-            for(int i = 0; i < getBenchmark().getConnectionRetries(); i++) {
+            for (int i = 0; i < getConnection().getConnectionRetries(); i++) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ignored) {}
 
-                status = benchmark.connect(benchmark.getBindAddress(), benchmark.getRemoteAddress());
+                status = connection.connect(connection.getBindAddress(), connection.getRemoteAddress());
 
-                if(status == Status.OK || status == Status.NOT_IMPLEMENTED) {
+                if (status == Status.OK || status == Status.NOT_IMPLEMENTED) {
                     return status;
                 }
             }

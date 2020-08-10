@@ -11,7 +11,7 @@ import de.hhu.bsinfo.neutrino.verbs.SendWorkRequest;
 import de.hhu.bsinfo.neutrino.verbs.SendWorkRequest.OpCode;
 import de.hhu.bsinfo.neutrino.verbs.SendWorkRequest.SendFlag;
 import de.hhu.bsinfo.neutrino.verbs.WorkCompletion;
-import de.hhu.bsinfo.observatory.benchmark.Benchmark;
+import de.hhu.bsinfo.observatory.benchmark.Connection;
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,9 +20,9 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NeutrinoBenchmark extends Benchmark {
+public class NeutrinoConnection extends Connection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NeutrinoBenchmark.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NeutrinoConnection.class);
 
     private static final String PARAM_KEY_DEVICE_NUMBER = "deviceNumber";
     private static final String PARAM_KEY_PORT_NUMBER = "portNumber";
@@ -121,7 +121,7 @@ public class NeutrinoBenchmark extends Benchmark {
         ReceiveWorkRequest.Builder receiveBuilder = new ReceiveWorkRequest.Builder()
                 .withScatterGatherElement(receiveScatterGatherElement);
 
-        for(int i = 0; i < queueSize; i++) {
+        for (int i = 0; i < queueSize; i++) {
             sendWorkRequests[i] = sendBuilder.build();
             receiveWorkRequests[i] = receiveBuilder.build();
         }
@@ -172,7 +172,7 @@ public class NeutrinoBenchmark extends Benchmark {
             while(messagesLeft > 0) {
                 int batchSize = queueSize - pendingSendCompletions;
 
-                if(batchSize > messagesLeft) {
+                if (batchSize > messagesLeft) {
                     batchSize = messagesLeft;
                 }
 
@@ -203,7 +203,7 @@ public class NeutrinoBenchmark extends Benchmark {
             while(messagesLeft > 0) {
                 int batchSize = queueSize - pendingReceiveCompletions;
 
-                if(batchSize > messagesLeft) {
+                if (batchSize > messagesLeft) {
                     batchSize = messagesLeft;
                 }
 
@@ -234,7 +234,7 @@ public class NeutrinoBenchmark extends Benchmark {
             while(operationsLeft > 0) {
                 int batchSize = queueSize - pendingSendCompletions;
 
-                if(batchSize > operationsLeft) {
+                if (batchSize > operationsLeft) {
                     batchSize = operationsLeft;
                 }
 
@@ -360,13 +360,13 @@ public class NeutrinoBenchmark extends Benchmark {
     }
 
     private void postSend(int amount) throws IOException {
-        if(amount == 0) {
+        if (amount == 0) {
             return;
         }
 
         sendList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(OpCode.SEND);
             sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
 
@@ -377,13 +377,13 @@ public class NeutrinoBenchmark extends Benchmark {
     }
 
     private void postReceive(int amount) throws IOException {
-        if(amount == 0) {
+        if (amount == 0) {
             return;
         }
 
         receiveList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             receiveList.add(receiveWorkRequests[i]);
         }
 
@@ -391,13 +391,13 @@ public class NeutrinoBenchmark extends Benchmark {
     }
 
     private void postRdma(int amount, RdmaMode mode) throws IOException {
-        if(amount == 0) {
+        if (amount == 0) {
             return;
         }
 
         sendList.clear();
 
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             sendWorkRequests[i].setOpCode(mode == RdmaMode.WRITE ? OpCode.RDMA_WRITE : OpCode.RDMA_READ);
             sendWorkRequests[i].setSendFlags(SendFlag.SIGNALED);
 
@@ -416,10 +416,10 @@ public class NeutrinoBenchmark extends Benchmark {
 
         completionQueue.poll(completionArray);
 
-        for(int i = 0; i < completionArray.getLength(); i++) {
+        for (int i = 0; i < completionArray.getLength(); i++) {
             WorkCompletion completion = completionArray.get(i);
 
-            if(completion.getStatus() != WorkCompletion.Status.SUCCESS) {
+            if (completion.getStatus() != WorkCompletion.Status.SUCCESS) {
                 throw new IOException("Work completion failed with status [" + completion + "]: " + completion.getStatusMessage());
             }
         }
