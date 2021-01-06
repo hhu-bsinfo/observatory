@@ -61,11 +61,9 @@ public class JucxBenchmark extends Benchmark {
 
     @Override
     protected Status serve(InetSocketAddress bindAddress) {
-       InetSocketAddress listenAddr = new InetSocketAddress(bindAddress.getAddress(), bindAddress.getPort());
+       LOGGER.info("Listener started on {}", bindAddress);
 
-       LOGGER.info("Listener started on {}", listenAddr);
-
-       UcpListenerParams listenerParams = new UcpListenerParams().setSockAddr(listenAddr)
+       UcpListenerParams listenerParams = new UcpListenerParams().setSockAddr(bindAddress)
                 .setConnectionHandler(request -> this.connectionRequest = request);
         listener = worker.newListener(listenerParams);
         resources.add(listener);
@@ -77,7 +75,7 @@ public class JucxBenchmark extends Benchmark {
         }
 
         UcpEndpointParams endpointParams = new UcpEndpointParams().setConnectionRequest(connectionRequest)
-                .setPeerErrorHadnlingMode();
+                .setPeerErrorHandlingMode();
         serverToClient = worker.newEndpoint(endpointParams);
 
         // Exchange small message to wire-up connection
@@ -90,12 +88,10 @@ public class JucxBenchmark extends Benchmark {
 
     @Override
     protected Status connect(InetSocketAddress bindAddress, InetSocketAddress serverAddress) {
-        InetSocketAddress socketAddress = new InetSocketAddress(serverAddress.getAddress(), serverAddress.getPort());
+        LOGGER.info("Connecting to {}", serverAddress);
 
-        LOGGER.info("Connecting to {}", socketAddress);
-
-        UcpEndpointParams epParams = new UcpEndpointParams().setSocketAddress(socketAddress)
-                .setPeerErrorHadnlingMode();
+        UcpEndpointParams epParams = new UcpEndpointParams().setSocketAddress(serverAddress)
+                .setPeerErrorHandlingMode();
         clientToServer = worker.newEndpoint(epParams);
 
         // Exchange small message to wire-up connection
