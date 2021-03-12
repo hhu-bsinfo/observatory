@@ -1,5 +1,4 @@
 {
-  "className": "de.hhu.bsinfo.observatory.jverbs.JverbsBenchmark",
   "resultName": "jVerbs",
   "parameters": [
     { "key": "queueSize", "value": "200" },

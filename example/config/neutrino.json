@@ -1,5 +1,4 @@
 {
-  "className": "de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark",
   "resultName": "neutrino",
   "parameters": [
     { "key":  "deviceNumber", "value":  "0" },

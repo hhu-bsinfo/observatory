@@ -69,8 +69,13 @@ public class JucxBenchmark extends Benchmark {
         resources.add(listener);
 
         while (this.connectionRequest == null) {
-            if (worker.progress() == 0) {
-                worker.waitForEvents();
+            try {
+                if (worker.progress() == 0) {
+                    worker.waitForEvents();
+                }
+            } catch (Exception e) {
+                LOGGER.error("Failed to progress worker while waiting for an incoming connection", e);
+                return Status.NETWORK_ERROR;
             }
         }
 
@@ -80,8 +85,14 @@ public class JucxBenchmark extends Benchmark {
 
         // Exchange small message to wire-up connection
         ByteBuffer buffer = ByteBuffer.allocateDirect(8);
-        worker.progressRequest(worker.recvTaggedNonBlocking(buffer, null));
-        worker.progressRequest(serverToClient.sendTaggedNonBlocking(buffer, null));
+
+        try {
+            worker.progressRequest(worker.recvTaggedNonBlocking(buffer, null));
+            worker.progressRequest(serverToClient.sendTaggedNonBlocking(buffer, null));
+        } catch (Exception e) {
+            LOGGER.error("Failed to progress worker while wiring up the connection", e);
+            return Status.NETWORK_ERROR;
+        }
 
         return Status.OK;
     }
@@ -96,13 +107,19 @@ public class JucxBenchmark extends Benchmark {
 
         // Exchange small message to wire-up connection
         ByteBuffer buffer = ByteBuffer.allocateDirect(8);
-        worker.progressRequest(clientToServer.sendTaggedNonBlocking(buffer, null));
-        worker.progressRequest(worker.recvTaggedNonBlocking(buffer, null));
+
+        try {
+            worker.progressRequest(clientToServer.sendTaggedNonBlocking(buffer, null));
+            worker.progressRequest(worker.recvTaggedNonBlocking(buffer, null));
+        } catch (Exception e) {
+            LOGGER.error("Failed to progress worker while wiring up the connection", e);
+            return Status.NETWORK_ERROR;
+        }
 
         return Status.OK;
     }
 
-    private void exchangeMemoryInformation() {
+    private void exchangeMemoryInformation() throws Exception {
         UcpEndpoint endpoint = (clientToServer != null) ? clientToServer : serverToClient;
         ByteBuffer recvMemoryRkey = recvMemory.getRemoteKeyBuffer();
         ByteBuffer sendMessage = ByteBuffer.allocateDirect(8 + recvMemoryRkey.capacity());
@@ -136,7 +153,13 @@ public class JucxBenchmark extends Benchmark {
         resources.add(sendMemory);
         resources.add(recvMemory);
 
-        exchangeMemoryInformation();
+        try {
+            exchangeMemoryInformation();
+        }  catch (Exception e) {
+            LOGGER.error("Failed to exchange memory information", e);
+            return Status.NETWORK_ERROR;
+        }
+
         return Status.OK;
     }
 
@@ -172,12 +195,17 @@ public class JucxBenchmark extends Benchmark {
                         sendMemory.getLength(), 0, null);
             }
 
-            for (int i = 0; i < pendingCompletion; i++) {
-                if (!requests[i].isCompleted()) {
-                    worker.progressRequest(requests[i]);
-                }
+            try {
+                for (int i = 0; i < pendingCompletion; i++) {
+                    if (!requests[i].isCompleted()) {
+                        worker.progressRequest(requests[i]);
+                    }
 
-                completed++;
+                    completed++;
+                }
+            }  catch (Exception e) {
+                LOGGER.error("Failed to progress worker while sending a message", e);
+                return Status.NETWORK_ERROR;
             }
         }
 
@@ -197,11 +225,16 @@ public class JucxBenchmark extends Benchmark {
                   recvMemory.getLength(), 0, 0, null);
             }
 
-            for (int i = 0; i < pendingCompletion; i++) {
-                if (!requests[i].isCompleted()) {
-                    worker.progressRequest(requests[i]);
+            try {
+                for (int i = 0; i < pendingCompletion; i++) {
+                    if (!requests[i].isCompleted()) {
+                        worker.progressRequest(requests[i]);
+                    }
+                    completed++;
                 }
-                completed++;
+            }  catch (Exception e) {
+                LOGGER.error("Failed to progress worker while receiving a message", e);
+                return Status.NETWORK_ERROR;
             }
         }
 
@@ -228,7 +261,13 @@ public class JucxBenchmark extends Benchmark {
                 }
             }
 
-            worker.progressRequest(endpoint.flushNonBlocking(null));
+            try {
+                worker.progressRequest(endpoint.flushNonBlocking(null));
+            }  catch (Exception e) {
+                LOGGER.error("Failed to progress worker while waiting for RDMA operations to complete", e);
+                return Status.NETWORK_ERROR;
+            }
+
             completed += pendingCompletion;
         }
 

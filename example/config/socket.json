@@ -1,5 +1,4 @@
 {
-  "className": "de.hhu.bsinfo.observatory.socket.SocketBenchmark",
   "resultName": "Socket",
   "parameters": [],
   "detector": {

@@ -1,5 +1,4 @@
 {
-  "className": "de.hhu.bsinfo.observatory.disni.DisniBenchmark",
   "resultName": "DiSNI",
   "parameters": [
     { "key": "queueSize", "value": "200" },

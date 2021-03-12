@@ -1,5 +1,4 @@
 {
-  "className": "de.hhu.bsinfo.observatory.jucx.JucxBenchmark",
   "resultName": "JUCX",
   "parameters": [
     { "key": "queueSize", "value": "1000" }

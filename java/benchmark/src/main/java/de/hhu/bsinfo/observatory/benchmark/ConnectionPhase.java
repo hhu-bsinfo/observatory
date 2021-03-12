@@ -2,7 +2,11 @@ package de.hhu.bsinfo.observatory.benchmark;
 
 import de.hhu.bsinfo.observatory.benchmark.result.Status;
 
+import java.net.InetSocketAddress;
+
 class ConnectionPhase extends BenchmarkPhase {
+
+    private static int portCounter = 1;
 
     ConnectionPhase(Benchmark benchmark) {
         super(benchmark);
@@ -13,8 +17,11 @@ class ConnectionPhase extends BenchmarkPhase {
         Benchmark benchmark = getBenchmark();
 
         if(benchmark.isServer()) {
-            return benchmark.serve(benchmark.getBindAddress());
+            InetSocketAddress bindAddress = new InetSocketAddress(benchmark.getBindAddress().getAddress(), benchmark.getBindAddress().getPort() + portCounter++);
+            return benchmark.serve(bindAddress);
         } else {
+            InetSocketAddress bindAddress = new InetSocketAddress(benchmark.getBindAddress().getAddress(), benchmark.getBindAddress().getPort() + portCounter);
+            InetSocketAddress remoteAddress = new InetSocketAddress(benchmark.getRemoteAddress().getAddress(), benchmark.getRemoteAddress().getPort() + portCounter++);
             Status status = Status.UNKNOWN_ERROR;
 
             for(int i = 0; i < getBenchmark().getConnectionRetries(); i++) {
@@ -22,7 +29,7 @@ class ConnectionPhase extends BenchmarkPhase {
                     Thread.sleep(100);
                 } catch (InterruptedException ignored) {}
 
-                status = benchmark.connect(benchmark.getBindAddress(), benchmark.getRemoteAddress());
+                status = benchmark.connect(bindAddress, remoteAddress);
 
                 if(status == Status.OK || status == Status.NOT_IMPLEMENTED) {
                     return status;
