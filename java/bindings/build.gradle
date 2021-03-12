@@ -23,8 +23,6 @@ subprojects {
     }
 
     dependencies {
-        implementation fileTree(dir: 'libs', include: ['*.jar'])
-
         implementation project(':application')
         implementation project(':benchmark')
 

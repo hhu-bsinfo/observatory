@@ -6,6 +6,7 @@ include 'bindings'
 
 include 'bindings:dummy-binding'
 include 'bindings:socket-binding'
+include 'bindings:nio-binding'
 include 'bindings:disni-binding'
 include 'bindings:neutrino-binding'
 include 'bindings:jverbs-binding'

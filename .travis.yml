@@ -17,6 +17,13 @@ matrix:
         - ./gradlew bindings:socket-binding:assemble
       script: ./gradlew bindings:socket-binding:distTar
       
+    - name: Java nio-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:nio-binding:assemble
+      script: ./gradlew bindings:nio-binding:distTar
+      
     - name: Java neutrino-binding
       language: java
       install:
