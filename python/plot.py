@@ -4,20 +4,22 @@ import argparse
 import pandas
 import matplotlib.pyplot
 
-COLORS: final = {'ibverbs': '#ff0000', 'jVerbs': '#00ff00', 'DiSNI': '#ff7f00',
-                 'neutrino': '#0000ff', 'IPoIB': '#ff00ff', 'libvma': '#00ffff',
-                 'JSOR': '#4d4d4d'}
+#COLORS: final = {'hadroNIO (4K)': '#ff0000', 'hadroNIO (8K)': '#00ff00', 'hadroNIO (16K)': '#ff7f00',
+#                 'hadroNIO (32K)': '#0000ff', 'hadroNIO (64K)': '#ff00ff', 'hadroNIO (128K)': '#00ffff'}
 
-MARKERS: final = {'ibverbs': '+', 'jVerbs': 'x', 'DiSNI': 'o',
-                  'neutrino': 's', 'IPoIB': 'D', 'libvma': 'p',
-                  'JSOR': 'v'}
+COLORS: final = {'hadroNIO (64K)': '#ff0000', 'IPoIB': '#00ff00', 'JUCX': '#ff7f00'}
+
+#MARKERS: final = {'hadroNIO (4K)': '+', 'hadroNIO (8K)': 'x', 'hadroNIO (16K)': 'o',
+#                  'hadroNIO (32K)': 's', 'hadroNIO (64K)': 'D', 'hadroNIO (128K)': 'p'}
+
+MARKERS: final = {'hadroNIO (64K)': '+', 'IPoIB': 'x', 'JUCX': 'o'}
 
 METRIC_TABLE: final = ['', 'K', 'M', 'G', 'T', 'P', 'E']
 FONT: final = {'family': 'DejaVu Sans', 'weight': 'normal', 'size': 28}
 
 FIGURE_SIZE: final = (16, 9)
-LEGEND_POSITION: final = (0.5, 1.2)
-LEGEND_COLUMNS: final = 4
+LEGEND_POSITION: final = (0.5, 1.15)
+LEGEND_COLUMNS: final = 3
 LATENCY_YMIN: final = 0.91
 
 matplotlib.rc('font', **FONT)

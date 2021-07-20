@@ -1,21 +1,11 @@
 ext {
-    projectVersion = '0.1.0'
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
+    projectVersion = '0.2.0'
 }
 
 subprojects {
     buildDir = rootProject.file("build/${it.name}")
-
-    repositories {
-        mavenCentral()
-    }
 }
 
 wrapper {
-    gradleVersion = "6.8.3"
+    gradleVersion = "6.9"
 }

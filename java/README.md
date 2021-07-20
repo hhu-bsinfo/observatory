@@ -4,6 +4,8 @@ This is the Java implementation of Observatory. The benchmark itself is written 
 
 ## Build instructions
 
+Observatory has dependencies in the GitHub Package Registry. Use a file called `gradle.properties` to set `gpr.user` to your GitHub username and `gpr.token` to a Personal Access Token with `read:packages` enabled. See the [GitHub Docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry) for more information on the GitHub Package Registry.
+
 Each Observatory binding can be build into a standalone application. The bindings are located in the subdirectory `bindings`. To build a binding you can run the following command from the project's root directory:
 
 ```

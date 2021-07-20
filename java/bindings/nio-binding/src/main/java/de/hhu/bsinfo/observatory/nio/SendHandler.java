@@ -60,7 +60,7 @@ public class SendHandler implements Handler {
             try {
                 socket.read(messageBuffer);
             } catch (IOException e) {
-                LOGGER.error("Failed to read a message!");
+                LOGGER.error("Failed to receive a message!");
             }
 
             if (!messageBuffer.hasRemaining()) {

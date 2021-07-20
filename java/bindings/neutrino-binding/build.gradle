@@ -6,8 +6,19 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
+repositories {
+    maven {
+        name = "GitHubPackages neutrino"
+        url = "https://maven.pkg.github.com/hhu-bsinfo/neutrino"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getProperty("gpr.user")
+            password = project.findProperty("gpr.token") ?: System.getProperty("gpr.token")
+        }
+    }
+}
+
 dependencies {
-    implementation 'de.hhu.bsinfo:neutrino:0.1.0-SNAPSHOT'
+    implementation 'de.hhu.bsinfo:neutrino:0.1.0'
 }
 
 buildConfig {

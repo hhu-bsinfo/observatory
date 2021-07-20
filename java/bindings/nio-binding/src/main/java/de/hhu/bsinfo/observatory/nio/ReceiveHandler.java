@@ -60,7 +60,7 @@ public class ReceiveHandler implements Handler {
             try {
                 socket.write(messageBuffer);
             } catch (IOException e) {
-                LOGGER.error("Failed to read a message!");
+                LOGGER.error("Failed to send a message!");
             }
 
             if (!messageBuffer.hasRemaining()) {

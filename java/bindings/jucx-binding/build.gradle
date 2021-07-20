@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    implementation 'org.openucx:jucx:1.10.0'
+    implementation 'org.openucx:jucx:1.10.1'
 }
 
 buildConfig {

@@ -89,6 +89,7 @@ modules.xml
 .idea/sonarlint
 
 ### Gradle ###
+gradle.properties
 .gradle
 build/
 

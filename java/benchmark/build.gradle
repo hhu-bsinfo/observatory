@@ -17,20 +17,21 @@ repositories {
     mavenCentral()
 
     maven {
-        url 'https://dl.bintray.com/hhu-bsinfo/dxram'
-    }
-
-    maven {
-        url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
+        name = "GitHubPackages jDetector"
+        url = "https://maven.pkg.github.com/hhu-bsinfo/jdetector"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getProperty("gpr.user")
+            password = project.findProperty("gpr.token") ?: System.getProperty("gpr.token")
+        }
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     
-    implementation 'org.slf4j:slf4j-api:1.7.30'
-    implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'de.hhu.bsinfo:jdetector:0.1.0'
+    implementation 'org.slf4j:slf4j-api:1.7.31'
+    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation 'de.hhu.bsinfo:jdetector:0.1.1'
 }
 
 buildConfig {

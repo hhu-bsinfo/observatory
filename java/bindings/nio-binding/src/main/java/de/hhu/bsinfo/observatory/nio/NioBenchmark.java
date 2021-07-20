@@ -57,10 +57,10 @@ public class NioBenchmark extends Benchmark {
 
         try {
             socket = SocketChannel.open();
-            // socket.bind(bindAddress);
+            socket.bind(new InetSocketAddress(bindAddress.getAddress(), 0));
             socket.connect(new InetSocketAddress(serverAddress.getAddress(), serverAddress.getPort() + 1));
             socket.configureBlocking(blocking);
-            LOGGER.info("Successfully connected to server {}", socket.getRemoteAddress());
+            LOGGER.info("Successfully connected to server {} with local address {}", socket.getRemoteAddress(), socket.getLocalAddress());
         } catch (IOException e) {
             LOGGER.error("Connecting to server failed", e);
             return Status.NETWORK_ERROR;

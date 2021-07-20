@@ -56,7 +56,7 @@ public class NonBlockingSocketChannelBenchmark extends SocketChannelBenchmark {
         if (handler == null) {
             try {
                 key = socket.register(selector, 0);
-                handler = new ReceiveHandler(socket, key, sendBuffer, messageCount);
+                handler = new ReceiveHandler(socket, key, receiveBuffer, messageCount);
                 key.attach(handler);
             } catch (IOException e) {
                 LOGGER.error("Failed to register key", e);
