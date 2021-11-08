@@ -75,7 +75,7 @@ public class Application implements Runnable {
         }
 
         if(!isServer) {
-            bindAddress = new InetSocketAddress(bindAddress.getAddress(), 0);
+            bindAddress = new InetSocketAddress(bindAddress.getAddress(), DEFAULT_SERVER_PORT);
         }
 
         LOGGER.info("Creating observatory instance");

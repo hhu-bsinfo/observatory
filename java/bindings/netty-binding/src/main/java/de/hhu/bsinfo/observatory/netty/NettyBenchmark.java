@@ -92,7 +92,7 @@ public class NettyBenchmark extends Benchmark {
             });
 
         try {
-            final ChannelFuture connectFuture = bootstrap.connect(serverAddress);
+            final ChannelFuture connectFuture = bootstrap.connect(serverAddress, bindAddress);
             connectFuture.channel().closeFuture().addListener(future -> LOGGER.info("Socket channel closed"));
 
             return connectFuture.sync().isSuccess() ? Status.OK : Status.NETWORK_ERROR;
