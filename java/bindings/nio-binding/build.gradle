@@ -1,9 +1,14 @@
 def benchmarkClass = 'de.hhu.bsinfo.observatory.nio.NioBenchmark'
 
-compileJava {
-    sourceCompatibility = '8'
-    targetCompatibility = '8'
-    options.encoding = 'UTF-8'
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
 
 buildConfig {
@@ -12,4 +17,9 @@ buildConfig {
 
     charset = 'UTF-8'
     buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
+}
+
+// Workaround for 'Configuration <compile> not found', caused by de.fuerstenau.buildconfig with Gradle 7+
+configurations {
+    create("compile")
 }

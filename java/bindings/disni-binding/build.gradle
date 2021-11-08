@@ -1,9 +1,18 @@
 def benchmarkClass = 'de.hhu.bsinfo.observatory.disni.DisniBenchmark'
 
-compileJava {
-    sourceCompatibility = '8'
-    targetCompatibility = '8'
-    options.encoding = 'UTF-8'
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+dependencies {
+    implementation ("com.ibm.disni:disni:${disniVersion}") {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
 
 buildConfig {
@@ -14,8 +23,7 @@ buildConfig {
     buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
 }
 
-dependencies {
-    implementation ('com.ibm.disni:disni:2.1') {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-    }
+// Workaround for 'Configuration <compile> not found', caused by de.fuerstenau.buildconfig with Gradle 7+
+configurations {
+    create("compile")
 }

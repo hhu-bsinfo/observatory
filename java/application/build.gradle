@@ -5,10 +5,10 @@ plugins {
 group = 'de.hhu.bsinfo'
 version = getProperty('projectVersion')
 
-compileJava {
-    sourceCompatibility = '8'
-    targetCompatibility = '8'
-    options.encoding = 'UTF-8'
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 repositories {
@@ -18,7 +18,10 @@ repositories {
 dependencies {
     implementation project(':benchmark')
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
-    implementation 'com.google.code.gson:gson:2.8.7'
-    implementation 'info.picocli:picocli:4.6.1'
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    implementation "com.google.code.gson:gson:${gsonVersion}"
+    implementation "info.picocli:picocli:${picocliVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }

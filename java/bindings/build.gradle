@@ -27,7 +27,7 @@ subprojects {
         implementation project(':application')
         implementation project(':benchmark')
 
-        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+        implementation "org.slf4j:slf4j-api:${slf4jVersion}"
     }
 
     mainClassName = 'de.hhu.bsinfo.observatory.app.Application'
@@ -36,4 +36,9 @@ subprojects {
     applicationDistribution.from('../../../example/config/config.json') {
         into '/'
     }
+}
+
+// Workaround for 'Configuration <compile> not found', caused by de.fuerstenau.buildconfig with Gradle 7+
+configurations {
+    create("compile")
 }

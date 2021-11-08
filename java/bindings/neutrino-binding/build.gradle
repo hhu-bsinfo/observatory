@@ -1,9 +1,9 @@
 def benchmarkClass = 'de.hhu.bsinfo.observatory.neutrino.NeutrinoBenchmark'
 
-compileJava {
-    sourceCompatibility = '11'
-    targetCompatibility = '11'
-    options.encoding = 'UTF-8'
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
 repositories {
@@ -18,7 +18,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.hhu.bsinfo:neutrino:0.1.0'
+    implementation "de.hhu.bsinfo:neutrino:${neutrinoVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
 }
 
 buildConfig {
@@ -27,4 +30,9 @@ buildConfig {
 
     charset = 'UTF-8'
     buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
+}
+
+// Workaround for 'Configuration <compile> not found', caused by de.fuerstenau.buildconfig with Gradle 7+
+configurations {
+    create("compile")
 }
