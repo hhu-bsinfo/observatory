@@ -25,7 +25,7 @@ Observatory provides a single lean interface, that combines messaging, as well a
 
 ## Build and Run Instructions
 
-Observatory offers a [Java](https://github.com/hhu-bsinfo/observatory/tree/development/java) and a [C++](https://github.com/hhu-bsinfo/observatory/tree/development/cpp) implementation. For instructions on how to build and run each implemenation, see the README file in the corresponding subdirectory.
+Observatory offers a [Java](https://github.com/hhu-bsinfo/observatory/tree/development/java) and a [C++](https://github.com/hhu-bsinfo/observatory/tree/development/cpp) implementation. For instructions on how to build and run each implementation, see the README file in the corresponding subdirectory.
 
 ## Configuration
 
@@ -70,9 +70,9 @@ The benchmark itself is made up of six phases that are executed consecutively:
  5. **Operation**: This is the main phase of the benchmark, executing the configured amount of operations. If a bidirectional benchmark run is performed, dedicated threads for sending and receiving are started. If a throughput benchmark is being performed, two timestamps will be taken right before the first operation starts and right after the last one has finished. Otherwise, if a latency measurement is performed, the time needed for each operation is measured and stored in an array. This allows calculating percentiles afterwards. Furthermore, the benchmark utilizes the performance counters of the IB HCA to determine the raw amount of data being sent/received. Thus, it is possible to calculate the overhead added by any software defined protocol which is especially relevant for the socket-based libraries.
  6. **Cleanup**: The benchmark is finished, resources shall be freed and all connections shall be closed.
   
-Observatory currently provides Java implementations for TCP-Sockets, NIO, [jVerbs](https://www.ibm.com/support/knowledgecenter/en/SSYKE2_7.1.0/com.ibm.java.lnx.71.doc/diag/understanding/rdma_jverbs.html), [DiSNI](https://developer.ibm.com/technologies/analytics/projects/direct-storage-and-networking-interface-disni/), [JUCX](https://www.openucx.org/) and [neutrino](https://www.cs.hhu.de/en/research-groups/operating-systems-prof-dr-michael-schoettner/research/neutrino.html), as well as native implementations for TCP-Sockets and [libibverbs](https://github.com/linux-rdma/rdma-core).
+Observatory currently provides Java implementations for TCP-Sockets, NIO, [netty](https://netty.io) [jVerbs](https://www.ibm.com/support/knowledgecenter/en/SSYKE2_7.1.0/com.ibm.java.lnx.71.doc/diag/understanding/rdma_jverbs.html), [DiSNI](https://developer.ibm.com/technologies/analytics/projects/direct-storage-and-networking-interface-disni/), [JUCX](https://www.openucx.org/) and [neutrino](https://www.cs.hhu.de/en/research-groups/operating-systems-prof-dr-michael-schoettner/research/neutrino.html), as well as native implementations for TCP-Sockets and [libibverbs](https://github.com/linux-rdma/rdma-core).
 
 ## Publications
 
  - *Performance analysis and evaluation of Java-based InfiniBand Solutions*, Fabian Ruhland, Filip Krakowski, Michael Schöttner; appeared in: Proceedings of the IEEE International Symposium on Parallel and Distributed Computing ([ISPDC](https://ispdc2020.ipipan.waw.pl/), [IEEE Xplore](https://ieeexplore.ieee.org/document/9201723)), Warsaw, Poland, 2020.
- - *hadroNIO: Accelerating Java NIO via UCX*, Fabian Ruhland, Filip Krakowski, Michael Schöttner; to appear in: Proceedings of the IEEE International Symposium on Parallel and Distributed Computing ([ISPDC](https://ispdc2021.utcluj.ro/)), Cluj-Napoca, Romania, 2021.
+ - *hadroNIO: Accelerating Java NIO via UCX*, Fabian Ruhland, Filip Krakowski, Michael Schöttner; appeared in: Proceedings of the IEEE International Symposium on Parallel and Distributed Computing ([ISPDC](https://ispdc2021.utcluj.ro/), [IEEE Xplore](https://ieeexplore.ieee.org/document/9521601)), Cluj-Napoca, Romania, 2021.

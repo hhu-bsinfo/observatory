@@ -37,6 +37,8 @@ After that, simply run `./bin/observatory/`.
 The following bindings are implemented for the Java version of Observatory:
  - [Dummy Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/dummy-binding): An example binding, that can be used as a starting point for new implementations.
  - [Socket Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/socket-binding): This implementation uses plain Java sockets and does **not** support RDMA.
+ - [NIO Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/nio-binding): This implementation uses Java NIO socket channels and does **not** support RDMA.
+ - [netty Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/netty-binding): This implementation uses *netty* and does **not** support RDMA.
  - [jVerbs Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/jverbs-binding): This implementation uses IBM's proprietary *jVerbs* library to access InfiniBand hardware.
  - [DiSNI Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/disni-binding): This implementation uses IBM's open source library *DiSNI* to access InfiniBand hardware.
  - [neutrino Binding](https://github.com/hhu-bsinfo/observatory/tree/development/java/bindings/neutrino-binding): This implementation uses open source library *neutrino* (developed by the Operating Systems group at Heinrich Heine University Düsseldorf) to access InfiniBand hardware.
