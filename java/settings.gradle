@@ -11,4 +11,5 @@ include 'bindings:disni-binding'
 include 'bindings:neutrino-binding'
 include 'bindings:jverbs-binding'
 include 'bindings:jucx-binding'
+include 'bindings:netty-binding'
 

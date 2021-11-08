@@ -1,0 +1,28 @@
+def benchmarkClass = 'de.hhu.bsinfo.observatory.netty.NettyBenchmark'
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+dependencies {
+    implementation "io.netty:netty-transport:${nettyVersion}"
+    implementation "io.netty:netty-buffer:${nettyVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+}
+
+buildConfig {
+    clsName = 'BuildConfig'
+    packageName = 'de.hhu.bsinfo.observatory.generated'
+
+    charset = 'UTF-8'
+    buildConfigField 'String', 'BENCHMARK_CLASS_NAME', benchmarkClass
+}
+
+// Workaround for 'Configuration <compile> not found', caused by de.fuerstenau.buildconfig with Gradle 7+
+configurations {
+    create("compile")
+}

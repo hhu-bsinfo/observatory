@@ -25,6 +25,13 @@ jobs:
         - ./gradlew bindings:nio-binding:assemble -Dgpr.user=${GPR_USER} -Dgpr.token=${GPR_TOKEN}
       script: ./gradlew bindings:nio-binding:distTar -Dgpr.user=${GPR_USER} -Dgpr.token=${GPR_TOKEN}
       
+    - name: Java netty-binding
+      language: java
+      install:
+        - cd java
+        - ./gradlew bindings:netty-binding:assemble -Dgpr.user=${GPR_USER} -Dgpr.token=${GPR_TOKEN}
+      script: ./gradlew bindings:netty-binding:distTar -Dgpr.user=${GPR_USER} -Dgpr.token=${GPR_TOKEN}
+      
     - name: Java neutrino-binding
       language: java
       install:

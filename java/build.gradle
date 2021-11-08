@@ -11,6 +11,7 @@ ext {
     disniVersion = '2.1'
     jucxVersion = '1.11.2'
     neutrinoVersion = '0.1.0'
+    nettyVersion = '4.1.70.Final'
 
     slf4jVersion = '1.7.32'
     log4jVersion = '2.14.1'

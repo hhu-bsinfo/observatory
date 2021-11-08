@@ -6,6 +6,7 @@ import de.hhu.bsinfo.observatory.benchmark.result.Status;
 import java.net.InetSocketAddress;
 
 public class DummyBenchmark extends Benchmark {
+
     @Override
     protected Status initialize() {
         return Status.NOT_IMPLEMENTED;
