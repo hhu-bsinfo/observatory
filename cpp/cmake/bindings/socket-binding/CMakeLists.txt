@@ -29,3 +29,4 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "observatory")
 
 target_link_libraries(${PROJECT_NAME} log4cpp benchmark application)
+install(TARGETS ${PROJECT_NAME})
