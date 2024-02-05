@@ -54,7 +54,7 @@ public:
 
     void setParameter(const char *key, const char *value);
 
-    std::string getParameter(const char *key, const char *defaultValue) const;
+    std::string getParameter(const char *key, const std::string defaultValue) const;
 
     uint8_t getParameter(const char *key, uint8_t defaultValue) const;
 

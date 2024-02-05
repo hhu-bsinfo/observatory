@@ -1,5 +1,6 @@
 #include <detector/exception/IbPerfException.h>
 #include <memory>
+#include <string>
 #include <thread>
 #include "Benchmark.h"
 
@@ -15,24 +16,29 @@ void Benchmark::setParameter(const char *key, const char *value) {
     parameters[key] = value;
 }
 
-std::string Benchmark::getParameter(const char *key, const char *defaultValue) const {
-    return parameters.at(key);
+std::string Benchmark::getParameter(const char *key, const std::string defaultValue) const {
+    auto it = parameters.find(key);
+    if(it != parameters.end()) {
+        return it->first;
+    } else {
+        return defaultValue;
+    }
 }
 
 uint8_t Benchmark::getParameter(const char *key, uint8_t defaultValue) const {
-    return std::stoi(parameters.at(key));
+    return std::stoi(this->getParameter(key, std::to_string(defaultValue)));
 }
 
 uint16_t Benchmark::getParameter(const char *key, uint16_t defaultValue) const {
-    return std::stoi(parameters.at(key));
+    return std::stoi(this->getParameter(key, std::to_string(defaultValue)));
 }
 
 uint32_t Benchmark::getParameter(const char *key, uint32_t defaultValue) const {
-    return std::stoi(parameters.at(key));
+    return std::stoi(this->getParameter(key, std::to_string(defaultValue)));
 }
 
 uint64_t Benchmark::getParameter(const char *key, uint64_t defaultValue) const {
-    return std::stoi(parameters.at(key));
+    return std::stoi(this->getParameter(key, std::to_string(defaultValue)));
 }
 
 int Benchmark::getOffChannelSocket() const {
